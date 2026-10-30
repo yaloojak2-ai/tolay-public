@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Tolay Admin</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+.adm{padding-block:28px 80px;display:flex;flex-direction:column;gap:20px}
+.tabbar{display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:14px}
+.panel{display:flex;flex-direction:column;gap:14px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.bar input,.bar select,.f input,.f select,.f textarea,td input{background:var(--ink-2);border:1px solid var(--line);color:var(--ivory);border-radius:10px;padding:8px 12px;font:inherit;font-size:14px;min-width:0}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:10px;border-bottom:1px solid var(--line);text-align:start;vertical-align:middle}
+th{color:var(--muted);font-weight:500;font-size:12px;background:var(--ink-2);position:sticky;top:0}
+td img{width:48px;height:56px;object-fit:cover;border-radius:8px;background:var(--shelf);display:block}
+td input{width:96px;font-variant-numeric:tabular-nums}
+td input.saved{border-color:#4caf7a}
+tr.off td{opacity:.45}
+.nm{min-width:200px;line-height:1.4}
+.nm small{display:block;color:var(--gold);font-size:11px}
+.sm{font-size:12px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:transparent}
+.sm.ok{border-color:#4caf7a;color:#7fd6a3}
+.sm.no{border-color:var(--danger);color:var(--danger)}
+.pill{font-size:11px;border-radius:999px;padding:2px 10px;border:1px solid var(--line)}
+.pill.pending{color:var(--gold);border-color:var(--gold)}
+.pill.approved{color:#7fd6a3;border-color:#4caf7a}
+.pill.rejected{color:var(--danger);border-color:var(--danger)}
+.f{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:28px}
+.f label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);min-width:0}
+.f .full{grid-column:1/-1}
+.f .chk{flex-direction:row;align-items:center;gap:8px}
+@media (max-width:600px){.f{grid-template-columns:1fr}}
+.prev{width:120px;height:140px;object-fit:cover;border-radius:12px;background:var(--shelf)}
+.hint{color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="logo" href="index.html"><b>TOLAY</b><small>ADMIN</small></a>
+  <a class="acct-btn" href="index.html" style="margin-inline-start:auto;text-decoration:none">عرض المتجر</a>
+  <button class="acct-btn" id="logout" type="button" hidden>خروج</button>
+</div></header>
+
+<main class="wrap adm">
+  <section id="login" class="auth" hidden>
+    <h2>لوحة التحكم</h2>
+    <form id="loginForm" class="auth" style="padding:0">
+      <label>الإيميل<input id="lEmail" type="email" required dir="ltr" autocomplete="email"></label>
+      <label>كلمة السر<input id="lPass" type="password" required dir="ltr" autocomplete="current-password"></label>
+      <div class="msg" id="lMsg"></div>
+      <button class="btn" type="submit">دخول</button>
+    </form>
+    <p class="hint">أول مرة؟ اعمل حساب من زر "حساب التجار" بالمتجر بنفس إيميل الأدمن، أكّد الإيميل، وارجع هون.</p>
+  </section>
+
+  <section id="app" hidden>
+    <div class="tabbar">
+      <button class="chip" type="button" data-tab="products" aria-pressed="true">المنتجات والأسعار</button>
+      <button class="chip" type="button" data-tab="traders">التجار <span id="pendN"></span></button>
+      <button class="chip" type="button" data-tab="cats">الأقسام</button>
+      <button class="chip" type="button" data-tab="settings">نصوص وإعدادات</button>
+    </div>
+
+    <div class="panel" id="t-products">
+      <div class="bar">
+        <input id="pq" type="search" placeholder="بحث…" style="flex:1 1 200px">
+        <select id="pcat"><option value="">كل الأقسام</option></select>
+        <button class="btn" type="button" id="newP">+ منتج جديد</button>
+      </div>
+      <p class="hint">عدّل السعر مباشرة بالجدول وبينحفظ لحاله لما تطلع من الخانة. سعر الجملة والحد الأدنى بيشوفهم التجار المعتمدين بس.</p>
+      <div class="tbl"><table>
+        <thead><tr><th></th><th>المنتج</th><th>سعر المفرق</th><th>سعر الجملة</th><th>أقل كمية جملة</th><th>ظاهر</th><th></th></tr></thead>
+        <tbody id="pRows"></tbody>
+      </table></div>
+    </div>
+
+    <div class="panel" id="t-traders" hidden>
+      <div class="tbl"><table>
+        <thead><tr><th>الاسم</th><th>المحل</th><th>الهاتف</th><th>المدينة</th><th>الإيميل</th><th>الحالة</th><th></th></tr></thead>
+        <tbody id="tRows"></tbody>
+      </table></div>
+    </div>
+
+    <div class="panel" id="t-cats" hidden>
+      <div class="bar"><input id="newCat" placeholder="اسم قسم جديد"><button class="btn" type="button" id="addCat">إضافة</button></div>
+      <div class="tbl"><table>
+        <thead><tr><th>الترتيب</th><th>الاسم</th><th>المنتجات</th><th></th></tr></thead>
+        <tbody id="cRows"></tbody>
+      </table></div>
+    </div>
+
+    <div class="panel" id="t-settings" hidden>
+      <form id="sForm" class="f" style="padding:0">
+        <label>رقم الواتساب (بدون + أو أصفار بالبداية)<input name="whatsapp" dir="ltr"></label>
+        <label>العملة<input name="currency"></label>
+        <label class="full">السطر الصغير فوق العنوان<input name="hero_eyebrow"></label>
+        <label>العنوان الرئيسي<input name="hero_title"></label>
+        <label>العنوان (السطر الملوّن)<input name="hero_accent"></label>
+        <label class="full">نص الواجهة<textarea name="hero_text" rows="3"></textarea></label>
+        <div class="full"><button class="btn" type="submit">حفظ</button></div>
+      </form>
+      <p class="hint">المنتجات اللي معلّم عليها "مميّز" بتطلع بأول الصفحة (أول 3).</p>
+    </div>
+  </section>
+</main>
+
+<dialog id="edit"><button class="x" type="button" data-close aria-label="إغلاق">✕</button>
+  <form id="eForm" class="f">
+    <h3 class="full" id="eTitle" style="font-family:var(--f-body)">منتج</h3>
+    <div class="full" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><img class="prev" id="ePrev" alt=""><label>صورة المنتج<input type="file" id="eFile" accept="image/*"></label></div>
+    <label>البراند<input name="brand"></label>
+    <label>اسم المنتج<input name="name" required></label>
+    <label>القسم<select name="category_id" id="eCat"></select></label>
+    <label>الحجم<input name="size"></label>
+    <label class="full">الدرجات / الألوان (افصل بينها بفاصلة ,)<input name="shades"></label>
+    <label class="full">وصف<textarea name="description" rows="2"></textarea></label>
+    <label>سعر المفرق<input name="retail_price" type="number" step="0.01" min="0" dir="ltr"></label>
+    <label>الترتيب<input name="sort" type="number" dir="ltr"></label>
+    <label>سعر الجملة<input name="w_price" type="number" step="0.01" min="0" dir="ltr"></label>
+    <label>أقل كمية جملة<input name="w_min" type="number" min="1" dir="ltr"></label>
+    <label class="chk"><input type="checkbox" name="active"> ظاهر بالمتجر</label>
+    <label class="chk"><input type="checkbox" name="featured"> مميّز (بأول الصفحة)</label>
+    <div class="msg full" id="eMsg"></div>
+    <div class="full" style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" type="submit">حفظ</button><button class="sm no" type="button" id="eDel">حذف المنتج</button></div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const num = v => v === "" || v == null ? null : Number(v);
+let P = [], C = [], W = {}, T = [];
+let tt; function toast(m) { const el = $("#toast"); el.textContent = m; el.classList.add("on"); clearTimeout(tt); tt = setTimeout(() => el.classList.remove("on"), 2000); }
+const fail = error => { if (error) { toast("ما انحفظ: " + error.message); return true; } };
+
+async function boot() {
+  const { data: { session } } = await db.auth.getSession();
+  let admin = false;
+  if (session) {
+    const { data } = await db.from("profiles").select("role").eq("id", session.user.id).single();
+    admin = data?.role === "admin";
+    if (!admin) $("#lMsg").textContent = "هاد الحساب مش حساب أدمن.";
+  }
+  $("#login").hidden = admin; $("#app").hidden = !admin; $("#logout").hidden = !session;
+  if (admin) await loadAll();
+}
+$("#loginForm").addEventListener("submit", async e => {
+  e.preventDefault(); $("#lMsg").textContent = "لحظة…";
+  const { error } = await db.auth.signInWithPassword({ email: $("#lEmail").value.trim(), password: $("#lPass").value });
+  if (error) { $("#lMsg").textContent = "الإيميل أو كلمة السر غلط، أو الإيميل لسا مش مأكّد."; return; }
+  boot();
+});
+$("#logout").addEventListener("click", async () => { await db.auth.signOut(); location.reload(); });
+
+async function loadAll() {
+  const [p, c, w, t, s] = await Promise.all([
+    db.from("products").select("*").order("sort"),
+    db.from("categories").select("*").order("sort"),
+    db.from("wholesale_prices").select("*"),
+    db.from("profiles").select("*").eq("role", "merchant").order("created_at", { ascending: false }),
+    db.from("settings").select("*"),
+  ]);
+  P = p.data || []; C = c.data || []; T = t.data || [];
+  W = Object.fromEntries((w.data || []).map(r => [r.product_id, r]));
+  (s.data || []).forEach(r => { const i = $("#sForm").elements[r.key]; if (i) i.value = r.value; });
+  const opts = C.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
+  $("#pcat").innerHTML = `<option value="">كل الأقسام</option>` + opts;
+  $("#eCat").innerHTML = opts;
+  drawP(); drawT(); drawC();
+}
+
+// products
+function drawP() {
+  const q = $("#pq").value.trim().toLowerCase(), cf = $("#pcat").value;
+  const catName = Object.fromEntries(C.map(c => [c.id, c.name]));
+  $("#pRows").innerHTML = P.filter(p => (!cf || p.category_id == cf) && (!q || `${p.brand} ${p.name}`.toLowerCase().includes(q))).map(p => `
+    <tr class="${p.active ? "" : "off"}">
+      <td><img src="${esc(p.image_url)}" alt="" loading="lazy"></td>
+      <td class="nm">${esc(p.name)}<small>${esc(p.brand)} · ${esc(catName[p.category_id] || "")}</small></td>
+      <td><input type="number" step="0.01" min="0" dir="ltr" value="${p.retail_price ?? ""}" data-id="${p.id}" data-f="retail" aria-label="سعر المفرق"></td>
+      <td><input type="number" step="0.01" min="0" dir="ltr" value="${W[p.id]?.price ?? ""}" data-id="${p.id}" data-f="wprice" aria-label="سعر الجملة"></td>
+      <td><input type="number" min="1" dir="ltr" value="${W[p.id]?.min_qty ?? 1}" data-id="${p.id}" data-f="wmin" aria-label="أقل كمية" style="width:70px"></td>
+      <td><input type="checkbox" ${p.active ? "checked" : ""} data-id="${p.id}" data-f="active" aria-label="ظاهر" style="width:auto"></td>
+      <td><button class="sm" type="button" data-edit="${p.id}">تعديل</button></td>
+    </tr>`).join("");
+}
+$("#pq").addEventListener("input", drawP);
+$("#pcat").addEventListener("change", drawP);
+$("#pRows").addEventListener("change", async e => {
+  const i = e.target, id = +i.dataset.id, f = i.dataset.f; if (!f) return;
+  let error;
+  if (f === "retail") ({ error } = await db.from("products").update({ retail_price: num(i.value) }).eq("id", id));
+  if (f === "active") ({ error } = await db.from("products").update({ active: i.checked }).eq("id", id));
+  if (f === "wprice" || f === "wmin") {
+    const row = { product_id: id, price: W[id]?.price ?? null, min_qty: W[id]?.min_qty ?? 1 };
+    f === "wprice" ? row.price = num(i.value) : row.min_qty = Math.max(1, +i.value || 1);
+    ({ error } = await db.from("wholesale_prices").upsert(row));
+    if (!error) W[id] = row;
+  }
+  if (fail(error)) return;
+  const p = P.find(p => p.id === id);
+  if (f === "retail") p.retail_price = num(i.value);
+  if (f === "active") { p.active = i.checked; i.closest("tr").className = i.checked ? "" : "off"; }
+  i.classList.add("saved"); setTimeout(() => i.classList.remove("saved"), 1200);
+});
+
+let editing = null, pickedFile = null;
+function openEdit(id) {
+  editing = id ? P.find(p => p.id === id) : null; pickedFile = null; $("#eFile").value = "";
+  const p = editing || { brand: "", name: "", category_id: C[0]?.id, size: "", shades: "", description: "", retail_price: "", sort: (P.at(-1)?.sort || 0) + 1, active: true, featured: false, image_url: "" };
+  const f = $("#eForm").elements;
+  ["brand", "name", "category_id", "size", "shades", "description", "sort"].forEach(k => f[k].value = p[k] ?? "");
+  f.retail_price.value = p.retail_price ?? "";
+  f.w_price.value = W[p.id]?.price ?? ""; f.w_min.value = W[p.id]?.min_qty ?? 1;
+  f.active.checked = p.active; f.featured.checked = p.featured;
+  $("#ePrev").src = p.image_url || "";
+  $("#eTitle").textContent = editing ? "تعديل منتج" : "منتج جديد";
+  $("#eDel").hidden = !editing; $("#eMsg").textContent = "";
+  $("#edit").showModal();
+}
+$("#eFile").addEventListener("change", e => { pickedFile = e.target.files[0] || null; if (pickedFile) $("#ePrev").src = URL.createObjectURL(pickedFile); });
+$("#eForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const f = e.target.elements, m = $("#eMsg"); m.textContent = "عم نحفظ…";
+  const row = { brand: f.brand.value.trim(), name: f.name.value.trim(), category_id: +f.category_id.value || null, size: f.size.value.trim(), shades: f.shades.value.trim(), description: f.description.value.trim(), retail_price: num(f.retail_price.value), sort: +f.sort.value || 0, active: f.active.checked, featured: f.featured.checked };
+  if (pickedFile) {
+    const path = `${Date.now()}-${pickedFile.name.replace(/[^\w.]+/g, "_")}`;
+    const up = await db.storage.from("products").upload(path, pickedFile, { contentType: pickedFile.type });
+    if (up.error) { m.textContent = "ما انرفعت الصورة: " + up.error.message; return; }
+    row.image_url = db.storage.from("products").getPublicUrl(path).data.publicUrl;
+  }
+  const res = editing ? await db.from("products").update(row).eq("id", editing.id).select().single() : await db.from("products").insert(row).select().single();
+  if (res.error) { m.textContent = "ما انحفظ: " + res.error.message; return; }
+  const w = await db.from("wholesale_prices").upsert({ product_id: res.data.id, price: num(f.w_price.value), min_qty: Math.max(1, +f.w_min.value || 1) });
+  if (w.error) { m.textContent = "المنتج انحفظ بس سعر الجملة لا: " + w.error.message; return; }
+  $("#edit").close(); toast("انحفظ ✓"); loadAll();
+});
+$("#eDel").addEventListener("click", async () => {
+  const b = $("#eDel");
+  if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = "متأكد؟ اكبس كمان مرة للحذف"; return; }
+  b.dataset.sure = ""; b.textContent = "حذف المنتج";
+  const { error } = await db.from("products").delete().eq("id", editing.id);
+  if (fail(error)) return;
+  $("#edit").close(); toast("انحذف"); loadAll();
+});
+$("#newP").addEventListener("click", () => openEdit(null));
+
+// traders
+const stName = { pending: "بانتظار الموافقة", approved: "معتمد", rejected: "مرفوض" };
+function drawT() {
+  const pend = T.filter(t => t.status === "pending").length;
+  $("#pendN").textContent = pend ? `(${pend} جديد)` : "";
+  $("#tRows").innerHTML = T.length ? T.map(t => `
+    <tr><td>${esc(t.full_name)}</td><td>${esc(t.shop_name)}</td><td dir="ltr">${esc(t.phone)}</td><td>${esc(t.city)}</td><td dir="ltr">${esc(t.email)}</td>
+    <td><span class="pill ${t.status}">${stName[t.status]}</span></td>
+    <td style="white-space:nowrap">${t.status !== "approved" ? `<button class="sm ok" type="button" data-st="approved" data-uid="${t.id}">موافقة</button>` : ""} ${t.status !== "rejected" ? `<button class="sm no" type="button" data-st="rejected" data-uid="${t.id}">رفض</button>` : ""}</td></tr>`).join("")
+    : `<tr><td colspan="7" class="hint">لسا ما في طلبات تجار. التاجر بيطلب حساب من زر "حساب التجار" بالمتجر.</td></tr>`;
+}
+
+// categories
+function drawC() {
+  $("#cRows").innerHTML = C.map(c => `<tr>
+    <td><input type="number" dir="ltr" value="${c.sort}" data-cid="${c.id}" data-cf="sort" style="width:70px" aria-label="الترتيب"></td>
+    <td><input value="${esc(c.name)}" data-cid="${c.id}" data-cf="name" style="width:200px" aria-label="اسم القسم"></td>
+    <td>${P.filter(p => p.category_id === c.id).length}</td>
+    <td><button class="sm no" type="button" data-delcat="${c.id}">حذف</button></td></tr>`).join("");
+}
+$("#cRows").addEventListener("change", async e => {
+  const i = e.target; if (!i.dataset.cf) return;
+  const { error } = await db.from("categories").update({ [i.dataset.cf]: i.dataset.cf === "sort" ? +i.value || 0 : i.value.trim() }).eq("id", +i.dataset.cid);
+  if (!fail(error)) { i.classList.add("saved"); setTimeout(() => i.classList.remove("saved"), 1200); }
+});
+$("#addCat").addEventListener("click", async () => {
+  const name = $("#newCat").value.trim(); if (!name) return;
+  if (fail((await db.from("categories").insert({ name, sort: C.length })).error)) return;
+  $("#newCat").value = ""; loadAll();
+});
+
+$("#sForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const rows = [...e.target.elements].filter(i => i.name).map(i => ({ key: i.name, value: i.value.trim() }));
+  if (!fail((await db.from("settings").upsert(rows)).error)) toast("انحفظ ✓");
+});
+
+document.addEventListener("click", async e => {
+  const t = e.target.closest("button"); if (!t) return;
+  const d = t.dataset;
+  if (d.tab) {
+    document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-pressed", b === t));
+    ["products", "traders", "cats", "settings"].forEach(k => $("#t-" + k).hidden = k !== d.tab);
+  }
+  else if (d.edit) openEdit(+d.edit);
+  else if (d.close !== undefined) t.closest("dialog").close();
+  else if (d.st) {
+    if (fail((await db.from("profiles").update({ status: d.st }).eq("id", d.uid)).error)) return;
+    T.find(x => x.id === d.uid).status = d.st; drawT(); toast(d.st === "approved" ? "تم اعتماد التاجر ✓" : "تم الرفض");
+  }
+  else if (d.delcat) {
+    if (P.some(p => p.category_id === +d.delcat)) { toast("انقل منتجات القسم لقسم تاني قبل الحذف"); return; }
+    if (!fail((await db.from("categories").delete().eq("id", +d.delcat)).error)) loadAll();
+  }
+});
+boot();
+</script>
+</body>
+</html>
