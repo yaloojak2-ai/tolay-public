@@ -110,7 +110,7 @@ tr.off td{opacity:.45}
         <div class="full"><button class="btn" type="submit">حفظ</button></div>
       </form>
       <p class="hint">المنتجات اللي معلّم عليها "مميّز" بتطلع بأول الصفحة (أول 3).</p>
-      <div class="bar"><button class="btn ghost" type="button" id="seedSw">تعبئة الألوان المقترحة للدرجات</button><button class="btn" type="button" id="addNew">إضافة المنتجات الجديدة (<span id="addN"></span>)</button><span class="hint" id="seedMsg">بيعبّي ألوان تقريبية لكل الدرجات الموجودة وشكل التجربة لكل قسم. ما بيلمس منتج إله ألوان أصلاً.</span></div>
+      <div class="bar"><button class="btn ghost" type="button" id="seedSw">تعبئة الألوان المقترحة للدرجات</button><button class="btn" type="button" id="addNew">إضافة المنتجات الجديدة (<span id="addN"></span>)</button><span class="hint" id="seedMsg">بيعبّي ألوان تقريبية لكل الدرجات الموجودة وشكل التجربة لكل قسم. ما بيلمس منتج إله ألوان أصلاً، إلا المنتجات اللي انصححت ألوانها.</span></div>
     </div>
   </section>
 </main>
@@ -321,7 +321,7 @@ $("#seedSw").addEventListener("click", async () => {
   for (const c of C) if (SEED.viz[c.name] && c.viz === "photo") { const { error } = await db.from("categories").update({ viz: SEED.viz[c.name] }).eq("id", c.id); if (fail(error)) return; }
   for (const p of P) {
     const row = {};
-    if (SEED.swatches[p.name] && !(p.swatches || []).length) { row.swatches = SEED.swatches[p.name]; row.shades = ""; }
+    if (SEED.swatches[p.name] && (!(p.swatches || []).length || (SEED.fixed || []).includes(p.name))) { row.swatches = SEED.swatches[p.name]; row.shades = ""; }
     if (SEED.finish[p.name] && !p.finish) row.finish = SEED.finish[p.name];
     if (!Object.keys(row).length) continue;
     const { error } = await db.from("products").update(row).eq("id", p.id); if (fail(error)) return; n++;
