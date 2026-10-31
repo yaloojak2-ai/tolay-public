@@ -84,6 +84,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
+<script src="viz.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -94,7 +95,11 @@ const has = n => n !== null && n !== undefined && n !== "";
 // the price this visitor pays: wholesale for approved traders when set, otherwise retail
 const unit = p => isTrader() && has(p.w?.price) ? Number(p.w.price) : has(p.pr) ? Number(p.pr) : null;
 const minQty = p => isTrader() ? Math.max(1, p.w?.min_qty || 1) : 1;
-const shadesOf = p => p.s && !p.s.includes("ألوان متعددة") && !p.s.includes("درجات") ? p.s.split(/,\s*/) : [];
+const shadesOf = p => swatchesOf(p).map(s => s.name);
+// swatches with colours from the admin; plain comma-separated names as a fallback (no colour yet)
+const swatchesOf = p => p.sw.length ? p.sw : p.s && !p.s.includes("ألوان متعددة") && !p.s.includes("درجات") ? p.s.split(/,\s*/).map(name => ({ name, hex: null })) : [];
+const FIN = { matte: "Matte", satin: "Satin", gloss: "Gloss", shimmer: "Shimmer" };
+const dotsHTML = p => { const s = p.sw.filter(x => x.hex); return s.length ? `<div class="dots">${s.slice(0, 6).map(x => `<i style="--c:${esc(x.hex)}" title="${esc(x.name)}"></i>`).join("")}${s.length > 6 ? `<small>+${s.length - 6}</small>` : ""}</div>` : ""; };
 function priceHTML(p) {
   if (isTrader() && has(p.w?.price)) return `<span class="price wprice">${money(p.w.price)}<small>جملة · أقل كمية ${minQty(p)}</small>${has(p.pr) ? `<s>${money(p.pr)}</s>` : ""}</span>`;
   return has(p.pr) ? `<span class="price">${money(p.pr)}</span>` : `<span class="price soon">السعر قريباً</span>`;
@@ -103,13 +108,14 @@ function priceHTML(p) {
 async function load() {
   const [{ data: st }, { data: cats }, { data: prods, error }] = await Promise.all([
     db.from("settings").select("key,value"),
-    db.from("categories").select("id,name").order("sort"),
+    db.from("categories").select("*").order("sort"),
     db.from("products").select("*").eq("active", true).order("sort"),
   ]);
   if (error) { $("#grid").innerHTML = `<div class="empty">ما قدرنا نحمّل المنتجات، حدّثي الصفحة.</div>`; return; }
   S = Object.fromEntries((st || []).map(r => [r.key, r.value]));
   const catName = Object.fromEntries((cats || []).map(c => [c.id, c.name]));
-  ALL = prods.map(p => ({ id: p.id, b: p.brand, n: p.name, s: p.shades, z: p.size, d: p.description, pr: p.retail_price, img: p.image_url, featured: p.featured, cat: catName[p.category_id] || "" }));
+  const catViz = Object.fromEntries((cats || []).map(c => [c.id, c.viz || "photo"]));
+  ALL = prods.map(p => ({ id: p.id, b: p.brand, n: p.name, s: p.shades, z: p.size, d: p.description, pr: p.retail_price, img: p.image_url, featured: p.featured, cat: catName[p.category_id] || "", sw: p.swatches || [], fin: p.finish || "", viz: catViz[p.category_id] || "photo" }));
   byId = Object.fromEntries(ALL.map(p => [p.id, p]));
   CATS = (cats || []).map(c => ({ s: c.name, p: ALL.filter(p => p.cat === c.name) })).filter(c => c.p.length);
   await loadSession();
@@ -163,6 +169,7 @@ function render() {
       <button class="ph" type="button" data-open="${p.id}" aria-label="${esc(p.n)}"><img src="${esc(p.img)}" alt="" loading="lazy"><span class="tag">${esc(p.cat)}</span></button>
       <div class="brand latin">${esc(p.b)}</div>
       <div class="name">${esc(p.n)}</div>
+      ${dotsHTML(p)}
       <div class="row">${priceHTML(p)}<button class="add" type="button" data-add="${p.id}" aria-label="أضيفي للسلة">+</button></div>
     </article>`).join("") : `<div class="empty">ما في نتائج، جرّبي كلمة تانية.</div>`;
   document.querySelectorAll("#chips .chip").forEach(b => b.setAttribute("aria-pressed", b.dataset.cat === cat));
@@ -207,27 +214,36 @@ $("#send").addEventListener("click", e => {
 });
 
 // product dialog
-let pdState = {};
+let pdState = {}, setShade = null;
 function openProduct(id) {
-  const p = byId[id], sh = shadesOf(p), mq = minQty(p);
-  pdState = { id, shade: sh[0] || "", qty: mq };
+  const p = byId[id], sw = swatchesOf(p), mq = minQty(p), first = sw[0];
+  pdState = { id, shade: first?.name || "", qty: mq };
   $("#pdBody").innerHTML = `
-    <div class="ph"><img src="${esc(p.img)}" alt="${esc(p.n)}"></div>
+    <div class="stage" id="stage">
+      <div class="photo"><img src="${esc(p.img)}" alt="${esc(p.n)}"></div>
+      <div class="vzwrap" id="vz"></div>
+      <div class="badge" id="badge" hidden><i></i><span></span></div>
+      <button class="thumb" type="button" id="swap" hidden aria-label="بدّلي بين صورة المنتج والتجربة"><img src="${esc(p.img)}" alt=""></button>
+    </div>
     <div class="body">
       <div class="eyebrow latin">${esc(p.b)}</div>
       <h3>${esc(p.n)}</h3>
-      <div class="meta">${esc(p.cat)}${p.z ? " · " + esc(p.z) : ""}</div>
+      <div class="meta">${esc(p.cat)}${p.z ? " · " + esc(p.z) : ""}${FIN[p.fin] ? `<span class="fin latin">${FIN[p.fin]}</span>` : ""}</div>
       ${priceHTML(p)}
       ${p.d ? `<p class="meta" style="margin:0">${esc(p.d)}</p>` : ""}
-      ${sh.length ? `<div><div class="meta" style="margin-bottom:8px">اختاري الدرجة</div><div class="shades">${sh.map((s, i) => `<button class="chip" type="button" data-shade="${esc(s)}" aria-pressed="${i === 0}">${esc(s)}</button>`).join("")}</div></div>`
+      ${sw.length ? `<div><div class="shade-name">الدرجة: <b id="shadeName">${esc(first.name)}</b></div><div class="swatches" style="margin-top:10px">${sw.map((s, i) => `<button class="sw${s.hex ? "" : " txt"}" type="button" style="${s.hex ? `--c:${esc(s.hex)}` : ""}" data-shade="${esc(s.name)}" data-hex="${esc(s.hex || "")}" aria-pressed="${i === 0}" aria-label="${esc(s.name)}" title="${esc(s.name)}">${s.hex ? "" : esc(s.name)}</button>`).join("")}</div></div>`
         : p.s ? `<div class="meta">${esc(p.s)}، اكتبي اللون اللي بدك ياه بالملاحظات.</div>` : ""}
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:auto">
         <div class="qty"><button type="button" data-pq="-1" aria-label="أقل">−</button><span id="pq">${mq}</span><button type="button" data-pq="1" aria-label="أكثر">+</button></div>
         <button class="btn" type="button" id="pdAdd">أضيفي للسلة</button>
       </div>
     </div>`;
+  setShade = window.mountViz ? mountViz($("#vz"), p.viz, p.fin, first?.hex) : null;
+  $("#swap").hidden = !setShade;
+  if (setShade && first?.hex) badge(first);
   $("#pd").showModal();
 }
+function badge(s) { const b = $("#badge"); b.hidden = false; b.style.setProperty("--c", s.hex); b.querySelector("span").textContent = s.name; }
 
 // trader account
 function acctView(mode) {
@@ -277,7 +293,12 @@ document.addEventListener("click", async e => {
   else if (d.cat !== undefined) { cat = d.cat; render(); }
   else if (d.open) openProduct(+d.open);
   else if (d.add) { const p = byId[d.add]; shadesOf(p).length ? openProduct(p.id) : addToCart(p.id, "", minQty(p)); }
-  else if (d.shade !== undefined) { pdState.shade = d.shade; t.parentElement.querySelectorAll(".chip").forEach(b => b.setAttribute("aria-pressed", b === t)); }
+  else if (d.shade !== undefined) {
+    pdState.shade = d.shade; $("#shadeName").textContent = d.shade;
+    t.parentElement.querySelectorAll(".sw").forEach(b => b.setAttribute("aria-pressed", b === t));
+    if (setShade && d.hex) { $("#stage").classList.remove("show-photo"); setShade(d.hex); badge({ name: d.shade, hex: d.hex }); }
+  }
+  else if (t.id === "swap") $("#stage").classList.toggle("show-photo");
   else if (d.pq) { pdState.qty = Math.max(minQty(byId[pdState.id]), pdState.qty + +d.pq); $("#pq").textContent = pdState.qty; }
   else if (t.id === "pdAdd") { addToCart(pdState.id, pdState.shade, pdState.qty); $("#pd").close(); }
   else if (d.rm !== undefined) { cart.splice(+d.rm, 1); save(); drawCart(); }

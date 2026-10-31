@@ -38,6 +38,10 @@ tr.off td{opacity:.45}
 @media (max-width:600px){.f{grid-template-columns:1fr}}
 .prev{width:120px;height:140px;object-fit:cover;border-radius:12px;background:var(--shelf)}
 .hint{color:var(--muted);font-size:13px}
+.swl{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.swl div{display:flex;gap:8px;align-items:center}
+.swl input[type=color]{width:44px;height:38px;padding:2px;border-radius:10px;flex:none}
+.swl input[type=text]{flex:1}
 </style>
 </head>
 <body>
@@ -90,7 +94,7 @@ tr.off td{opacity:.45}
     <div class="panel" id="t-cats" hidden>
       <div class="bar"><input id="newCat" placeholder="اسم قسم جديد"><button class="btn" type="button" id="addCat">إضافة</button></div>
       <div class="tbl"><table>
-        <thead><tr><th>الترتيب</th><th>الاسم</th><th>المنتجات</th><th></th></tr></thead>
+        <thead><tr><th>الترتيب</th><th>الاسم</th><th>شكل التجربة المتحركة</th><th>المنتجات</th><th></th></tr></thead>
         <tbody id="cRows"></tbody>
       </table></div>
     </div>
@@ -106,6 +110,7 @@ tr.off td{opacity:.45}
         <div class="full"><button class="btn" type="submit">حفظ</button></div>
       </form>
       <p class="hint">المنتجات اللي معلّم عليها "مميّز" بتطلع بأول الصفحة (أول 3).</p>
+      <div class="bar"><button class="btn ghost" type="button" id="seedSw">تعبئة الألوان المقترحة للدرجات</button><span class="hint" id="seedMsg">بيعبّي ألوان تقريبية لكل الدرجات الموجودة وشكل التجربة لكل قسم. ما بيلمس منتج إله ألوان أصلاً.</span></div>
     </div>
   </section>
 </main>
@@ -118,7 +123,9 @@ tr.off td{opacity:.45}
     <label>اسم المنتج<input name="name" required></label>
     <label>القسم<select name="category_id" id="eCat"></select></label>
     <label>الحجم<input name="size"></label>
-    <label class="full">الدرجات / الألوان (افصل بينها بفاصلة ,)<input name="shades"></label>
+    <div class="full"><div class="hint" style="margin-bottom:6px">الدرجات وألوانها (بتطلع بالتجربة المتحركة بصفحة المنتج)</div><div id="swList" class="swl"></div><button class="sm" type="button" id="addSw">+ درجة</button></div>
+    <label>الملمس<select name="finish"><option value="">عادي</option><option value="matte">Matte مات</option><option value="satin">Satin ستان</option><option value="gloss">Gloss لامع</option><option value="shimmer">Shimmer براق</option></select></label>
+    <label>ملاحظة ألوان (اختياري)<input name="shades" placeholder="مثلاً: ألوان متعددة"></label>
     <label class="full">وصف<textarea name="description" rows="2"></textarea></label>
     <label>سعر المفرق<input name="retail_price" type="number" step="0.01" min="0" dir="ltr"></label>
     <label>الترتيب<input name="sort" type="number" dir="ltr"></label>
@@ -135,11 +142,13 @@ tr.off td{opacity:.45}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
+<script src="seed.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const num = v => v === "" || v == null ? null : Number(v);
 let P = [], C = [], W = {}, T = [];
+const VIZ = { photo: "صورة المنتج", lips: "شفاه", skin: "سواتش بشرة", cheek: "خدود", eyes: "عيون", brow: "حواجب", scent: "عطر" };
 let tt; function toast(m) { const el = $("#toast"); el.textContent = m; el.classList.add("on"); clearTimeout(tt); tt = setTimeout(() => el.classList.remove("on"), 2000); }
 const fail = error => { if (error) { toast("ما انحفظ: " + error.message); return true; } };
 
@@ -228,7 +237,8 @@ function openEdit(id) {
   editing = id ? P.find(p => p.id === id) : null; pickedFile = null; $("#eFile").value = "";
   const p = editing || { brand: "", name: "", category_id: C[0]?.id, size: "", shades: "", description: "", retail_price: "", sort: (P.at(-1)?.sort || 0) + 1, active: true, featured: false, image_url: "" };
   const f = $("#eForm").elements;
-  ["brand", "name", "category_id", "size", "shades", "description", "sort"].forEach(k => f[k].value = p[k] ?? "");
+  ["brand", "name", "category_id", "size", "shades", "description", "sort", "finish"].forEach(k => f[k].value = p[k] ?? "");
+  $("#swList").innerHTML = ""; (p.swatches || []).forEach(s => addSwRow(s));
   f.retail_price.value = p.retail_price ?? "";
   f.w_price.value = W[p.id]?.price ?? ""; f.w_min.value = W[p.id]?.min_qty ?? 1;
   f.active.checked = p.active; f.featured.checked = p.featured;
@@ -241,7 +251,8 @@ $("#eFile").addEventListener("change", e => { pickedFile = e.target.files[0] || 
 $("#eForm").addEventListener("submit", async e => {
   e.preventDefault();
   const f = e.target.elements, m = $("#eMsg"); m.textContent = "عم نحفظ…";
-  const row = { brand: f.brand.value.trim(), name: f.name.value.trim(), category_id: +f.category_id.value || null, size: f.size.value.trim(), shades: f.shades.value.trim(), description: f.description.value.trim(), retail_price: num(f.retail_price.value), sort: +f.sort.value || 0, active: f.active.checked, featured: f.featured.checked };
+  const swatches = [...$("#swList").children].map(d => ({ name: d.querySelector("[type=text]").value.trim(), hex: d.querySelector("[type=color]").value })).filter(s => s.name);
+  const row = { swatches, finish: f.finish.value, brand: f.brand.value.trim(), name: f.name.value.trim(), category_id: +f.category_id.value || null, size: f.size.value.trim(), shades: f.shades.value.trim(), description: f.description.value.trim(), retail_price: num(f.retail_price.value), sort: +f.sort.value || 0, active: f.active.checked, featured: f.featured.checked };
   if (pickedFile) {
     const path = `${Date.now()}-${pickedFile.name.replace(/[^\w.]+/g, "_")}`;
     const up = await db.storage.from("products").upload(path, pickedFile, { contentType: pickedFile.type });
@@ -263,6 +274,13 @@ $("#eDel").addEventListener("click", async () => {
   $("#edit").close(); toast("انحذف"); loadAll();
 });
 $("#newP").addEventListener("click", () => openEdit(null));
+function addSwRow(s = { name: "", hex: "#c25a5a" }) {
+  const d = document.createElement("div");
+  d.innerHTML = `<input type="color" value="${esc(s.hex || "#c25a5a")}" aria-label="لون الدرجة"><input type="text" value="${esc(s.name)}" placeholder="اسم الدرجة" aria-label="اسم الدرجة"><button class="sm no" type="button" aria-label="حذف الدرجة">✕</button>`;
+  d.querySelector("button").onclick = () => d.remove();
+  $("#swList").append(d);
+}
+$("#addSw").addEventListener("click", () => addSwRow());
 
 // traders
 const stName = { pending: "بانتظار الموافقة", approved: "معتمد", rejected: "مرفوض" };
@@ -281,6 +299,7 @@ function drawC() {
   $("#cRows").innerHTML = C.map(c => `<tr>
     <td><input type="number" dir="ltr" value="${c.sort}" data-cid="${c.id}" data-cf="sort" style="width:70px" aria-label="الترتيب"></td>
     <td><input value="${esc(c.name)}" data-cid="${c.id}" data-cf="name" style="width:200px" aria-label="اسم القسم"></td>
+    <td><select data-cid="${c.id}" data-cf="viz" aria-label="شكل التجربة">${Object.entries(VIZ).map(([k, v]) => `<option value="${k}" ${c.viz === k ? "selected" : ""}>${v}</option>`).join("")}</select></td>
     <td>${P.filter(p => p.category_id === c.id).length}</td>
     <td><button class="sm no" type="button" data-delcat="${c.id}">حذف</button></td></tr>`).join("");
 }
@@ -295,6 +314,18 @@ $("#addCat").addEventListener("click", async () => {
   $("#newCat").value = ""; loadAll();
 });
 
+$("#seedSw").addEventListener("click", async () => {
+  const m = $("#seedMsg"); m.textContent = "عم نعبّي…"; let n = 0;
+  for (const c of C) if (SEED.viz[c.name] && c.viz === "photo") { const { error } = await db.from("categories").update({ viz: SEED.viz[c.name] }).eq("id", c.id); if (fail(error)) return; }
+  for (const p of P) {
+    const row = {};
+    if (SEED.swatches[p.name] && !(p.swatches || []).length) { row.swatches = SEED.swatches[p.name]; row.shades = ""; }
+    if (SEED.finish[p.name] && !p.finish) row.finish = SEED.finish[p.name];
+    if (!Object.keys(row).length) continue;
+    const { error } = await db.from("products").update(row).eq("id", p.id); if (fail(error)) return; n++;
+  }
+  m.textContent = `تم ✓ انعبّى ${n} منتج. فيك تعدّل أي لون من زر "تعديل" عالمنتج.`; loadAll();
+});
 $("#sForm").addEventListener("submit", async e => {
   e.preventDefault();
   const rows = [...e.target.elements].filter(i => i.name).map(i => ({ key: i.name, value: i.value.trim() }));
