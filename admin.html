@@ -110,7 +110,7 @@ tr.off td{opacity:.45}
         <div class="full"><button class="btn" type="submit">حفظ</button></div>
       </form>
       <p class="hint">المنتجات اللي معلّم عليها "مميّز" بتطلع بأول الصفحة (أول 3).</p>
-      <div class="bar"><button class="btn ghost" type="button" id="seedSw">تعبئة الألوان المقترحة للدرجات</button><span class="hint" id="seedMsg">بيعبّي ألوان تقريبية لكل الدرجات الموجودة وشكل التجربة لكل قسم. ما بيلمس منتج إله ألوان أصلاً.</span></div>
+      <div class="bar"><button class="btn ghost" type="button" id="seedSw">تعبئة الألوان المقترحة للدرجات</button><button class="btn" type="button" id="addNew">إضافة المنتجات الجديدة (<span id="addN"></span>)</button><span class="hint" id="seedMsg">بيعبّي ألوان تقريبية لكل الدرجات الموجودة وشكل التجربة لكل قسم. ما بيلمس منتج إله ألوان أصلاً.</span></div>
     </div>
   </section>
 </main>
@@ -195,6 +195,8 @@ async function loadAll() {
   $("#pcat").innerHTML = `<option value="">كل الأقسام</option>` + opts;
   $("#eCat").innerHTML = opts;
   drawP(); drawT(); drawC();
+  const have = new Set(P.map(p => (p.brand + "|" + p.name).toLowerCase()));
+  $("#addN").textContent = SEED.add.filter(a => !have.has((a.brand + "|" + a.name).toLowerCase())).length;
 }
 
 // products
@@ -325,6 +327,21 @@ $("#seedSw").addEventListener("click", async () => {
     const { error } = await db.from("products").update(row).eq("id", p.id); if (fail(error)) return; n++;
   }
   m.textContent = `تم ✓ انعبّى ${n} منتج. فيك تعدّل أي لون من زر "تعديل" عالمنتج.`; loadAll();
+});
+$("#addNew").addEventListener("click", async () => {
+  const m = $("#seedMsg"), key = p => (p.brand + "|" + p.name).toLowerCase();
+  const have = new Set(P.map(key)), todo = SEED.add.filter(a => !have.has(key(a)));
+  if (!todo.length) { m.textContent = "كل المنتجات الجديدة مضافة ✓"; return; }
+  m.textContent = "عم نضيف…";
+  const cid = {}; C.forEach(c => cid[c.name] = c.id);
+  for (const name of [...new Set(todo.map(a => a.cat))].filter(n => !cid[n])) {
+    const { data, error } = await db.from("categories").insert({ name, sort: C.length + Object.keys(cid).length }).select().single();
+    if (fail(error)) return; cid[name] = data.id;
+  }
+  const sort = Math.max(0, ...P.map(p => p.sort || 0)) + 1;
+  const rows = todo.map((a, i) => ({ category_id: cid[a.cat], brand: a.brand, name: a.name, shades: a.shades, image_url: a.img, active: true, sort: sort + i }));
+  if (fail((await db.from("products").insert(rows)).error)) return;
+  m.textContent = `تم ✓ انضاف ${rows.length} منتج. حط أسعارهم من تبويب المنتجات.`; loadAll();
 });
 $("#sForm").addEventListener("submit", async e => {
   e.preventDefault();
