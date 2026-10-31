@@ -218,3 +218,9 @@ dialog#pd{max-width:min(1000px,calc(100vw - 32px))}
 .dots small{color:var(--muted);font-size:11px;margin-inline-start:2px}
 @media (max-width:700px){.pd{grid-template-columns:1fr}.stage{aspect-ratio:4/3;min-height:0}#pd .body{padding-top:24px}}
 @media (prefers-reduced-motion:reduce){.vz *, .vz{animation:none!important;transition:none!important}.stage .photo img{animation:none}}
+
+.real{position:absolute;inset:0;background:#e9d6cc}
+.real video,.real img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.real .rb{clip-path:inset(0 100% 0 0);opacity:0}
+.real .rb.go{animation:apply .9s cubic-bezier(.7,0,.2,1) forwards}
+@keyframes apply{from{clip-path:inset(0 100% 0 0);opacity:1}to{clip-path:inset(0 0 0 0);opacity:1}}
