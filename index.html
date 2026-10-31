@@ -118,7 +118,7 @@ async function load() {
   const catViz = Object.fromEntries((cats || []).map(c => [c.id, c.viz || "photo"]));
   // DB values win; seed.js fills in the generated try-on photos/clips until the admin sets their own
   const SD = window.SEED || {}, catMedia = Object.fromEntries((cats || []).map(c => [c.id, Object.keys(c.media || {}).length ? c.media : SD.media?.[c.name] || {}]));
-  const swOf = p => ((p.swatches || []).length ? p.swatches : SD.swatches?.[p.name] || []).map(s => ({ ...s, img: s.img || SD.img?.[p.name]?.[s.name] || "" }));
+  const swOf = p => ((p.swatches || []).length ? p.swatches : SD.swatches?.[p.name] || []).map(s => ({ ...s, img: s.img || SD.img?.[p.name]?.[s.name] || "", vid: s.vid || SD.vid?.[p.name]?.[s.name] || "" }));
   ALL = prods.map(p => ({ id: p.id, b: p.brand, n: p.name, s: p.shades, z: p.size, d: p.description, pr: p.retail_price, img: p.image_url, featured: p.featured, cat: catName[p.category_id] || "", sw: swOf(p), fin: p.finish || SD.finish?.[p.name] || "", viz: catViz[p.category_id] || "photo", media: catMedia[p.category_id] || {} }));
   byId = Object.fromEntries(ALL.map(p => [p.id, p]));
   CATS = (cats || []).map(c => ({ s: c.name, p: ALL.filter(p => p.cat === c.name) })).filter(c => c.p.length);
@@ -235,7 +235,7 @@ function openProduct(id) {
       <div class="meta">${esc(p.cat)}${p.z ? " · " + esc(p.z) : ""}${FIN[p.fin] ? `<span class="fin latin">${FIN[p.fin]}</span>` : ""}</div>
       ${priceHTML(p)}
       ${p.d ? `<p class="meta" style="margin:0">${esc(p.d)}</p>` : ""}
-      ${sw.length ? `<div><div class="shade-name">الدرجة: <b id="shadeName">${esc(first.name)}</b></div><div class="swatches" style="margin-top:10px">${sw.map((s, i) => `<button class="sw${s.hex ? "" : " txt"}" type="button" style="${s.hex ? `--c:${esc(s.hex)}` : ""}" data-shade="${esc(s.name)}" data-hex="${esc(s.hex || "")}" data-img="${esc(s.img || "")}" aria-pressed="${i === 0}" aria-label="${esc(s.name)}" title="${esc(s.name)}">${s.hex ? "" : esc(s.name)}</button>`).join("")}</div></div>`
+      ${sw.length ? `<div><div class="shade-name">الدرجة: <b id="shadeName">${esc(first.name)}</b></div><div class="swatches" style="margin-top:10px">${sw.map((s, i) => `<button class="sw${s.hex ? "" : " txt"}" type="button" style="${s.hex ? `--c:${esc(s.hex)}` : ""}" data-shade="${esc(s.name)}" data-hex="${esc(s.hex || "")}" data-img="${esc(s.img || "")}" data-vid="${esc(s.vid || "")}" aria-pressed="${i === 0}" aria-label="${esc(s.name)}" title="${esc(s.name)}">${s.hex ? "" : esc(s.name)}</button>`).join("")}</div></div>`
         : p.s ? `<div class="meta">${esc(p.s)}، اكتبي اللون اللي بدك ياه بالملاحظات.</div>` : ""}
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:auto">
         <div class="qty"><button type="button" data-pq="-1" aria-label="أقل">−</button><span id="pq">${mq}</span><button type="button" data-pq="1" aria-label="أكثر">+</button></div>
@@ -243,18 +243,21 @@ function openProduct(id) {
       </div>
     </div>`;
   // real photos/video when the section has them, drawn SVG stage otherwise
-  setShade = p.media.base || p.media.video ? mountReal($("#vz"), p.media, first) : window.mountViz ? mountViz($("#vz"), p.viz, p.fin, first?.hex) : null;
+  setShade = p.media.base || p.media.video || first?.vid ? mountReal($("#vz"), p.media, first) : window.mountViz ? mountViz($("#vz"), p.viz, p.fin, first?.hex) : null;
   $("#swap").hidden = !setShade;
   if (setShade && first?.hex) badge(first);
   $("#pd").showModal();
 }
 // UGC clip plays first, then each shade swaps in its own photo with a left-to-right "application" wipe
 function mountReal(el, m, first) {
-  el.innerHTML = `<div class="real">${m.video ? `<video src="${esc(m.video)}" ${m.base ? `poster="${esc(m.base)}"` : ""} autoplay muted playsinline></video>` : ""}<img class="ra" alt="" ${m.base ? `src="${esc(m.base)}"` : ""}><img class="rb" alt=""></div>`;
+  // a shade's own clip (SEED.vid) beats the shared section clip
+  const clip = first?.vid || m.video;
+  el.innerHTML = `<div class="real">${clip ? `<video src="${esc(clip)}" ${m.base ? `poster="${esc(m.base)}"` : ""} autoplay muted playsinline></video>` : ""}<img class="ra" alt="" ${m.base ? `src="${esc(m.base)}"` : ""}><img class="rb" alt=""></div>`;
   const v = el.querySelector("video"), a = el.querySelector(".ra"), b = el.querySelector(".rb");
   if (v) { a.hidden = true; v.onended = () => { if (a.getAttribute("src")) { a.hidden = false; v.hidden = true; } else v.play(); }; }
   if (first?.img) a.src = first.img;
-  return (hex, img) => {
+  return (hex, img, vid) => {
+    if (vid && v) { if (img) a.src = img; a.hidden = true; v.hidden = false; v.src = vid; v.play(); return; }
     if (!img) return;
     if (v) { v.pause(); v.hidden = true; a.hidden = false; }
     b.src = img; b.classList.remove("go"); b.getBoundingClientRect(); b.classList.add("go");
@@ -314,7 +317,7 @@ document.addEventListener("click", async e => {
   else if (d.shade !== undefined) {
     pdState.shade = d.shade; $("#shadeName").textContent = d.shade;
     t.parentElement.querySelectorAll(".sw").forEach(b => b.setAttribute("aria-pressed", b === t));
-    if (setShade && d.hex) { $("#stage").classList.remove("show-photo"); setShade(d.hex, d.img); badge({ name: d.shade, hex: d.hex }); }
+    if (setShade && d.hex) { $("#stage").classList.remove("show-photo"); setShade(d.hex, d.img, d.vid); badge({ name: d.shade, hex: d.hex }); }
   }
   else if (t.id === "swap") $("#stage").classList.toggle("show-photo");
   else if (d.pq) { pdState.qty = Math.max(minQty(byId[pdState.id]), pdState.qty + +d.pq); $("#pq").textContent = pdState.qty; }
