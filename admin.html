@@ -55,8 +55,8 @@ tr.off td{opacity:.45}
       <label>كلمة السر<input id="lPass" type="password" required dir="ltr" autocomplete="current-password"></label>
       <div class="msg" id="lMsg"></div>
       <button class="btn" type="submit">دخول</button>
+      <button class="btn ghost" type="button" id="signupAdmin">أول مرة؟ أنشئ الحساب بهالإيميل وكلمة السر</button>
     </form>
-    <p class="hint">أول مرة؟ اعمل حساب من زر "حساب التجار" بالمتجر بنفس إيميل الأدمن، أكّد الإيميل، وارجع هون.</p>
   </section>
 
   <section id="app" hidden>
@@ -159,6 +159,15 @@ $("#loginForm").addEventListener("submit", async e => {
   const { error } = await db.auth.signInWithPassword({ email: $("#lEmail").value.trim(), password: $("#lPass").value });
   if (error) { $("#lMsg").textContent = "الإيميل أو كلمة السر غلط، أو الإيميل لسا مش مأكّد."; return; }
   boot();
+});
+$("#signupAdmin").addEventListener("click", async () => {
+  const email = $("#lEmail").value.trim(), password = $("#lPass").value, m = $("#lMsg");
+  if (!email || password.length < 6) { m.textContent = "اكتب الإيميل وكلمة سر 6 أحرف أو أكثر."; return; }
+  m.textContent = "لحظة…";
+  const { data, error } = await db.auth.signUp({ email, password, options: { emailRedirectTo: location.href } });
+  if (error) { m.textContent = error.message; return; }
+  m.textContent = data.session ? "" : "انبعتلك إيميل تأكيد. افتحه واكبس الرابط، وبعدين ارجع هون وادخل.";
+  if (data.session) boot();
 });
 $("#logout").addEventListener("click", async () => { await db.auth.signOut(); location.reload(); });
 
