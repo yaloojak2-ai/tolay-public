@@ -25,7 +25,7 @@
     <div class="eyebrow latin" id="hEyebrow"></div>
     <h1><span id="hTitle"></span><br><em id="hAccent"></em></h1>
     <p id="hText"></p>
-    <div class="cta"><a class="btn" href="#shop">تسوّقي الآن</a><a class="btn ghost" href="#cats">تصفّحي الأقسام</a></div>
+    <div class="cta"><a class="btn" href="#shop">تسوّقي الآن</a><a class="btn ghost" href="#cats">تصفّحي الأقسام</a><button class="btn ghost" type="button" id="openQuiz">اكتشفي درجتك ✨</button></div>
   </div>
   <div class="niches" id="heroNiches"></div>
 </div></section>
@@ -66,6 +66,8 @@
 </div></footer>
 
 <dialog id="pd"><button class="x" type="button" data-close aria-label="إغلاق">✕</button><div class="pd" id="pdBody"></div></dialog>
+
+<dialog id="quiz" class="small"><button class="x" type="button" data-close aria-label="إغلاق">✕</button><div class="auth" id="quizBody"></div></dialog>
 
 <dialog id="acct" class="small"><button class="x" type="button" data-close aria-label="إغلاق">✕</button><div class="auth" id="acctBody"></div></dialog>
 
@@ -241,12 +243,63 @@ function openProduct(id) {
         <div class="qty"><button type="button" data-pq="-1" aria-label="أقل">−</button><span id="pq">${mq}</span><button type="button" data-pq="1" aria-label="أكثر">+</button></div>
         <button class="btn" type="button" id="pdAdd">أضيفي للسلة</button>
       </div>
+      ${lookHTML(p)}
     </div>`;
   // real photos/video when the section has them, drawn SVG stage otherwise
   setShade = p.media.base || p.media.video || first?.vid ? mountReal($("#vz"), p.media, first) : window.mountViz ? mountViz($("#vz"), p.viz, p.fin, first?.hex) : null;
   $("#swap").hidden = !setShade;
   if (setShade && first?.hex) badge(first);
   $("#pd").showModal();
+}
+
+// "complete the look": one product from each of three complementary sections, picked by id so it stays stable
+const LOOK = ["الشفاه", "الخدود", "الماسكارا", "ظلال العيون", "البشرة والبودرة"];
+function lookHTML(p) {
+  const picks = LOOK.filter(c => c !== p.cat).slice(0, 3).map(c => { const l = ALL.filter(x => x.cat === c && x.img); return l[p.id % l.length]; }).filter(Boolean);
+  return picks.length ? `<div class="look"><div class="shade-name">كمّلي الإطلالة</div><div class="lookrow">${picks.map(x => `<div class="lk"><button type="button" data-open="${x.id}" aria-label="${esc(x.n)}"><img src="${esc(x.img)}" alt=""></button><small>${esc(x.b)}</small><button class="btn ghost" type="button" data-add="${x.id}" aria-label="أضيفي ${esc(x.n)}">+</button></div>`).join("")}</div></div>` : "";
+}
+
+// shade finder: 3 answers -> a foundation and 3 lip shades from what we really stock
+const QZ = [
+  ["tone", "شو لون بشرتك؟", [["0.08", "فاتحة"], ["0.4", "قمحية"], ["0.7", "سمراء"], ["0.95", "غامقة"]]],
+  ["under", "شو التحت لون؟ (عروق معصمك خضرا = دافئ، زرقا = بارد)", [["w", "دافئ"], ["c", "بارد"], ["n", "مش متأكدة"]]],
+  ["style", "شو ستايلك؟", [["soft", "طبيعي وناعم"], ["bold", "جريء وواضح"]]]];
+let qa = {}, qi = 0;
+const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const satOf = h => { const [r, g, b] = rgb(h), m = Math.max(r, g, b); return m ? (m - Math.min(r, g, b)) / m : 0; };
+const warmOf = h => { const [r, g, b] = rgb(h); return r - b; };
+function quizPicks() {
+  // shade names we could not confirm yet stay out of recommendations
+  const UNSURE = ["Wander 75", "Invite 80", "Loveslick", "Attention", "Kiss Me", "Pucker Up", "Tongue Tied", "Lingerie"];
+  const hexed = p => swatchesOf(p).filter(s => /^#[0-9a-f]{6}$/i.test(s.hex || "") && !(p.b === "Tolay Select" || UNSURE.includes(s.name) && /Phantom|Glow Reviver/.test(p.n)));
+  let fnd = null;
+  for (const p of ALL.filter(p => /foundation/i.test(p.n))) {
+    const l = hexed(p); if (l.length < 3) continue;
+    const i = Math.round(qa.tone * (l.length - 1)), w = l.slice(Math.max(0, i - 1), i + 2);
+    const s = qa.under === "w" ? w.reduce((a, b) => warmOf(b.hex) > warmOf(a.hex) ? b : a) : qa.under === "c" ? w.reduce((a, b) => warmOf(b.hex) < warmOf(a.hex) ? b : a) : l[i];
+    fnd = fnd || { p, s };
+  }
+  const tgt = qa.style === "bold" ? 0.8 : 0.3, u = qa.under === "w" ? 1 : qa.under === "c" ? -1 : 0;
+  const lips = ALL.filter(p => p.cat === "الشفاه").map(p => {
+    const sc = s => { const [r, g] = rgb(s.hex); return -2 * Math.abs(satOf(s.hex) - tgt) + 1.2 * u * g / r; };
+    const best = hexed(p).sort((a, b) => sc(b) - sc(a))[0];
+    return best && { p, s: best, sc: sc(best) };
+  }).filter(Boolean).sort((a, b) => b.sc - a.sc).slice(0, 3);
+  return { fnd, lips };
+}
+function quizView() {
+  const b = $("#quizBody");
+  if (qi < QZ.length) {
+    const [k, q, o] = QZ[qi];
+    b.innerHTML = `<div class="eyebrow">سؤال ${qi + 1} من ${QZ.length}</div><h2>${q}</h2><div class="qopts">${o.map(([v, t]) => `<button class="btn ghost" type="button" data-qa="${k}" data-v="${v}">${t}</button>`).join("")}</div>`;
+    return;
+  }
+  const { fnd, lips } = quizPicks();
+  const row = (lbl, x) => `<div class="qres"><i style="background:${esc(x.s.hex)}"></i><div><small>${lbl}</small><b>${esc(x.p.b)} · ${esc(x.p.n)}</b><small>${esc(x.s.name)}</small></div><button class="btn ghost" type="button" data-qopen="${x.p.id}" data-qshade="${esc(x.s.name)}">شوفي</button></div>`;
+  const all = [fnd && ["فاونديشن", fnd], ...lips.map(x => ["أحمر شفاه", x])].filter(Boolean);
+  const msg = `مرحبا Tolay Makeup، اخترت من "اكتشفي درجتك":\n` + all.map(([l, x]) => `${l}: ${x.p.b} - ${x.p.n} (${x.s.name})`).join("\n");
+  b.innerHTML = `<div class="eyebrow">اخترنالك</div><h2>درجاتك المناسبة</h2>${all.length ? all.map(([l, x]) => row(l, x)).join("") : `<p class="meta">ما لقينا درجات مناسبة حالياً.</p>`}
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px"><a class="btn" target="_blank" rel="noopener" href="https://wa.me/${S.whatsapp}?text=${encodeURIComponent(msg)}">ابعتيها عالواتساب</a><button class="btn ghost" type="button" data-qreset>من جديد</button></div>`;
 }
 // UGC clip plays first, then each shade swaps in its own photo with a left-to-right "application" wipe
 function mountReal(el, m, first) {
@@ -319,6 +372,9 @@ document.addEventListener("click", async e => {
     t.parentElement.querySelectorAll(".sw").forEach(b => b.setAttribute("aria-pressed", b === t));
     if (setShade && d.hex) { $("#stage").classList.remove("show-photo"); setShade(d.hex, d.img, d.vid); badge({ name: d.shade, hex: d.hex }); }
   }
+  else if (t.id === "openQuiz" || d.qreset !== undefined) { qa = {}; qi = 0; quizView(); if (!$("#quiz").open) $("#quiz").showModal(); }
+  else if (d.qa) { qa[d.qa] = d.v; qi++; quizView(); }
+  else if (d.qopen) { $("#quiz").close(); openProduct(+d.qopen); [...document.querySelectorAll("#pdBody .sw")].find(b => b.dataset.shade === d.qshade)?.click(); }
   else if (t.id === "swap") $("#stage").classList.toggle("show-photo");
   else if (d.pq) { pdState.qty = Math.max(minQty(byId[pdState.id]), pdState.qty + +d.pq); $("#pq").textContent = pdState.qty; }
   else if (t.id === "pdAdd") { addToCart(pdState.id, pdState.shade, pdState.qty); $("#pd").close(); }
