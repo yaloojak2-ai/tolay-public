@@ -109,6 +109,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
 <script src="viz.js?v=1793632833"></script>
+<script src="desc.js?v=1793663490"></script>
 <script src="seed.js?v=1793632833"></script>
 <script>
 const $ = s => document.querySelector(s);
@@ -184,6 +185,8 @@ document.querySelectorAll("[data-ic]").forEach(e => e.insertAdjacentHTML("afterb
 const enc = encodeURIComponent;
 const SKIP_BRANDS = ["Tolay Select", "—", ""];
 const brandMap = () => { const m = new Map(); ALL.forEach(p => { if (!SKIP_BRANDS.includes(p.b)) (m.get(p.b) || m.set(p.b, []).get(p.b)).push(p); }); return m; };
+const descHTML = p => { const x = (window.DESC || {})[p.b + "|" + p.n]; if (!p.d && !x) return ""; if (!x) return `<p class="meta" style="margin:0">${esc(p.d)}</p>`;
+  return `<div class="pdesc"><h4>${esc(x.t)}</h4><p>${esc(p.d || x.d)}</p><ul>${x.f.map(f => `<li>${esc(f)}</li>`).join("")}</ul></div>`; };
 const withImg = l => l.filter(p => p.img);
 
 // wishlist (per-browser)
@@ -367,7 +370,7 @@ function openProduct(id) {
       <h3>${esc(p.n)}</h3>
       <div class="meta">${esc(p.cat)}${p.z ? " · " + esc(p.z) : ""}${FIN[p.fin] ? `<span class="fin latin">${FIN[p.fin]}</span>` : ""}</div>
       ${priceHTML(p)}
-      ${p.d ? `<p class="meta" style="margin:0">${esc(p.d)}</p>` : ""}
+      ${descHTML(p)}
       ${sw.length ? `<div><div class="shade-name">الدرجة: <b id="shadeName">${esc(first.name)}</b></div><div class="swatches" style="margin-top:10px">${sw.map((s, i) => `<button class="sw${s.hex ? "" : " txt"}" type="button" style="${s.hex ? `--c:${esc(s.hex)}` : ""}" data-shade="${esc(s.name)}" data-hex="${esc(s.hex || "")}" data-img="${esc(s.img || "")}" data-vid="${esc(s.vid || "")}" aria-pressed="${i === 0}" aria-label="${esc(s.name)}" title="${esc(s.name)}">${s.hex ? "" : esc(s.name)}</button>`).join("")}</div></div>`
         : p.s ? `<div class="meta">${esc(p.s)}، اكتبي اللون اللي بدك ياه بالملاحظات.</div>` : ""}
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:auto">
