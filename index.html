@@ -13,71 +13,63 @@
 <body>
 <div class="wholesale-bar" id="wBar" hidden>وضع التاجر: أسعار الجملة ظاهرة لإلك</div>
 <header class="top"><div class="wrap">
-  <a class="logo" href="#top" aria-label="Tolay Makeup"><b>TOLAY</b><small>MAKEUP</small></a>
-  <nav class="links"><a href="#cats">الأقسام</a><a href="#newin">جديدنا</a><a href="#perfume">العطور</a><a href="#shop">المتجر</a><a href="#contact">تواصل</a></nav>
-  <button class="acct-btn" id="openAcct" type="button">حساب التجار</button>
-  <button class="cart-btn" id="openCart" type="button">السلة <span class="n" id="cartN">0</span></button>
+  <a class="logo" href="#/" aria-label="Tolay Makeup"><b>TOLAY</b><small>MAKEUP</small></a>
+  <label class="srch"><span data-ic="search"></span><input id="q" type="search" placeholder="ابحثي عن منتج أو براند…" aria-label="بحث" autocomplete="off"></label>
+  <nav class="links"><a href="#/" data-tab="home">الرئيسية</a><a href="#/brands" data-tab="brands">الماركات</a><a href="#/cats" data-tab="cats">الأقسام</a><a href="#/account" data-tab="account">حسابي</a></nav>
+  <a class="ib" href="#/wishlist" aria-label="المفضلة" data-ic="heart"><span class="n favN" hidden>0</span></a>
+  <a class="ib cartib" href="#/cart" aria-label="السلة" data-ic="bag"><span class="n cartN" hidden>0</span></a>
 </div></header>
 
 <main id="top">
-<section class="hero"><div class="wrap">
-  <div>
-    <div class="eyebrow latin" id="hEyebrow"></div>
-    <h1><span id="hTitle"></span><br><em id="hAccent"></em></h1>
-    <p id="hText"></p>
-    <div class="cta"><a class="btn" href="#shop">تسوّقي الآن</a><a class="btn ghost" href="#cats">تصفّحي الأقسام</a><button class="btn ghost" type="button" id="openQuiz">اكتشفي درجتك ✨</button></div>
+<section class="page" id="pg-home">
+  <div class="wrap">
+    <div class="slider" id="slider"><div class="slides" id="slides"></div><div class="sdots" id="sdots"></div></div>
+    <div class="circles" id="circles"></div>
   </div>
-  <div class="niches" id="heroNiches"></div>
-</div></section>
-
-<div class="marquee" aria-hidden="true"><div class="track" id="brandTrack"></div></div>
-
-<div class="promises">
-  <div><b>أصلي من أمريكا</b><small>كل قطعة مستوردة من متاجر أمريكية معتمدة</small></div>
-  <div><b id="brandCount">براندات عالمية</b><small>NYX · Huda Beauty · Benefit · Too Faced وغيرها</small></div>
-  <div><b>طلب سهل عبر واتساب</b><small>السلة بتنبعت لنا برسالة جاهزة ومنرد عليكِ فوراً</small></div>
-</div>
-
-<section class="block" id="cats"><div class="wrap">
-  <div class="sec-head"><div><div class="eyebrow">الأقسام</div><h2>شو بدك تدللي اليوم؟</h2></div></div>
-  <div class="cats" id="catRow"></div>
-</div></section>
-
-<section class="spot" id="newin" hidden><div class="wrap">
-  <div class="sec-head"><div><div class="eyebrow latin">New In</div><h2>جديدنا</h2></div><a class="btn ghost" href="#shop">كل المنتجات</a></div>
-  <div class="spot-row" id="newRow"></div>
-</div></section>
-
-<section class="spot" id="perfume"><div class="wrap">
-  <div class="sec-head"><div><div class="eyebrow latin">The Scent Edit</div><h2>العطور</h2></div><a class="btn ghost" href="#shop" data-goto="العطور">كل العطور</a></div>
-  <div class="spot-row" id="spotRow"></div>
-</div></section>
-
-<section class="block" id="shop"><div class="wrap">
-  <div class="sec-head"><div><div class="eyebrow">المتجر</div><h2>كل المنتجات</h2></div><small id="resultN" style="color:var(--muted)"></small></div>
-  <div class="tools">
-    <input id="q" type="search" placeholder="ابحثي عن منتج أو براند…" aria-label="بحث">
-    <select id="brand" aria-label="البراند"><option value="">كل البراندات</option></select>
+  <section class="rowsec wrap" id="newin" hidden>
+    <div class="rowhead"><div><div class="eyebrow latin">New In</div><h2>جديدنا</h2></div><a class="more" href="#/shop">عرض الكل ‹</a></div>
+    <div class="hrow" id="newRow"></div>
+  </section>
+  <div id="brandRows"></div>
+  <div class="wrap"><button class="qbanner" type="button" data-quiz><span><b>اكتشفي درجتك ✨</b><small>3 أسئلة وبنختارلك الفاونديشن وأحمر الشفاه المناسبين</small></span><span class="go">ابدئي ‹</span></button></div>
+  <section class="spot" id="perfume"><div class="wrap">
+    <div class="sec-head"><div><div class="eyebrow latin">The Scent Edit</div><h2>العطور</h2></div><a class="btn ghost" href="#/shop/%D8%A7%D9%84%D8%B9%D8%B7%D9%88%D8%B1">كل العطور</a></div>
+    <div class="spot-row" id="spotRow"></div>
+  </div></section>
+  <div class="marquee" aria-hidden="true"><div class="track" id="brandTrack"></div></div>
+  <div class="promises">
+    <div><b>أصلي من أمريكا</b><small>كل قطعة مستوردة من متاجر أمريكية معتمدة</small></div>
+    <div><b id="brandCount">براندات عالمية</b><small>NYX · Huda Beauty · Benefit · Too Faced وغيرها</small></div>
+    <div><b>طلب سهل عبر واتساب</b><small>السلة بتنبعت لنا برسالة جاهزة ومنرد عليكِ فوراً</small></div>
   </div>
+</section>
+
+<section class="page" id="pg-brands" hidden><div class="wrap">
+  <div class="pghead"><h2>الماركات</h2><small id="brandN"></small></div>
+  <label class="srch wide"><span data-ic="search"></span><input id="bq" type="search" placeholder="ابحثي عن ماركة…" aria-label="بحث عن ماركة" autocomplete="off"></label>
+  <div class="btiles" id="btiles"></div>
+</div></section>
+
+<section class="page" id="pg-cats" hidden><div class="wrap catsplit">
+  <aside class="rail" id="rail"></aside>
+  <div class="cpanel" id="cpanel"></div>
+</div></section>
+
+<section class="page" id="pg-shop" hidden><div class="wrap">
+  <div class="pghead"><h2 id="shopTitle">كل المنتجات</h2><small id="resultN"></small></div>
+  <div class="tools"><select id="brand" aria-label="البراند"><option value="">كل البراندات</option></select></div>
   <div class="chips" id="chips" role="toolbar" aria-label="الأقسام"></div>
   <div class="grid" id="grid"><div class="loading">عم نحمّل المنتجات…</div></div>
 </div></section>
-</main>
 
-<footer id="contact"><div class="wrap">
-  <a class="logo" href="#top"><b>TOLAY</b><small>MAKEUP</small></a>
-  <p>للطلب والاستفسار واتساب: <span class="num" id="waNum"></span></p>
-  <p class="latin" style="color:var(--muted)">From U.S.A with love</p>
-</div></footer>
+<section class="page" id="pg-wish" hidden><div class="wrap">
+  <div class="pghead"><h2>مفضلتي</h2><small id="wishN"></small></div>
+  <div class="grid" id="wgrid"></div>
+</div></section>
 
-<dialog id="pd"><button class="x" type="button" data-close aria-label="إغلاق">✕</button><div class="pd" id="pdBody"></div></dialog>
-
-<dialog id="quiz" class="small"><button class="x" type="button" data-close aria-label="إغلاق">✕</button><div class="auth" id="quizBody"></div></dialog>
-
-<dialog id="acct" class="small"><button class="x" type="button" data-close aria-label="إغلاق">✕</button><div class="auth" id="acctBody"></div></dialog>
-
-<dialog id="cart" class="drawer"><div class="in">
-  <div style="display:flex;justify-content:space-between;align-items:center"><h2 id="cartTitle">سلة الطلب</h2><button class="x" style="position:static" type="button" data-close aria-label="إغلاق">✕</button></div>
+<section class="page" id="pg-cart" hidden><div class="wrap cartpg">
+  <div class="pghead"><h2 id="cartTitle">سلة الطلب</h2></div>
+  <div class="dinfo"><b>أسعار التوصيل</b><span>الضفة 20 · القدس 30 · الداخل 70</span></div>
   <div class="lines" id="lines"></div>
   <label>منطقة التوصيل<select id="cZone"><option value="">اختاري المنطقة</option><option value="20">الضفة الغربية</option><option value="30">القدس</option><option value="70">الداخل</option></select></label>
   <div class="total"><span>المنتجات</span><span id="total" class="price"></span></div>
@@ -88,7 +80,29 @@
   <label>ملاحظات (اللون، الدرجة…)<textarea id="cNote" rows="2"></textarea></label>
   <a class="btn wa" id="send" href="#" target="_blank" rel="noopener">إرسال الطلب عبر واتساب</a>
   <div class="note">إذا ما فتح واتساب، ابعتي لنا على <span class="num" id="waNum2"></span></div>
-</div></dialog>
+</div></section>
+
+<section class="page" id="pg-account" hidden><div class="wrap acctpg" id="acctBody"></div></section>
+</main>
+
+<footer id="contact"><div class="wrap">
+  <a class="logo" href="#/"><b>TOLAY</b><small>MAKEUP</small></a>
+  <p>للطلب والاستفسار واتساب: <span class="num" id="waNum"></span></p>
+  <p class="latin" style="color:var(--muted)">From U.S.A with love</p>
+</div></footer>
+
+<nav class="tabbar" aria-label="التنقل">
+  <a href="#/" data-tab="home"><i data-ic="home"></i><span>الرئيسية</span></a>
+  <a href="#/brands" data-tab="brands"><i data-ic="brands"></i><span>الماركات</span></a>
+  <a href="#/cats" data-tab="cats" class="mid"><i class="bub" data-ic="cats"></i><span>الأقسام</span></a>
+  <a href="#/cart" data-tab="cart"><i data-ic="bag"></i><span>سلتي</span><b class="n cartN" hidden>0</b></a>
+  <a href="#/account" data-tab="account"><i data-ic="user"></i><span>حسابي</span></a>
+</nav>
+
+<dialog id="pd"><button class="x" type="button" data-close aria-label="إغلاق">✕</button><div class="pd" id="pdBody"></div></dialog>
+
+<dialog id="quiz" class="small"><button class="x" type="button" data-close aria-label="إغلاق">✕</button><div class="auth" id="quizBody"></div></dialog>
+
 
 <div class="toast" id="toast" role="status"></div>
 
@@ -150,31 +164,84 @@ async function loadSession() {
   }
   ALL.forEach(p => p.w = WS[p.id]);
   $("#wBar").hidden = !isTrader();
-  $("#openAcct").textContent = profile ? (profile.shop_name || profile.full_name || "حسابي") : "حساب التجار";
+}
+
+const IC = {
+  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/></svg>',
+  brands: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l1 12H5L6 8Z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>',
+  cats: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><path d="m16.8 13.5 3.2 3.2m-1 2.7a3 3 0 1 1-4.2-4.2 3 3 0 0 1 4.2 4.2Z"/></svg>',
+  bag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h14l-1 11H6L5 9Z"/><path d="M9 9V7a3 3 0 0 1 6 0v2"/></svg>',
+  user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c.8-4 3.6-6 7.5-6s6.7 2 7.5 6"/></svg>',
+  heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.7a4.3 4.3 0 0 1 7.5 2.6c0 5.6-7.5 10.2-7.5 10.2Z"/></svg>',
+  search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>',
+  chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4V5Z"/></svg>',
+  spark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"/></svg>',
+  shop: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5 5.5 4h13L20 9.5"/><path d="M5 9.5v10h14v-10"/><path d="M4 9.5c0 1.7 1.3 2.5 2.7 2.5S9.3 11.2 9.3 9.5c0 1.7 1.3 2.5 2.7 2.5s2.7-.8 2.7-2.5c0 1.7 1.3 2.5 2.6 2.5S20 11.2 20 9.5"/></svg>',
+  out: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h5v16h-5"/><path d="M4 12h10m-3-3 3 3-3 3"/></svg>',
+};
+document.querySelectorAll("[data-ic]").forEach(e => e.insertAdjacentHTML("afterbegin", IC[e.dataset.ic]));
+
+const enc = encodeURIComponent;
+const SKIP_BRANDS = ["Tolay Select", "—", ""];
+const brandMap = () => { const m = new Map(); ALL.forEach(p => { if (!SKIP_BRANDS.includes(p.b)) (m.get(p.b) || m.set(p.b, []).get(p.b)).push(p); }); return m; };
+const withImg = l => l.filter(p => p.img);
+
+// wishlist (per-browser)
+let fav = new Set();
+try { fav = new Set(JSON.parse(localStorage.getItem("tolay-fav") || "[]")); } catch {}
+function favView() {
+  document.querySelectorAll(".favN").forEach(n => { n.textContent = fav.size; n.hidden = !fav.size; });
+  document.querySelectorAll("[data-fav]").forEach(b => b.setAttribute("aria-pressed", fav.has(+b.dataset.fav)));
+}
+
+const cardHTML = p => `
+  <article class="card">
+    <button class="fav" type="button" data-fav="${p.id}" aria-label="أضيفي للمفضلة" aria-pressed="${fav.has(p.id)}">${IC.heart}</button>
+    <button class="ph" type="button" data-open="${p.id}" aria-label="${esc(p.n)}"><img src="${esc(p.img)}" alt="" loading="lazy"><span class="tag">${esc(p.cat)}</span>${p.isNew ? `<span class="nb">جديد</span>` : ""}</button>
+    <div class="brand latin">${esc(p.b)}</div>
+    <div class="name">${esc(p.n)}</div>
+    ${dotsHTML(p)}
+    <div class="row">${priceHTML(p)}<button class="add" type="button" data-add="${p.id}" aria-label="أضيفي للسلة">+</button></div>
+  </article>`;
+
+let si = 0, slideTimer;
+function slideTo(i) {
+  const n = $("#slides").children.length; if (!n) return;
+  si = (i + n) % n;
+  $("#slides").style.transform = `translateX(${si * 100}%)`; // RTL: positive shift reveals the next slide
+  [...$("#sdots").children].forEach((d, k) => d.setAttribute("aria-current", k === si));
 }
 
 function paint() {
-  $("#hEyebrow").textContent = S.hero_eyebrow || "";
-  $("#hTitle").textContent = S.hero_title || "";
-  $("#hAccent").textContent = S.hero_accent || "";
-  $("#hText").textContent = S.hero_text || "";
   const wa = S.whatsapp || "";
   $("#waNum").textContent = $("#waNum2").textContent = wa ? "+" + wa : "";
-  const picks = ALL.filter(p => p.featured).slice(0, 3);
-  $("#heroNiches").innerHTML = picks.map(p => `<div class="niche"><span>${esc(p.b)}</span><img src="${esc(p.img)}" alt="${esc(p.n)}"></div>`).join("");
-  const brands = [...new Set(ALL.map(p => p.b))].filter(b => b && b !== "Tolay Select").sort();
+  const picks = withImg(ALL.filter(p => p.featured)).slice(0, 3);
+  const slides = [
+    `<div class="slide s1"><div><div class="eyebrow latin">${esc(S.hero_eyebrow || "")}</div><h1>${esc(S.hero_title || "")}<br><em>${esc(S.hero_accent || "")}</em></h1><p>${esc(S.hero_text || "")}</p><a class="btn" href="#/shop">تسوّقي الآن</a></div><div class="sl-img">${picks.map(p => `<img src="${esc(p.img)}" alt="${esc(p.n)}">`).join("")}</div></div>`,
+    `<div class="slide s2"><div><div class="eyebrow latin">Shade Finder</div><h1>اكتشفي درجتك ✨</h1><p>3 أسئلة بس وبنختارلك الفاونديشن وأحمر الشفاه الأنسب لبشرتك.</p><button class="btn" type="button" data-quiz>ابدئي الآن</button></div><div class="sl-img sw3">${["#f4dfd0", "#d9a98a", "#c4302b", "#a94667"].map(c => `<i style="background:${c}"></i>`).join("")}</div></div>`,
+    `<div class="slide s3"><div><div class="eyebrow latin">Delivery</div><h1>توصيل لكل مكان</h1><p>الضفة 20 · القدس 30 · الداخل 70. اطلبي عبر واتساب ومنرد عليكِ فوراً.</p><a class="btn" href="#/cart">سلتي</a></div></div>`,
+    `<div class="slide s4"><div><div class="eyebrow latin">From U.S.A</div><h1>أصلي 100% من أمريكا</h1><p>كل قطعة مستوردة من متاجر أمريكية معتمدة، من ماركات زي NYX وHuda Beauty وFenty.</p><a class="btn" href="#/brands">كل الماركات</a></div></div>`,
+  ];
+  $("#slides").innerHTML = slides.join("");
+  $("#sdots").innerHTML = slides.map((_, i) => `<button type="button" data-slide="${i}" aria-label="شريحة ${i + 1}"></button>`).join("");
+  slideTo(0);
+  clearInterval(slideTimer); slideTimer = setInterval(() => { if (!document.hidden && !$("#pg-home").hidden) slideTo(si + 1); }, 5500);
+
+  const bm = brandMap(), brands = [...bm.keys()].sort();
   $("#brandTrack").innerHTML = [...brands, ...brands].map(b => `<span>${esc(b)}</span>`).join("");
   $("#brandCount").textContent = `+${brands.length} براند عالمي`;
   $("#brand").innerHTML = `<option value="">كل البراندات</option>` + brands.map(b => `<option>${esc(b)}</option>`).join("");
-  $("#catRow").innerHTML = CATS.map(c => `<button class="cat" type="button" data-goto="${esc(c.s)}"><div class="ph"><img src="${esc(c.p[0].img)}" alt="" loading="lazy"></div><b>${esc(c.s)}</b><small>${c.p.length} منتج</small></button>`).join("");
-  const fresh = ALL.filter(p => p.isNew && p.img && !["الهدايا", "أدوات المكياج"].includes(p.cat)).slice(-5).reverse();
+  $("#circles").innerHTML = CATS.map(c => `<a class="circ" href="#/cats/${enc(c.s)}"><span><img src="${esc(withImg(c.p)[0]?.img || "")}" alt="" loading="lazy"></span><b>${esc(c.s)}</b></a>`).join("");
+  const fresh = withImg(ALL.filter(p => p.isNew && !["الهدايا", "أدوات المكياج"].includes(p.cat))).slice(-10).reverse();
   $("#newin").hidden = fresh.length < 3;
-  $("#newRow").innerHTML = fresh.map(p => `<button type="button" data-open="${p.id}"><div class="niche"><img src="${esc(p.img)}" alt="${esc(p.n)}" loading="lazy"></div><div><b class="latin">${esc(p.b)}</b><small>${esc(p.n)}</small></div></button>`).join("");
+  $("#newRow").innerHTML = fresh.map(cardHTML).join("");
+  const top = [...bm].filter(([, l]) => withImg(l).length >= 3).sort((a, b) => b[1].length - a[1].length).slice(0, 5);
+  $("#brandRows").innerHTML = top.map(([b, l]) => `<section class="rowsec wrap"><div class="rowhead"><h2 class="latin">${esc(b)}</h2><a class="more" href="#/brand/${enc(b)}">عرض الكل ‹</a></div><div class="hrow">${withImg(l).slice(0, 10).map(cardHTML).join("")}</div></section>`).join("");
   const perf = CATS.find(c => c.s === "العطور");
   $("#perfume").hidden = !perf;
   if (perf) $("#spotRow").innerHTML = perf.p.slice(0, 5).map(p => `<button type="button" data-open="${p.id}"><div class="niche"><img src="${esc(p.img)}" alt="${esc(p.n)}" loading="lazy"></div><div><b class="latin">${esc(p.b)}</b><small>${esc(p.n)}</small></div></button>`).join("");
   $("#chips").innerHTML = ["", ...CATS.map(c => c.s)].map(s => `<button class="chip" type="button" data-cat="${esc(s)}">${esc(s) || "الكل"}</button>`).join("");
-  render(); drawCart();
+  render(); drawCart(); favView(); route();
 }
 
 let cat = "", q = "", brand = "";
@@ -182,18 +249,58 @@ function render() {
   const t = q.trim().toLowerCase();
   const list = ALL.filter(p => (!cat || p.cat === cat) && (!brand || p.b === brand) && (!t || `${p.b} ${p.n} ${p.cat}`.toLowerCase().includes(t)));
   $("#resultN").textContent = `${list.length} منتج`;
-  $("#grid").innerHTML = list.length ? list.map(p => `
-    <article class="card">
-      <button class="ph" type="button" data-open="${p.id}" aria-label="${esc(p.n)}"><img src="${esc(p.img)}" alt="" loading="lazy"><span class="tag">${esc(p.cat)}</span>${p.isNew ? `<span class="nb">جديد</span>` : ""}</button>
-      <div class="brand latin">${esc(p.b)}</div>
-      <div class="name">${esc(p.n)}</div>
-      ${dotsHTML(p)}
-      <div class="row">${priceHTML(p)}<button class="add" type="button" data-add="${p.id}" aria-label="أضيفي للسلة">+</button></div>
-    </article>`).join("") : `<div class="empty">ما في نتائج، جرّبي كلمة تانية.</div>`;
+  $("#shopTitle").textContent = brand || cat || "كل المنتجات";
+  $("#brand").value = brand;
+  $("#grid").innerHTML = list.length ? list.map(cardHTML).join("") : `<div class="empty">ما في نتائج، جرّبي كلمة تانية.</div>`;
   document.querySelectorAll("#chips .chip").forEach(b => b.setAttribute("aria-pressed", b.dataset.cat === cat));
 }
-$("#q").addEventListener("input", e => { q = e.target.value; render(); });
-$("#brand").addEventListener("change", e => { brand = e.target.value; render(); });
+
+// page views
+function brandsView() {
+  const t = $("#bq").value.trim().toLowerCase();
+  const l = [...brandMap()].filter(([b]) => !t || b.toLowerCase().includes(t)).sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
+  $("#brandN").textContent = `${l.length} ماركة`;
+  $("#btiles").innerHTML = l.length ? l.map(([b, ps]) => `<a class="btile" href="#/brand/${enc(b)}"><div class="mos">${withImg(ps).slice(0, 4).map(p => `<img src="${esc(p.img)}" alt="" loading="lazy">`).join("")}</div><div class="bt"><b class="latin">${esc(b)}</b><small>${ps.length} منتج</small></div></a>`).join("") : `<div class="empty">ما لقينا هالماركة.</div>`;
+}
+let ccur = "", cbrand = "";
+function catsView(a) {
+  if (a && a !== ccur) cbrand = "";
+  const cur = CATS.find(c => c.s === a) || CATS.find(c => c.s === ccur) || CATS[0]; if (!cur) return;
+  ccur = cur.s;
+  $("#rail").innerHTML = CATS.map(c => `<a class="ri" href="#/cats/${enc(c.s)}" aria-current="${c === cur}"><span class="rt"><img src="${esc(withImg(c.p)[0]?.img || "")}" alt=""></span>${esc(c.s)}</a>`).join("");
+  const bs = [...new Set(cur.p.map(p => p.b).filter(b => !SKIP_BRANDS.includes(b)))].sort();
+  const list = cur.p.filter(p => !cbrand || p.b === cbrand);
+  $("#cpanel").innerHTML = `<div class="pghead"><h2>${esc(cur.s)}</h2><small>${list.length} منتج</small></div>
+    <div class="chips"><button class="chip" type="button" data-cbrand="" aria-pressed="${!cbrand}">كل الماركات</button>${bs.map(b => `<button class="chip" type="button" data-cbrand="${esc(b)}" aria-pressed="${b === cbrand}">${esc(b)}</button>`).join("")}</div>
+    <div class="grid">${list.map(cardHTML).join("")}</div>`;
+}
+function wishView() {
+  const l = ALL.filter(p => fav.has(p.id));
+  $("#wishN").textContent = l.length ? `${l.length} منتج` : "";
+  $("#wgrid").innerHTML = l.length ? l.map(cardHTML).join("") : `<div class="empty"><p>لسا ما ضفتي ولا منتج للمفضلة.</p><a class="btn" href="#/shop">تصفّحي المنتجات</a></div>`;
+}
+
+const TABS = { home: "home", brands: "brands", cats: "cats", shop: "cats", cart: "cart", account: "account", wish: "account" };
+function route() {
+  const [, pg = "", arg = ""] = location.hash.split("/"), a = decodeURIComponent(arg);
+  const page = { "": "home", brands: "brands", cats: "cats", shop: "shop", brand: "shop", wishlist: "wish", cart: "cart", account: "account" }[pg] || "home";
+  cat = pg === "shop" ? a : ""; brand = pg === "brand" ? a : "";
+  ["home", "brands", "cats", "shop", "wish", "cart", "account"].forEach(p => $("#pg-" + p).hidden = p !== page);
+  document.querySelectorAll("[data-tab]").forEach(t => t.toggleAttribute("aria-current", t.dataset.tab === TABS[page]));
+  if (page === "shop") render();
+  else if (page === "brands") brandsView();
+  else if (page === "cats") catsView(a);
+  else if (page === "wish") wishView();
+  else if (page === "account") acctView();
+  window.scrollTo(0, 0);
+}
+window.addEventListener("hashchange", route);
+$("#q").addEventListener("input", e => { q = e.target.value; if (/^#\/(shop|brand)/.test(location.hash)) render(); else location.hash = "#/shop"; });
+$("#bq").addEventListener("input", brandsView);
+$("#brand").addEventListener("change", e => { location.hash = e.target.value ? "#/brand/" + enc(e.target.value) : "#/shop"; });
+let sx = null;
+$("#slider").addEventListener("touchstart", e => { sx = e.touches[0].clientX; }, { passive: true });
+$("#slider").addEventListener("touchend", e => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; sx = null; if (Math.abs(dx) > 40) slideTo(si + (dx > 0 ? 1 : -1)); });
 
 // cart (per-browser convenience only)
 let cart = [];
@@ -216,7 +323,8 @@ function drawCart() {
   cart = cart.filter(l => byId[l.id]);
   cart.forEach(l => l.qty = Math.max(l.qty, minQty(byId[l.id])));
   $("#cartTitle").textContent = isTrader() ? "طلب جملة" : "سلة الطلب";
-  $("#cartN").textContent = cart.reduce((a, l) => a + l.qty, 0);
+  const cn = cart.reduce((a, l) => a + l.qty, 0);
+  document.querySelectorAll(".cartN").forEach(e => { e.textContent = cn; e.hidden = !cn; });
   $("#lines").innerHTML = cart.length ? cart.map((l, i) => { const p = byId[l.id], u = unit(p); return `
     <div class="line"><img src="${esc(p.img)}" alt="">
       <div class="t">${esc(p.n)}<small>${esc(p.b)}${l.shade ? " · " + esc(l.shade) : ""}${u !== null ? " · " + money(u) : ""}</small><button class="rm" type="button" data-rm="${i}">إزالة</button></div>
@@ -343,21 +451,32 @@ function mountReal(el, m, first) {
 }
 function badge(s) { const b = $("#badge"); b.hidden = false; b.style.setProperty("--c", s.hex); b.querySelector("span").textContent = s.name; }
 
-// trader account
+// account page: menu for everyone, trader login/signup and status inside it
 function acctView(mode) {
-  const b = $("#acctBody");
+  const b = $("#acctBody"), wa = S.whatsapp || "";
+  const row = (ic, t, sub, attrs, tag = "button") => `<${tag} class="mrow" ${attrs}><span class="mi">${IC[ic]}</span><span class="mt"><b>${t}</b>${sub ? `<small>${sub}</small>` : ""}</span><span class="chev">‹</span></${tag}>`;
+  const base = row("heart", "مفضلتي", `${fav.size} منتج`, 'href="#/wishlist"', "a")
+    + row("spark", "اكتشفي درجتك", "فاونديشن وأحمر شفاه مناسبين لبشرتك", "type=button data-quiz")
+    + row("chat", "تواصلي معنا", "واتساب", `href="https://wa.me/${wa}" target="_blank" rel="noopener"`, "a");
   if (profile) {
     const st = { pending: "طلبك قيد المراجعة. رح نفعّل حسابك بأقرب وقت ونبلّغك.", approved: "حسابك مفعّل وأسعار الجملة ظاهرة لإلك.", rejected: "للأسف ما تمت الموافقة على الحساب. تواصلي معنا عالواتساب." }[profile.status];
-    b.innerHTML = `<h2>${esc(profile.shop_name || profile.full_name || "حسابي")}</h2><p class="meta">${st}</p>
-      ${profile.role === "admin" ? `<a class="btn" href="admin.html">لوحة التحكم</a>` : ""}
-      <button class="btn ghost" type="button" id="logout">تسجيل خروج</button>`;
+    const nm = profile.shop_name || profile.full_name || "حسابي";
+    b.innerHTML = `<div class="pcard"><span class="av">${esc(nm.trim()[0] || "T")}</span><div><h2>${esc(nm)}</h2><p>${st}</p></div></div>
+      <div class="mlist">${base}${profile.role === "admin" ? row("shop", "لوحة التحكم", "إدارة المنتجات والطلبات", 'href="admin.html"', "a") : ""}${row("out", "تسجيل خروج", "", 'type=button id="logout"')}</div>`;
+    return;
+  }
+  if (!mode) {
+    b.innerHTML = `<div class="pcard"><span class="av">${IC.user}</span><div><h2>أهلاً فيكِ في Tolay</h2><p>إذا عندك محل، ادخلي كتاجرة لتشوفي أسعار الجملة.</p></div></div>
+      <div class="mlist">${base}${row("shop", "دخول التجار", "عندك حساب جملة", 'type=button data-mode="login"')}${row("shop", "طلب حساب جملة", "للمحلات وأصحاب المتاجر", 'type=button data-mode="signup"')}</div>
+      <p class="dnote">أسعار التوصيل: الضفة 20 · القدس 30 · الداخل 70</p>`;
     return;
   }
   const signup = mode === "signup";
   b.innerHTML = `
-    <div class="eyebrow">للتجار وأصحاب المحلات</div>
+    <button class="chip" type="button" data-mode="">‹ رجوع</button>
+    <div class="eyebrow" style="margin-top:14px">للتجار وأصحاب المحلات</div>
     <h2>${signup ? "طلب حساب جملة" : "دخول التجار"}</h2>
-    <div class="tabs"><button class="chip" type="button" data-mode="login" aria-pressed="${!signup}">دخول</button><button class="chip" type="button" data-mode="signup" aria-pressed="${signup}">طلب حساب</button></div>
+    <div class="tabs" style="margin:12px 0"><button class="chip" type="button" data-mode="login" aria-pressed="${!signup}">دخول</button><button class="chip" type="button" data-mode="signup" aria-pressed="${signup}">طلب حساب</button></div>
     <form id="authForm" class="auth" style="padding:0">
       ${signup ? `<label>الاسم<input id="aName" required autocomplete="name"></label>
       <label>اسم المحل<input id="aShop" required></label>
@@ -387,8 +506,10 @@ function acctView(mode) {
 document.addEventListener("click", async e => {
   const t = e.target.closest("button,a"); if (!t) return;
   const d = t.dataset;
-  if (d.goto !== undefined) { cat = d.goto; render(); if (t.tagName === "BUTTON") $("#shop").scrollIntoView(); }
-  else if (d.cat !== undefined) { cat = d.cat; render(); }
+  if (d.goto !== undefined || d.cat !== undefined) { const c = d.goto ?? d.cat; location.hash = c ? "#/shop/" + enc(c) : "#/shop"; }
+  else if (d.fav) { const id = +d.fav; fav.has(id) ? fav.delete(id) : fav.add(id); try { localStorage.setItem("tolay-fav", JSON.stringify([...fav])); } catch {} favView(); if (!$("#pg-wish").hidden) wishView(); }
+  else if (d.slide !== undefined) { slideTo(+d.slide); }
+  else if (d.cbrand !== undefined) { cbrand = d.cbrand; catsView(ccur); }
   else if (d.open) openProduct(+d.open);
   else if (d.add) { const p = byId[d.add]; shadesOf(p).length ? openProduct(p.id) : addToCart(p.id, "", minQty(p)); }
   else if (d.shade !== undefined) {
@@ -396,7 +517,7 @@ document.addEventListener("click", async e => {
     t.parentElement.querySelectorAll(".sw").forEach(b => b.setAttribute("aria-pressed", b === t));
     if (setShade && d.hex) { $("#stage").classList.remove("show-photo"); setShade(d.hex, d.img, d.vid); badge({ name: d.shade, hex: d.hex }); }
   }
-  else if (t.id === "openQuiz" || d.qreset !== undefined) { qa = {}; qi = 0; quizView(); if (!$("#quiz").open) $("#quiz").showModal(); }
+  else if (d.quiz !== undefined || d.qreset !== undefined) { qa = {}; qi = 0; quizView(); if (!$("#quiz").open) $("#quiz").showModal(); }
   else if (d.share) {
     const p = byId[d.share], text = `${p.b} - ${p.n}\n${location.origin}${location.pathname}`;
     if (navigator.share) navigator.share({ title: "Tolay Makeup", text }).catch(() => {});
@@ -409,11 +530,9 @@ document.addEventListener("click", async e => {
   else if (t.id === "pdAdd") { addToCart(pdState.id, pdState.shade, pdState.qty); $("#pd").close(); }
   else if (d.rm !== undefined) { cart.splice(+d.rm, 1); save(); drawCart(); }
   else if (d.q !== undefined) { const l = cart[+d.q]; l.qty += +d.d; if (l.qty < minQty(byId[l.id])) cart.splice(+d.q, 1); save(); drawCart(); }
-  else if (d.mode) acctView(d.mode);
+  else if (d.mode !== undefined) acctView(d.mode || undefined);
   else if (t.id === "logout") { await db.auth.signOut(); await loadSession(); render(); drawCart(); acctView(); }
   else if (d.close !== undefined) t.closest("dialog").close();
-  else if (t.id === "openCart") $("#cart").showModal();
-  else if (t.id === "openAcct") { acctView(); $("#acct").showModal(); }
 });
 document.querySelectorAll("dialog").forEach(dl => dl.addEventListener("click", e => { if (e.target === dl) dl.close(); }));
 
