@@ -14,7 +14,7 @@
 <div class="wholesale-bar" id="wBar" hidden>وضع التاجر: أسعار الجملة ظاهرة لإلك</div>
 <header class="top"><div class="wrap">
   <a class="logo" href="#top" aria-label="Tolay Makeup"><b>TOLAY</b><small>MAKEUP</small></a>
-  <nav class="links"><a href="#cats">الأقسام</a><a href="#perfume">العطور</a><a href="#shop">المتجر</a><a href="#contact">تواصل</a></nav>
+  <nav class="links"><a href="#cats">الأقسام</a><a href="#newin">جديدنا</a><a href="#perfume">العطور</a><a href="#shop">المتجر</a><a href="#contact">تواصل</a></nav>
   <button class="acct-btn" id="openAcct" type="button">حساب التجار</button>
   <button class="cart-btn" id="openCart" type="button">السلة <span class="n" id="cartN">0</span></button>
 </div></header>
@@ -41,6 +41,11 @@
 <section class="block" id="cats"><div class="wrap">
   <div class="sec-head"><div><div class="eyebrow">الأقسام</div><h2>شو بدك تدللي اليوم؟</h2></div></div>
   <div class="cats" id="catRow"></div>
+</div></section>
+
+<section class="spot" id="newin" hidden><div class="wrap">
+  <div class="sec-head"><div><div class="eyebrow latin">New In</div><h2>جديدنا</h2></div><a class="btn ghost" href="#shop">كل المنتجات</a></div>
+  <div class="spot-row" id="newRow"></div>
 </div></section>
 
 <section class="spot" id="perfume"><div class="wrap">
@@ -120,8 +125,9 @@ async function load() {
   const catViz = Object.fromEntries((cats || []).map(c => [c.id, c.viz || "photo"]));
   // DB values win; seed.js fills in the generated try-on photos/clips until the admin sets their own
   const SD = window.SEED || {}, catMedia = Object.fromEntries((cats || []).map(c => [c.id, Object.keys(c.media || {}).length ? c.media : SD.media?.[c.name] || {}]));
+  const NEW = new Set((SD.add || []).map(a => a.name));
   const swOf = p => ((p.swatches || []).length ? p.swatches : SD.swatches?.[p.name] || []).map(s => ({ ...s, img: s.img || SD.img?.[p.name]?.[s.name] || "", vid: s.vid || SD.vid?.[p.name]?.[s.name] || "" }));
-  ALL = prods.map(p => ({ id: p.id, b: p.brand, n: p.name, s: p.shades, z: p.size, d: p.description, pr: p.retail_price, img: p.image_url, featured: p.featured, cat: catName[p.category_id] || "", sw: swOf(p), fin: p.finish || SD.finish?.[p.name] || "", viz: catViz[p.category_id] || "photo", media: SD.pvid?.[p.name] ? { ...catMedia[p.category_id], video: SD.pvid[p.name] } : catMedia[p.category_id] || {} }));
+  ALL = prods.map(p => ({ id: p.id, b: p.brand, n: p.name, s: p.shades, z: p.size, d: p.description, pr: p.retail_price, img: p.image_url, featured: p.featured, cat: catName[p.category_id] || "", sw: swOf(p), fin: p.finish || SD.finish?.[p.name] || "", viz: catViz[p.category_id] || "photo", isNew: NEW.has(p.name), media: SD.pvid?.[p.name] ? { ...catMedia[p.category_id], video: SD.pvid[p.name] } : catMedia[p.category_id] || {} }));
   byId = Object.fromEntries(ALL.map(p => [p.id, p]));
   CATS = (cats || []).map(c => ({ s: c.name, p: ALL.filter(p => p.cat === c.name) })).filter(c => c.p.length);
   await loadSession();
@@ -158,6 +164,9 @@ function paint() {
   $("#brandCount").textContent = `+${brands.length} براند عالمي`;
   $("#brand").innerHTML = `<option value="">كل البراندات</option>` + brands.map(b => `<option>${esc(b)}</option>`).join("");
   $("#catRow").innerHTML = CATS.map(c => `<button class="cat" type="button" data-goto="${esc(c.s)}"><div class="ph"><img src="${esc(c.p[0].img)}" alt="" loading="lazy"></div><b>${esc(c.s)}</b><small>${c.p.length} منتج</small></button>`).join("");
+  const fresh = ALL.filter(p => p.isNew && p.img && !["الهدايا", "أدوات المكياج"].includes(p.cat)).slice(-5).reverse();
+  $("#newin").hidden = fresh.length < 3;
+  $("#newRow").innerHTML = fresh.map(p => `<button type="button" data-open="${p.id}"><div class="niche"><img src="${esc(p.img)}" alt="${esc(p.n)}" loading="lazy"></div><div><b class="latin">${esc(p.b)}</b><small>${esc(p.n)}</small></div></button>`).join("");
   const perf = CATS.find(c => c.s === "العطور");
   $("#perfume").hidden = !perf;
   if (perf) $("#spotRow").innerHTML = perf.p.slice(0, 5).map(p => `<button type="button" data-open="${p.id}"><div class="niche"><img src="${esc(p.img)}" alt="${esc(p.n)}" loading="lazy"></div><div><b class="latin">${esc(p.b)}</b><small>${esc(p.n)}</small></div></button>`).join("");
@@ -172,7 +181,7 @@ function render() {
   $("#resultN").textContent = `${list.length} منتج`;
   $("#grid").innerHTML = list.length ? list.map(p => `
     <article class="card">
-      <button class="ph" type="button" data-open="${p.id}" aria-label="${esc(p.n)}"><img src="${esc(p.img)}" alt="" loading="lazy"><span class="tag">${esc(p.cat)}</span></button>
+      <button class="ph" type="button" data-open="${p.id}" aria-label="${esc(p.n)}"><img src="${esc(p.img)}" alt="" loading="lazy"><span class="tag">${esc(p.cat)}</span>${p.isNew ? `<span class="nb">جديد</span>` : ""}</button>
       <div class="brand latin">${esc(p.b)}</div>
       <div class="name">${esc(p.n)}</div>
       ${dotsHTML(p)}
@@ -242,6 +251,7 @@ function openProduct(id) {
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:auto">
         <div class="qty"><button type="button" data-pq="-1" aria-label="أقل">−</button><span id="pq">${mq}</span><button type="button" data-pq="1" aria-label="أكثر">+</button></div>
         <button class="btn" type="button" id="pdAdd">أضيفي للسلة</button>
+        <button class="btn ghost" type="button" data-share="${p.id}" aria-label="شاركي المنتج">شاركي 🔗</button>
       </div>
       ${lookHTML(p)}
     </div>`;
@@ -373,6 +383,11 @@ document.addEventListener("click", async e => {
     if (setShade && d.hex) { $("#stage").classList.remove("show-photo"); setShade(d.hex, d.img, d.vid); badge({ name: d.shade, hex: d.hex }); }
   }
   else if (t.id === "openQuiz" || d.qreset !== undefined) { qa = {}; qi = 0; quizView(); if (!$("#quiz").open) $("#quiz").showModal(); }
+  else if (d.share) {
+    const p = byId[d.share], text = `${p.b} - ${p.n}\n${location.origin}${location.pathname}`;
+    if (navigator.share) navigator.share({ title: "Tolay Makeup", text }).catch(() => {});
+    else window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener");
+  }
   else if (d.qa) { qa[d.qa] = d.v; qi++; quizView(); }
   else if (d.qopen) { $("#quiz").close(); openProduct(+d.qopen); [...document.querySelectorAll("#pdBody .sw")].find(b => b.dataset.shade === d.qshade)?.click(); }
   else if (t.id === "swap") $("#stage").classList.toggle("show-photo");
