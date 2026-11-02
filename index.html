@@ -79,7 +79,10 @@
 <dialog id="cart" class="drawer"><div class="in">
   <div style="display:flex;justify-content:space-between;align-items:center"><h2 id="cartTitle">سلة الطلب</h2><button class="x" style="position:static" type="button" data-close aria-label="إغلاق">✕</button></div>
   <div class="lines" id="lines"></div>
-  <div class="total"><span>المجموع</span><span id="total" class="price"></span></div>
+  <label>منطقة التوصيل<select id="cZone"><option value="">اختاري المنطقة</option><option value="20">الضفة الغربية</option><option value="30">القدس</option><option value="70">الداخل</option></select></label>
+  <div class="total"><span>المنتجات</span><span id="total" class="price"></span></div>
+  <div class="total"><span>التوصيل</span><span id="ship" class="price"></span></div>
+  <div class="total"><span>الإجمالي</span><span id="grand" class="price"></span></div>
   <label>الاسم<input id="cName" autocomplete="name"></label>
   <label>المدينة والعنوان<input id="cAddr" autocomplete="street-address"></label>
   <label>ملاحظات (اللون، الدرجة…)<textarea id="cNote" rows="2"></textarea></label>
@@ -196,6 +199,14 @@ $("#brand").addEventListener("change", e => { brand = e.target.value; render(); 
 let cart = [];
 try { cart = JSON.parse(localStorage.getItem("tolay-cart") || "[]"); } catch {}
 const save = () => { try { localStorage.setItem("tolay-cart", JSON.stringify(cart)); } catch {} };
+let cartSum = null;
+const zoneFee = () => $("#cZone").value === "" ? null : +$("#cZone").value;
+function shipView() {
+  const fee = zoneFee();
+  $("#ship").textContent = fee === null ? "اختاري المنطقة" : money(fee);
+  $("#grand").textContent = fee === null || !cart.length ? "—" : cartSum === null ? "يتأكد بالواتساب" : money(cartSum + fee);
+}
+$("#cZone").addEventListener("change", shipView);
 function addToCart(id, shade = "", qty = 1) {
   const l = cart.find(l => l.id === id && l.shade === shade);
   l ? l.qty += qty : cart.push({ id, shade, qty });
@@ -214,16 +225,19 @@ function drawCart() {
   const priced = cart.filter(l => unit(byId[l.id]) !== null);
   const sum = priced.reduce((a, l) => a + unit(byId[l.id]) * l.qty, 0);
   $("#total").textContent = !cart.length ? "—" : priced.length === cart.length ? money(sum) : "يتأكد بالواتساب";
+  cartSum = cart.length && priced.length === cart.length ? sum : null;
+  shipView();
   if (profile) { $("#cName").value ||= profile.full_name || ""; $("#cAddr").value ||= profile.city || ""; }
 }
 function waLink() {
   const lines = cart.map((l, i) => { const p = byId[l.id], u = unit(p); return `${i + 1}. ${p.b} - ${p.n}${l.shade ? ` (${l.shade})` : ""} × ${l.qty}${u !== null ? ` = ${money(u * l.qty)}` : ""}`; });
   const head = isTrader() ? `طلب جملة 🏷️ من محل: ${profile.shop_name || ""}` : "مرحبا Tolay Makeup، بدي أطلب:";
-  const msg = [head, ...lines, "", `المجموع: ${$("#total").textContent}`, `الاسم: ${$("#cName").value}`, `العنوان: ${$("#cAddr").value}`, isTrader() && profile.phone ? `الهاتف: ${profile.phone}` : "", $("#cNote").value ? `ملاحظات: ${$("#cNote").value}` : ""].filter(Boolean).join("\n");
+  const msg = [head, ...lines, "", `المنتجات: ${$("#total").textContent}`, `التوصيل (${$("#cZone").selectedOptions[0].text}): ${money(zoneFee())}`, `الإجمالي: ${$("#grand").textContent}`, `الاسم: ${$("#cName").value}`, `العنوان: ${$("#cAddr").value}`, isTrader() && profile.phone ? `الهاتف: ${profile.phone}` : "", $("#cNote").value ? `ملاحظات: ${$("#cNote").value}` : ""].filter(Boolean).join("\n");
   return `https://wa.me/${S.whatsapp}?text=${encodeURIComponent(msg)}`;
 }
 $("#send").addEventListener("click", e => {
   if (!cart.length) { e.preventDefault(); toast("السلة فاضية"); return; }
+  if (zoneFee() === null) { e.preventDefault(); $("#cZone").focus(); toast("اختاري منطقة التوصيل"); return; }
   if (!$("#cName").value.trim()) { e.preventDefault(); $("#cName").focus(); toast("اكتبي اسمك لنكمّل الطلب"); return; }
   e.currentTarget.href = waLink();
 });
