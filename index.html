@@ -7,16 +7,16 @@
 <meta name="description" content="Tolay Makeup: منتجات مكياج وعناية وعطور أصلية من أمريكا">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Reem+Kufi:wght@500;600&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&display=swap">
-<link rel="stylesheet" href="style.css?v=1793735069">
+<link rel="stylesheet" href="style.css?v=1793735675">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<script src="i18n.js?v=1793735069"></script>
+<script src="i18n.js?v=1793735675"></script>
 </head>
 <body>
 <div class="wholesale-bar" id="wBar" hidden>وضع التاجر: أسعار الجملة ظاهرة لإلك</div>
 <header class="top"><div class="wrap">
   <a class="logo" href="#/" aria-label="Tolay Makeup"><b>TOLAY</b><small>MAKEUP</small></a>
   <label class="srch"><span data-ic="search"></span><input id="q" type="search" placeholder="ابحثي عن منتج أو براند…" aria-label="بحث" autocomplete="off"></label>
-  <nav class="links"><a href="#/" data-tab="home">الرئيسية</a><a href="#/brands" data-tab="brands">الماركات</a><a href="#/cats" data-tab="cats">الأقسام</a><a href="#/account" data-tab="account">حسابي</a></nav>
+  <nav class="links"><a href="#/" data-tab="home">الرئيسية</a><a href="#/brands" data-tab="brands">الماركات</a><a href="#/cats" data-tab="cats">الأقسام</a><a href="#/club" data-tab="club" class="latin">Tolay Club</a><a href="#/account" data-tab="account">حسابي</a></nav>
   <a class="ib" href="#/wishlist" aria-label="المفضلة" data-ic="heart"><span class="n favN" hidden>0</span></a>
   <a class="ib cartib" href="#/cart" aria-label="السلة" data-ic="bag"><span class="n cartN" hidden>0</span></a>
   <select class="lang" id="lang" aria-label="لغة"><option value="ar">ع</option><option value="en">EN</option><option value="he">עב</option></select>
@@ -33,7 +33,7 @@
     <div class="hrow" id="newRow"></div>
   </section>
   <div id="brandRows"></div>
-  <div class="wrap"><a class="qbanner arc" href="#/arcade"><span><b>Beauty Arcade 🎡</b><small>لفّي العجلة كل يوم، اكشطي كرتك، جاوبي سؤال اليوم واجمعي Tolay Coins</small></span><span class="go">العبي ‹</span></a></div>
+  <div class="wrap"><a class="qbanner arc" href="#/arcade"><span><b>Beauty Arcade 🎡</b><small>لفّي العجلة كل يوم، اكشطي كرتك، جاوبي سؤال اليوم واجمعي Tolay Coins</small></span><span class="go">العبي ‹</span></a><a class="qbanner arc club" href="#/club"><span><b>Tolay Club 💎</b><small>دروبات محدودة، صناديق مفاجآت، معركة الماركات والقبو السري</small></span><span class="go">ادخلي ‹</span></a></div>
   <div class="wrap"><button class="qbanner" type="button" data-quiz><span><b>اكتشفي درجتك ✨</b><small>3 أسئلة وبنختارلك الفاونديشن وأحمر الشفاه المناسبين</small></span><span class="go">ابدئي ‹</span></button></div>
   <section class="spot" id="perfume"><div class="wrap">
     <div class="sec-head"><div><div class="eyebrow latin">The Scent Edit</div><h2>العطور</h2></div><a class="btn ghost" href="#/shop/%D8%A7%D9%84%D8%B9%D8%B7%D9%88%D8%B1">كل العطور</a></div>
@@ -87,6 +87,8 @@
 </div></section>
 
 <section class="page" id="pg-arcade" hidden><div class="wrap arcpg" id="arcBody"></div></section>
+<section class="page" id="pg-club" hidden><div class="wrap arcpg" id="clubBody"></div></section>
+<section class="page" id="pg-box" hidden><div class="wrap arcpg" id="boxBody"></div></section>
 <section class="page" id="pg-account" hidden><div class="wrap acctpg" id="acctBody"></div></section>
 </main>
 
@@ -115,12 +117,12 @@
 <script src="config.js"></script>
 <script src="viz.js?v=1793632833"></script>
 <script src="desc.js?v=1793663490"></script>
-<script src="desc-i18n.js?v=1793735069"></script>
+<script src="desc-i18n.js?v=1793735675"></script>
 <script src="seed.js?v=1793632833"></script>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-let S = {}, CATS = [], ALL = [], byId = {}, profile = null, WS = {}, DISC = { pct: 0 };
+let S = {}, CATS = [], ALL = [], byId = {}, profile = null, WS = {}, DISC = { pct: 0 }, VM = false, toP;
 const isTrader = () => profile && profile.status === "approved";
 const money = n => `${Number(n).toLocaleString("en-US")} ${S.currency || ""}`.trim();
 const has = n => n !== null && n !== undefined && n !== "";
@@ -129,6 +131,13 @@ const unit = p => isTrader() && has(p.w?.price) ? Number(p.w.price) : has(p.pr) 
 // stock: absent key = not tracked (always available)
 const stockOf = (p, sh = "") => p.st && sh in p.st ? Math.max(0, +p.st[sh] || 0) : null;
 const soldOut = p => { const v = Object.values(p.st || {}); return v.length > 0 && v.every(n => !(+n > 0)); };
+// drops: real start/end times from the admin; vault members (VM) get in 24h early
+const dropState = p => !p.ds && !p.de ? null : p.ds && Date.now() < p.ds ? "soon" : "live";
+const canBuy = p => dropState(p) !== "soon" || (VM && Date.now() > p.ds - 864e5);
+const pad = n => String(n).padStart(2, "0");
+const cdTxt = ms => { const t = Math.max(0, ms / 1000 | 0), d = t / 86400 | 0; return `${d ? d + " يوم " : ""}${pad((t % 86400) / 3600 | 0)}:${pad((t % 3600) / 60 | 0)}:${pad(t % 60)}`; };
+const tick = () => document.querySelectorAll("[data-cd]").forEach(e => e.textContent = cdTxt(+e.dataset.cd - Date.now()));
+setInterval(tick, 1000);
 const minQty = p => isTrader() ? Math.max(1, p.w?.min_qty || 1) : 1;
 const shadesOf = p => swatchesOf(p).map(s => s.name);
 // swatches with colours from the admin; plain comma-separated names as a fallback (no colour yet)
@@ -154,7 +163,9 @@ async function load() {
   const SD = window.SEED || {}, catMedia = Object.fromEntries((cats || []).map(c => [c.id, Object.keys(c.media || {}).length ? c.media : SD.media?.[c.name] || {}]));
   const NEW = new Set((SD.add || []).map(a => a.name));
   const swOf = p => ((p.swatches || []).length ? p.swatches : SD.swatches?.[p.name] || []).map(s => ({ ...s, img: s.img || SD.img?.[p.name]?.[s.name] || "", vid: s.vid || SD.vid?.[p.name]?.[s.name] || "" }));
-  ALL = prods.map(p => ({ id: p.id, st: p.stock || {}, b: p.brand, n: p.name, s: p.shades, z: p.size, d: p.description, pr: p.retail_price, img: p.image_url ? p.image_url + (p.image_url.includes("?") ? "&" : "?") + "v=1793640000" : p.image_url, featured: p.featured, cat: catName[p.category_id] || "", sw: swOf(p), fin: p.finish || SD.finish?.[p.name] || "", viz: catViz[p.category_id] || "photo", isNew: (p.arrived_at && Date.now() - Date.parse(p.arrived_at) < 30 * 864e5) || NEW.has(p.name), media: SD.pvid?.[p.name] ? { ...catMedia[p.category_id], video: SD.pvid[p.name] } : catMedia[p.category_id] || {} }));
+  toP = p => ({ id: p.id, ds: p.drop_start ? Date.parse(p.drop_start) : null, de: p.drop_end ? Date.parse(p.drop_end) : null, worth: +p.worth || 0, st: p.stock || {}, b: p.brand, n: p.name, s: p.shades, z: p.size, d: p.description, pr: p.retail_price, img: p.image_url ? p.image_url + (p.image_url.includes("?") ? "&" : "?") + "v=1793640000" : p.image_url, featured: p.featured, cat: catName[p.category_id] || "", sw: swOf(p), fin: p.finish || SD.finish?.[p.name] || "", viz: catViz[p.category_id] || "photo", isNew: (p.arrived_at && Date.now() - Date.parse(p.arrived_at) < 30 * 864e5) || NEW.has(p.name), media: SD.pvid?.[p.name] ? { ...catMedia[p.category_id], video: SD.pvid[p.name] } : catMedia[p.category_id] || {} });
+  // vault products load on the Club page only; finished drops leave the store
+  ALL = prods.filter(p => !p.vault && !(p.drop_end && Date.parse(p.drop_end) < Date.now())).map(toP);
   byId = Object.fromEntries(ALL.map(p => [p.id, p]));
   CATS = (cats || []).map(c => ({ s: c.name, p: ALL.filter(p => p.cat === c.name) })).filter(c => c.p.length);
   await loadSession();
@@ -163,7 +174,7 @@ async function load() {
 
 async function loadSession() {
   const { data: { session } } = await db.auth.getSession();
-  profile = null; WS = {}; DISC = { pct: 0 };
+  profile = null; WS = {}; DISC = { pct: 0 }; VM = false;
   if (session) {
     const { data } = await db.from("profiles").select("*").eq("id", session.user.id).single();
     profile = data;
@@ -173,6 +184,8 @@ async function loadSession() {
       const { data: dd } = await db.rpc("my_discount");  // level discount, decided on the server
       DISC = dd?.[0] || { pct: 0 };
     }
+    const { data: vm } = await db.rpc("vault_member");
+    VM = !!vm;
   }
   ALL.forEach(p => p.w = WS[p.id]);
   $("#wBar").hidden = !isTrader();
@@ -211,9 +224,9 @@ function favView() {
 const cardHTML = p => `
   <article class="card">
     <button class="fav" type="button" data-fav="${p.id}" aria-label="أضيفي للمفضلة" aria-pressed="${fav.has(p.id)}">${IC.heart}</button>
-    <button class="ph" type="button" data-open="${p.id}" aria-label="${esc(p.n)}"><img src="${esc(p.img)}" alt="" loading="lazy"><span class="tag">${esc(p.cat)}</span>${soldOut(p) ? `<span class="nb out">نفذ</span>` : p.isNew ? `<span class="nb">وصل حديثاً</span>` : ""}</button>
+    <button class="ph" type="button" data-open="${p.id}" aria-label="${esc(p.n)}"><img src="${esc(p.img)}" alt="" loading="lazy"><span class="tag">${esc(p.cat)}</span>${soldOut(p) ? `<span class="nb out">نفذ</span>` : dropState(p) === "soon" ? `<span class="nb drop">Drop قريباً</span>` : dropState(p) ? `<span class="nb drop">Drop 🔥</span>` : p.isNew ? `<span class="nb">وصل حديثاً</span>` : ""}</button>
     <div class="brand latin">${esc(p.b)}</div>
-    <div class="name">${esc(p.n)}</div>
+    <div class="name">${esc(p.n)}</div>${p.worth ? `<div class="worth">قيمة مضمونة ${money(p.worth)}</div>` : ""}
     ${dotsHTML(p)}
     <div class="row">${priceHTML(p)}<button class="add" type="button" data-add="${p.id}" aria-label="أضيفي للسلة">+</button></div>
   </article>`;
@@ -294,12 +307,12 @@ function wishView() {
   $("#wgrid").innerHTML = l.length ? l.map(cardHTML).join("") : `<div class="empty"><p>لسا ما ضفتي ولا منتج للمفضلة.</p><a class="btn" href="#/shop">تصفّحي المنتجات</a></div>`;
 }
 
-const TABS = { home: "home", brands: "brands", cats: "cats", shop: "cats", cart: "cart", account: "account", wish: "account", arcade: "home" };
+const TABS = { home: "home", brands: "brands", cats: "cats", shop: "cats", cart: "cart", account: "account", wish: "account", arcade: "home", club: "club", box: "club" };
 function route() {
   const [, pg = "", arg = ""] = location.hash.split("/"), a = decodeURIComponent(arg);
-  const page = { "": "home", brands: "brands", cats: "cats", shop: "shop", brand: "shop", wishlist: "wish", cart: "cart", account: "account", arcade: "arcade" }[pg] || "home";
+  const page = { "": "home", brands: "brands", cats: "cats", shop: "shop", brand: "shop", wishlist: "wish", cart: "cart", account: "account", arcade: "arcade", club: "club", box: "box" }[pg] || "home";
   cat = pg === "shop" ? a : ""; brand = pg === "brand" ? a : "";
-  ["home", "brands", "cats", "shop", "wish", "cart", "account", "arcade"].forEach(p => $("#pg-" + p).hidden = p !== page);
+  ["home", "brands", "cats", "shop", "wish", "cart", "account", "arcade", "club", "box"].forEach(p => $("#pg-" + p).hidden = p !== page);
   document.querySelectorAll("[data-tab]").forEach(t => t.toggleAttribute("aria-current", t.dataset.tab === TABS[page]));
   if (page === "shop") render();
   else if (page === "brands") brandsView();
@@ -307,6 +320,8 @@ function route() {
   else if (page === "wish") wishView();
   else if (page === "account") acctView();
   else if (page === "arcade") arcadeView();
+  else if (page === "club") clubView();
+  else if (page === "box") boxView();
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", route);
@@ -358,7 +373,7 @@ function drawCart() {
   const sum = priced.reduce((a, l) => a + unit(byId[l.id]) * l.qty, 0) * (1 - pct / 100);
   $("#total").textContent = !cart.length ? "—" : priced.length === cart.length ? money(Math.round(sum * 100) / 100) + (pct ? ` (بعد خصم ${DISC.tier} ${pct}%)` : "") : "يتأكد بالواتساب";
   cartSum = cart.length && priced.length === cart.length ? sum : null;
-  shipView();
+  shipView(); boxSum();
   if (profile) { $("#cName").value ||= profile.full_name || ""; $("#cAddr").value ||= profile.city || ""; }
 }
 function waLink(no) {
@@ -421,7 +436,7 @@ function openProduct(id) {
 function pdStock() {
   const p = byId[pdState.id], n = stockOf(p, pdState.shade), b = $("#pdAdd");
   document.querySelectorAll("#pdBody .sw").forEach(x => x.classList.toggle("oos", stockOf(p, x.dataset.shade) === 0));
-  b.disabled = n === 0; b.textContent = n === 0 ? (pdState.shade ? "هالدرجة نفذت" : "نفذ من المخزون") : "أضيفي للسلة";
+  b.disabled = n === 0 || !canBuy(p); b.textContent = !canBuy(p) ? "الدروب بيفتح قريباً" : n === 0 ? (pdState.shade ? "هالدرجة نفذت" : "نفذ من المخزون") : "أضيفي للسلة";
   $("#stk").textContent = n !== null && n > 0 && n <= 3 ? `باقي ${n} بس` : "";
 }
 
@@ -498,7 +513,7 @@ try { const r = new URLSearchParams(location.search).get("ref"); if (r) localSto
 
 // Beauty Arcade: every coin is awarded by the database, the page only shows and asks
 const WHEEL = [5, 10, 5, 20, 10, 50, 5, 15];
-const WHY = { order: "طلب", spin: "عجلة الحظ", quiz: "سؤال اليوم", scratch: "كرت كشط", referral: "إحالة صديقة", redeem: "استبدال جائزة", refund: "استرجاع نقاط" };
+const WHY = { order: "طلب", spin: "عجلة الحظ", quiz: "سؤال اليوم", scratch: "كرت كشط", referral: "إحالة صديقة", redeem: "استبدال جائزة", refund: "استرجاع نقاط", battle: "توقع المعركة" };
 async function arcadeView() {
   const b = $("#arcBody");
   if (!profile) {
@@ -550,6 +565,54 @@ async function doSpin() {
   setTimeout(() => { toast(`ربحتِ ${prize} نقطة 🎉`); arcadeView(); }, 4200);
 }
 
+// Tolay Club: drops, mystery boxes, beauty battle, secret vault
+async function clubView() {
+  const b = $("#clubBody");
+  const drops = ALL.filter(dropState).sort((x, y) => (x.ds || 0) - (y.ds || 0)), boxes = ALL.filter(p => p.worth);
+  const [bt, vt, vp] = await Promise.all([
+    db.from("battles").select("*").order("ends_at", { ascending: false }).limit(3),
+    profile ? db.from("battle_votes").select("battle_id,pick") : { data: [] },
+    VM ? db.from("products").select("*").eq("active", true).eq("vault", true).order("sort") : { data: [] }]);
+  const VA = (vp.data || []).map(toP); VA.forEach(p => { p.w = WS[p.id]; byId[p.id] = p; });
+  const my = Object.fromEntries((vt.data || []).map(v => [v.battle_id, v.pick]));
+  const left = p => { const v = Object.values(p.st); return v.length ? v.reduce((a, n) => a + (+n || 0), 0) : null; };
+  const dropHTML = p => { const soon = dropState(p) === "soon", n = left(p); return `<div class="dropc">${cardHTML(p)}<div class="cd">${soon ? `بيفتح بعد <b data-cd="${p.ds}"></b>` : p.de ? `بيسكّر بعد <b data-cd="${p.de}"></b>` : "متوفر لحد ما يخلص"}${n !== null ? `<small>باقي ${n} قطعة</small>` : ""}</div></div>`; };
+  const battleHTML = x => {
+    const A = byId[x.a], B = byId[x.b]; if (!A || !B) return "";
+    const open = !x.resolved && Date.parse(x.ends_at) > Date.now(), mine = my[x.id];
+    const side = (p, n) => `<div class="bside${x.winner === p.id ? " win" : ""}"><button class="ph" type="button" data-open="${p.id}"><img src="${esc(p.img)}" alt="${esc(p.n)}" loading="lazy"></button><b class="latin">${esc(p.b)}</b><small>${esc(p.n)}</small>
+      ${x.resolved ? `<span class="meta">انباع ${n} قطعة${x.winner === p.id ? " 🏆" : ""}</span>` : open && profile && !mine ? `<button class="btn" type="button" data-vote="${x.id}" data-pick="${p.id}">هاد بيربح</button>` : mine === p.id ? `<span class="pill">توقعك ✓</span>` : ""}</div>`;
+    const note = x.resolved ? (x.winner ? (mine === x.winner ? `توقعك صح! +${x.reward} نقطة 🎉` : "النتيجة الحقيقية من المبيعات") : "تعادل")
+      : open ? `النتيجة بعد <b data-cd="${Date.parse(x.ends_at)}"></b> · التوقع الصح = ${x.reward} نقطة${profile ? "" : " · سجّلي دخول لتشاركي"}` : "النتيجة قريباً";
+    return `<div class="battle">${side(A, x.a_sold)}<span class="vs latin">VS</span>${side(B, x.b_sold)}</div><p class="meta bnote">${note}</p>`; };
+  const battles = (bt.data || []).map(battleHTML).join("");
+  b.innerHTML = `<div class="eyebrow latin">Tolay Club</div><h2>عالم تولاي الخاص</h2>
+    <h3 class="arch latin">TOLAY DROP</h3>
+    ${drops.length ? `<div class="hrow">${drops.map(dropHTML).join("")}</div>` : `<p class="meta">ما في دروب هلأ. تابعينا، الدروب الجاي قريب.</p>`}
+    ${boxes.length ? `<h3 class="arch latin">Mystery Box</h3><p class="meta">بتعرفي القسم والقيمة المضمونة، والمحتوى مفاجأة.</p><div class="hrow">${boxes.map(cardHTML).join("")}</div>` : ""}
+    ${battles ? `<h3 class="arch latin">Beauty Battle</h3><p class="meta">مين رح يبيع أكتر هالأسبوع؟ توقعي، والنتيجة من المبيعات الحقيقية.</p>${battles}` : ""}
+    <a class="qbanner arc" href="#/box"><span><b>كوّني صندوقك 📦</b><small>اختاري من كل قسم وشوفي العدد والمجموع مباشرة</small></span><span class="go">ابدئي ‹</span></a>
+    <h3 class="arch">القبو السري 🔒</h3>
+    ${VM ? (VA.length ? `<div class="grid">${VA.map(cardHTML).join("")}</div>` : `<p class="meta">إنتِ عضوة بالقبو ✓ القطع الحصرية بتنزل هون قريباً.</p>`)
+      : `<div class="vault"><p>القبو مفتوح لأعضاء VIP (مشتريات 2,000 ₪ بالشهر الماضي) والتجار Elite وBlack Diamond (10,000 ₪ بالشهر الماضي).</p><p class="meta">الأعضاء كمان بيدخلوا الدروبات قبل الكل بـ24 ساعة.</p></div>`}`;
+  tick(); favView();
+}
+function boxView() {
+  $("#boxBody").innerHTML = `<div class="eyebrow latin">Build Your Beauty Box</div><h2>كوّني صندوقك</h2>
+    <p class="meta">اختاري من كل قسم، والصندوق بيتجمّع بسلتك وانتِ ماشية.</p><div id="boxSum"></div>
+    ${CATS.map(c => `<section class="rowsec"><div class="rowhead"><h3>${esc(c.s)} <small class="meta" data-bc="${esc(c.s)}"></small></h3></div><div class="hrow">${withImg(c.p).slice(0, 12).map(cardHTML).join("")}</div></section>`).join("")}
+    <a class="btn" href="#/cart">كمّلي الطلب ‹</a>`;
+  boxSum(); favView();
+}
+function boxSum() {
+  const el = $("#boxSum"); if (!el || $("#pg-box").hidden) return;
+  const min = isTrader() ? +S.box_min || 0 : 0, n = cart.reduce((a, l) => a + l.qty, 0), per = {};
+  cart.forEach(l => { const c = byId[l.id]?.cat; per[c] = (per[c] || 0) + l.qty; });
+  el.innerHTML = `<div class="boxsum"><div><b>${n}</b><small>قطعة</small></div><div><b>${$("#total").textContent}</b><small>المجموع</small></div>${min ? `<div><b>${Math.max(0, min - n)}</b><small>باقي للحد الأدنى</small></div>` : ""}</div>
+    ${min ? `<div class="pbar"><i style="width:${Math.min(100, n / min * 100)}%"></i></div><p class="meta">${n >= min ? "✓ صندوقك وصل الحد الأدنى" : `الحد الأدنى لصندوق الجملة ${min} قطعة`}</p>` : ""}`;
+  document.querySelectorAll("[data-bc]").forEach(e => e.textContent = per[e.dataset.bc] ? `${per[e.dataset.bc]} بالصندوق` : "");
+}
+
 // membership levels: spend of delivered orders in the previous calendar month decides this month's level
 const TIERS = {
   wholesale: [["Starter", 0], ["Pro", 5000], ["Elite", 10000], ["Black Diamond", 30000]],
@@ -596,7 +659,7 @@ function acctView(mode) {
     const st = { active: "حسابك فعّال. طلباتك بتنحفظ هون وبتقدري تعيديها بضغطة.", pending: "طلبك قيد المراجعة. رح نفعّل حسابك بأقرب وقت ونبلّغك.", approved: "حسابك مفعّل وأسعار الجملة ظاهرة لإلك.", rejected: "للأسف ما تمت الموافقة على الحساب. تواصلي معنا عالواتساب." }[profile.status];
     const nm = profile.shop_name || profile.full_name || "حسابي";
     b.innerHTML = `<div class="pcard"><span class="av">${esc(nm.trim()[0] || "T")}</span><div><h2>${esc(nm)}</h2><p>${st}</p></div></div>
-      <div class="tier" id="tier"></div><div class="mlist">${base}${row("spark", "Beauty Arcade", "نقاطك وألعابك وجوائزك", 'href="#/arcade"', "a")}${row("bag", "طلباتي", "كل طلباتك وإعادة الطلب", 'type=button data-orders')}${profile.role === "admin" ? row("shop", "لوحة التحكم", "إدارة المنتجات والطلبات", 'href="admin.html"', "a") : ""}${row("out", "تسجيل خروج", "", 'type=button id="logout"')}</div>`;
+      <div class="tier" id="tier"></div><div class="mlist">${base}${row("spark", "Beauty Arcade", "نقاطك وألعابك وجوائزك", 'href="#/arcade"', "a")}${row("brands", "Tolay Club", "الدروبات والقبو السري وكوّني صندوقك", 'href="#/club"', "a")}${row("bag", "طلباتي", "كل طلباتك وإعادة الطلب", 'type=button data-orders')}${profile.role === "admin" ? row("shop", "لوحة التحكم", "إدارة المنتجات والطلبات", 'href="admin.html"', "a") : ""}${row("out", "تسجيل خروج", "", 'type=button id="logout"')}</div>`;
     tierCard();
     return;
   }
@@ -653,7 +716,8 @@ document.addEventListener("click", async e => {
   else if (d.redeem) { t.disabled = true; const { error } = await db.rpc("redeem", { p_reward: +d.redeem }); if (error) { toast("ما في نقاط كفاية"); t.disabled = false; return; } toast("انحجزت جائزتك ✓ بتوصلك مع الطلب الجاي"); arcadeView(); }
   else if (d.copyref !== undefined) { const v = t.previousElementSibling.value; try { await navigator.clipboard.writeText(v); toast("انتسخ الرابط ✓"); } catch { t.previousElementSibling.select(); } }
   else if (d.reorder !== undefined) { let n = 0; myOrders[+d.reorder].items.forEach(it => { const p = byId[it.id]; if (p && stockOf(p, it.shade) !== 0) { addToCart(p.id, it.shade, it.qty); n++; } }); toast(n ? "رجعت المنتجات للسلة ✓" : "المنتجات مش متوفرة حالياً"); if (n) location.hash = "#/cart"; }
-  else if (d.add) { const p = byId[d.add]; if (soldOut(p)) { toast("نفذ من المخزون"); return; } shadesOf(p).length ? openProduct(p.id) : addToCart(p.id, "", minQty(p)); }
+  else if (d.vote) { t.disabled = true; const { error } = await db.rpc("vote_battle", { p_battle: +d.vote, p_pick: +d.pick }); toast(error ? "التصويت مسكّر" : "انحفظ توقعك ✓"); clubView(); }
+  else if (d.add) { const p = byId[d.add]; if (soldOut(p)) { toast("نفذ من المخزون"); return; } if (!canBuy(p)) { toast("الدروب بيفتح قريباً"); return; } shadesOf(p).length ? openProduct(p.id) : addToCart(p.id, "", minQty(p)); }
   else if (d.shade !== undefined) {
     pdState.shade = d.shade; $("#shadeName").textContent = d.shade; pdStock();
     t.parentElement.querySelectorAll(".sw").forEach(b => b.setAttribute("aria-pressed", b === t));

@@ -150,6 +150,26 @@ window.I18N_ROWS = [
   ["جمالك الأصلي،", "Your original beauty,", "היופי המקורי שלך,"], ["جايّك من أمريكا", "straight from the USA", "ישר מארה״ב"],
   ["تشكيلة مختارة من أشهر براندات المكياج والعناية والعطور، منتجات أصلية ١٠٠٪ بتوصلك لعندك. اختاري، ضيفي للسلة، وابعتي طلبك بكبسة واتساب.", "A curated selection of the most loved makeup, skincare and fragrance brands, 100% original and delivered to your door. Choose, add to cart, and send your order with one WhatsApp tap.", "מבחר מהמותגים האהובים באיפור, טיפוח ובשמים, 100% מקוריים עד הבית. בחרי, הוסיפי לסל ושלחי הזמנה בלחיצת וואטסאפ."],
   ["مل", "ml", "מ״ל"], ["غ", "g", "גר׳"],
+  // Tolay Club
+  ["دروبات محدودة، صناديق مفاجآت، معركة الماركات والقبو السري", "Limited drops, mystery boxes, brand battles and the secret vault", "דרופים מוגבלים, קופסאות הפתעה, קרב מותגים והכספת הסודית"],
+  ["ادخلي", "Enter", "היכנסי"], ["الدروبات والقبو السري وكوّني صندوقك", "Drops, the secret vault and build your box", "דרופים, הכספת הסודית ובני את הקופסה"],
+  ["قريباً", "soon", "בקרוב"], ["قيمة مضمونة", "Guaranteed value", "ערך מובטח"], ["يوم", "d", "ימים"],
+  ["الدروب بيفتح قريباً", "The drop opens soon", "הדרופ נפתח בקרוב"], ["التصويت مسكّر", "Voting is closed", "ההצבעה סגורה"], ["انحفظ توقعك", "Your guess is saved", "הניחוש נשמר"],
+  ["توقع المعركة", "Battle guess", "ניחוש בקרב"], ["بيفتح بعد", "Opens in", "נפתח בעוד"], ["بيسكّر بعد", "Closes in", "נסגר בעוד"], ["متوفر لحد ما يخلص", "Available while stock lasts", "זמין עד גמר המלאי"],
+  ["قطعة", "pieces", "יחידות"], ["انباع", "Sold", "נמכרו"], ["هاد بيربح", "This one wins", "זה ינצח"], ["توقعك صح!", "You guessed right!", "ניחשת נכון!"], ["توقعك", "Your guess", "הניחוש שלך"],
+  ["النتيجة الحقيقية من المبيعات", "The real result, from sales", "התוצאה האמיתית, לפי המכירות"], ["تعادل", "Tie", "תיקו"], ["النتيجة بعد", "Result in", "התוצאה בעוד"],
+  ["التوقع الصح =", "Right guess =", "ניחוש נכון ="], ["سجّلي دخول لتشاركي", "Log in to take part", "התחברי כדי להשתתף"], ["النتيجة قريباً", "Result coming soon", "התוצאה בקרוב"],
+  ["عالم تولاي الخاص", "Tolay's private world", "העולם הפרטי של Tolay"], ["ما في دروب هلأ. تابعينا، الدروب الجاي قريب.", "No drop right now. Stay tuned, the next one is close.", "אין דרופ כרגע. הישארי מעודכנת, הבא בקרוב."],
+  ["بتعرفي القسم والقيمة المضمونة، والمحتوى مفاجأة.", "You know the category and the guaranteed value; the contents are a surprise.", "את יודעת את הקטגוריה והערך המובטח, והתוכן הוא הפתעה."],
+  ["مين رح يبيع أكتر هالأسبوع؟ توقعي، والنتيجة من المبيعات الحقيقية.", "Which will sell more this week? Guess, and the result comes from real sales.", "מה יימכר יותר השבוע? נחשי, והתוצאה לפי מכירות אמיתיות."],
+  ["كوّني صندوقك", "Build your box", "בני את הקופסה שלך"], ["اختاري من كل قسم وشوفي العدد والمجموع مباشرة", "Pick from each category and see the count and total live", "בחרי מכל קטגוריה וראי את הכמות והסכום מיד"],
+  ["ابدئي", "Start", "התחילי"], ["القبو السري", "The secret vault", "הכספת הסודית"],
+  ["إنتِ عضوة بالقبو ✓ القطع الحصرية بتنزل هون قريباً.", "You're a vault member ✓ Exclusive pieces land here soon.", "את חברה בכספת ✓ פריטים בלעדיים יגיעו לכאן בקרוב."],
+  ["القبو مفتوح لأعضاء VIP (مشتريات 2,000 ₪ بالشهر الماضي) والتجار Elite وBlack Diamond (10,000 ₪ بالشهر الماضي).", "The vault is open to VIP members (2,000 ₪ in purchases last month) and Elite & Black Diamond traders (10,000 ₪ last month).", "הכספת פתוחה לחברות VIP (רכישות של 2,000 ₪ בחודש שעבר) ולסוחרי Elite ו-Black Diamond (10,000 ₪ בחודש שעבר)."],
+  ["الأعضاء كمان بيدخلوا الدروبات قبل الكل بـ24 ساعة.", "Members also get into drops 24 hours before everyone else.", "החברות גם נכנסות לדרופים 24 שעות לפני כולם."],
+  ["اختاري من كل قسم، والصندوق بيتجمّع بسلتك وانتِ ماشية.", "Pick from each category; the box fills your cart as you go.", "בחרי מכל קטגוריה, והקופסה מתמלאת בסל תוך כדי."],
+  ["بالصندوق", "in the box", "בקופסה"], ["كمّلي الطلب", "Continue to order", "המשיכי להזמנה"], ["المجموع", "Total", "סה״כ"], ["باقي للحد الأدنى", "Left to the minimum", "נותרו למינימום"],
+  ["صندوقك وصل الحد الأدنى", "Your box reached the minimum", "הקופסה הגיעה למינימום"], ["الحد الأدنى لصندوق الجملة", "Wholesale box minimum:", "מינימום לקופסה סיטונאית:"],
 ];
 
 (() => {

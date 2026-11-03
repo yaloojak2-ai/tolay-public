@@ -73,6 +73,7 @@ tr.off td{opacity:.45}
       <button class="chip" type="button" data-tab="traders">التجار <span id="pendN"></span></button>
       <button class="chip" type="button" data-tab="cats">الأقسام</button>
       <button class="chip" type="button" data-tab="coins">النقاط والجوائز <span id="redN"></span></button>
+      <button class="chip" type="button" data-tab="battles">معركة الماركات</button>
       <button class="chip" type="button" data-tab="searches">شو بيدوّروا</button>
       <button class="chip" type="button" data-tab="settings">نصوص وإعدادات</button>
     </div>
@@ -104,8 +105,16 @@ tr.off td{opacity:.45}
       <form id="cForm" class="f" style="padding:0">
         <label>كم نقطة عن كل شيكل بالطلب المسلَّم<input name="coin_rate" type="number" step="0.01" min="0" dir="ltr"><small class="hint">0.1 يعني نقطة عن كل 10 ₪</small></label>
         <label>نقاط الإحالة (لما أول طلب للصديقة يتسلّم)<input name="referral_bonus" type="number" min="0" dir="ltr"></label>
+        <label>الحد الأدنى لصندوق الجملة (عدد القطع)<input name="box_min" type="number" min="0" dir="ltr"><small class="hint">بيطلع للتاجر بصفحة "كوّني صندوقك"</small></label>
         <div class="full"><button class="btn" type="submit">حفظ</button></div>
       </form>
+    </div>
+
+    <div class="panel" id="t-battles" hidden>
+      <p class="hint">اختار منتجين وموعد النهاية. الزبائن بيتوقعوا مين رح يبيع أكتر، وبعد ما تخلص المعركة اكبس "أعلن النتيجة": النتيجة بتنحسب من الطلبات المؤكدة والمسلّمة خلال المعركة، واللي توقعوا صح بياخدوا النقاط لحالهم.</p>
+      <div class="bar"><select id="bA" style="flex:1 1 200px"></select><b>VS</b><select id="bB" style="flex:1 1 200px"></select>
+        <label class="hint">لحد<input id="bEnd" type="datetime-local" dir="ltr"></label><label class="hint">نقاط التوقع الصح<input id="bRw" type="number" min="0" value="20" dir="ltr" style="width:80px"></label><button class="btn" type="button" id="bAdd">+ معركة</button></div>
+      <div class="tbl"><table><thead><tr><th>المعركة</th><th>لحد</th><th>المتوقعين</th><th>النتيجة</th></tr></thead><tbody id="bRows"></tbody></table></div>
     </div>
 
     <div class="panel" id="t-searches" hidden>
@@ -171,6 +180,10 @@ tr.off td{opacity:.45}
     <div class="full"><div class="hint" style="margin-bottom:6px">الدرجات وألوانها (بتطلع بالتجربة المتحركة بصفحة المنتج)</div><div id="swList" class="swl"></div><button class="sm" type="button" id="addSw">+ درجة</button><div class="hint">خانة الكمية جنب كل درجة: اتركها فاضية إذا ما بدك تتابع مخزونها، و0 يعني نفذت.</div></div>
     <label>الكمية المتوفرة (لمنتج بدون درجات)<input name="stock0" type="number" min="0" dir="ltr" placeholder="فاضي = ما بنتابع"></label>
     <label>تاريخ الوصول (بيطلع "وصل حديثاً" 30 يوم)<input name="arrived_at" type="date" dir="ltr"></label>
+    <label>الدروب يفتح (اختياري)<input name="drop_start" type="datetime-local" dir="ltr"></label>
+    <label>الدروب يسكّر (اختياري)<input name="drop_end" type="datetime-local" dir="ltr"><small class="hint">بعد هالوقت المنتج بيختفي من المتجر</small></label>
+    <label>صندوق مفاجآت: القيمة الحقيقية المضمونة<input name="worth" type="number" step="0.01" min="0" dir="ltr" placeholder="فاضي = منتج عادي"><small class="hint">اكتب المحتويات المحتملة بالوصف</small></label>
+    <label class="chk"><input type="checkbox" name="vault"> بالقبو السري (بس لأعضاء VIP وElite وBlack Diamond)</label>
     <label>الملمس<select name="finish"><option value="">عادي</option><option value="matte">Matte مات</option><option value="satin">Satin ستان</option><option value="gloss">Gloss لامع</option><option value="shimmer">Shimmer براق</option></select></label>
     <label>ملاحظة ألوان (اختياري)<input name="shades" placeholder="مثلاً: ألوان متعددة"></label>
     <label class="full">وصف<textarea name="description" rows="2"></textarea></label>
@@ -241,7 +254,7 @@ async function loadAll() {
   const opts = C.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
   $("#pcat").innerHTML = `<option value="">كل الأقسام</option>` + opts;
   $("#eCat").innerHTML = opts;
-  drawP(); drawT(); drawC(); loadOrders(); loadSearches(); loadCoins();
+  drawP(); drawT(); drawC(); loadOrders(); loadSearches(); loadCoins(); loadBattles();
   (s.data || []).forEach(r => { const i = $("#cForm").elements[r.key]; if (i) i.value = r.value; });
   const have = new Set(P.map(p => (p.brand + "|" + p.name).toLowerCase()));
   $("#addN").textContent = SEED.add.filter(a => !have.has((a.brand + "|" + a.name).toLowerCase())).length;
@@ -325,6 +338,25 @@ $("#cForm").addEventListener("submit", async e => {
   if (!fail((await db.from("settings").upsert(rows)).error)) toast("انحفظ ✓");
 });
 
+// beauty battle
+async function loadBattles() {
+  const opts = P.filter(p => p.active).map(p => `<option value="${p.id}">${esc(p.brand)} – ${esc(p.name)}</option>`).join("");
+  $("#bA").innerHTML = opts; $("#bB").innerHTML = opts;
+  const [bt, vt] = await Promise.all([db.from("battles").select("*").order("ends_at", { ascending: false }).limit(50), db.from("battle_votes").select("battle_id,pick")]);
+  if (bt.error) { $("#bRows").innerHTML = `<tr><td colspan="4" class="hint">${esc(bt.error.message)}</td></tr>`; return; }
+  const nm = id => { const p = P.find(x => x.id === id); return p ? `${esc(p.brand)} – ${esc(p.name)}` : "#" + id; };
+  const votes = (vt.data || []).reduce((m, v) => (m[v.battle_id + "|" + v.pick] = (m[v.battle_id + "|" + v.pick] || 0) + 1, m), {});
+  $("#bRows").innerHTML = (bt.data || []).length ? bt.data.map(b => `<tr><td class="nm">${nm(b.a)}<small>VS</small>${nm(b.b)}</td><td dir="ltr">${new Date(b.ends_at).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })}</td>
+    <td>${votes[b.id + "|" + b.a] || 0} / ${votes[b.id + "|" + b.b] || 0}</td>
+    <td>${b.resolved ? `${b.a_sold} / ${b.b_sold} قطعة · ${b.winner ? "الفايز: " + nm(b.winner) : "تعادل"}` : Date.parse(b.ends_at) > Date.now() ? "شغّالة" : `<button class="sm" type="button" data-resolve="${b.id}">أعلن النتيجة</button>`}</td></tr>`).join("")
+    : `<tr><td colspan="4" class="hint">لسا ما في معارك.</td></tr>`;
+}
+$("#bAdd").addEventListener("click", async () => {
+  const a = +$("#bA").value, b = +$("#bB").value, end = iso($("#bEnd").value);
+  if (!a || !b || a === b || !end || Date.parse(end) < Date.now()) { toast("اختار منتجين مختلفين وموعد نهاية بالمستقبل"); return; }
+  if (!fail((await db.from("battles").insert({ a, b, ends_at: end, reward: Math.max(0, +$("#bRw").value || 0) })).error)) { toast("انضافت المعركة ✓"); loadBattles(); }
+});
+
 // what customers search for
 async function loadSearches() {
   const { data, error } = await db.from("search_log").select("term,results").gte("created_at", new Date(Date.now() - 30 * 864e5).toISOString()).limit(5000);
@@ -369,6 +401,9 @@ $("#pRows").addEventListener("change", async e => {
   i.classList.add("saved"); setTimeout(() => i.classList.remove("saved"), 1200);
 });
 
+// datetime-local works in local time; the database keeps UTC
+const dl = v => { if (!v) return ""; const d = new Date(v); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 16); };
+const iso = v => v ? new Date(v).toISOString() : null;
 let editing = null, pickedFile = null;
 function openEdit(id) {
   editing = id ? P.find(p => p.id === id) : null; pickedFile = null; $("#eFile").value = "";
@@ -378,6 +413,7 @@ function openEdit(id) {
   const st = p.stock || {};
   $("#swList").innerHTML = ""; (p.swatches || []).forEach(s => addSwRow({ ...s, qty: st[s.name] }));
   f.stock0.value = st[""] ?? ""; f.arrived_at.value = p.arrived_at ? p.arrived_at.slice(0, 10) : "";
+  f.drop_start.value = dl(p.drop_start); f.drop_end.value = dl(p.drop_end); f.worth.value = p.worth ?? ""; f.vault.checked = !!p.vault;
   f.retail_price.value = p.retail_price ?? "";
   f.w_price.value = W[p.id]?.price ?? ""; f.w_min.value = W[p.id]?.min_qty ?? 1;
   f.active.checked = p.active; f.featured.checked = p.featured;
@@ -393,7 +429,7 @@ $("#eForm").addEventListener("submit", async e => {
   const rows = [...$("#swList").children].map(d => ({ name: d.querySelector("[type=text]").value.trim(), hex: d.querySelector("[type=color]").value, qty: d.querySelector("[type=number]").value })).filter(s => s.name);
   const swatches = rows.map(({ name, hex }) => ({ name, hex }));
   const stock = {}; rows.forEach(r => { if (r.qty !== "") stock[r.name] = Math.max(0, +r.qty); }); if (f.stock0.value !== "") stock[""] = Math.max(0, +f.stock0.value);
-  const row = { swatches, stock, arrived_at: f.arrived_at.value || null, finish: f.finish.value, brand: f.brand.value.trim(), name: f.name.value.trim(), category_id: +f.category_id.value || null, size: f.size.value.trim(), shades: f.shades.value.trim(), description: f.description.value.trim(), retail_price: num(f.retail_price.value), sort: +f.sort.value || 0, active: f.active.checked, featured: f.featured.checked };
+  const row = { swatches, stock, arrived_at: f.arrived_at.value || null, drop_start: iso(f.drop_start.value), drop_end: iso(f.drop_end.value), worth: num(f.worth.value), vault: f.vault.checked, finish: f.finish.value, brand: f.brand.value.trim(), name: f.name.value.trim(), category_id: +f.category_id.value || null, size: f.size.value.trim(), shades: f.shades.value.trim(), description: f.description.value.trim(), retail_price: num(f.retail_price.value), sort: +f.sort.value || 0, active: f.active.checked, featured: f.featured.checked };
   if (pickedFile) {
     const path = `${Date.now()}-${pickedFile.name.replace(/[^\w.]+/g, "_")}`;
     const up = await db.storage.from("products").upload(path, pickedFile, { contentType: pickedFile.type });
@@ -494,9 +530,10 @@ document.addEventListener("click", async e => {
   const d = t.dataset;
   if (d.tab) {
     document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-pressed", b === t));
-    ["orders", "products", "traders", "cats", "coins", "searches", "settings"].forEach(k => $("#t-" + k).hidden = k !== d.tab);
+    ["orders", "products", "traders", "cats", "coins", "battles", "searches", "settings"].forEach(k => $("#t-" + k).hidden = k !== d.tab);
   }
   else if (d.edit) openEdit(+d.edit);
+  else if (d.resolve) { t.disabled = true; const { error } = await db.rpc("resolve_battle", { p_battle: +d.resolve }); if (!fail(error)) { toast("انعلنت النتيجة ✓"); loadBattles(); } else t.disabled = false; }
   else if (d.close !== undefined) t.closest("dialog").close();
   else if (d.st) {
     if (fail((await db.from("profiles").update({ status: d.st }).eq("id", d.uid)).error)) return;
