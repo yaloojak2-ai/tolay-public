@@ -6,17 +6,17 @@
 <title>Tolay Makeup</title>
 <meta name="description" content="Tolay Makeup: منتجات مكياج وعناية وعطور أصلية من أمريكا">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Reem+Kufi:wght@500;600&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&display=swap">
-<link rel="stylesheet" href="style.css?v=1793735675">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Rubik:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="style.css?v=1793738558">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<script src="i18n.js?v=1793735675"></script>
+<script src="i18n.js?v=1793738558"></script>
 </head>
 <body>
 <div class="wholesale-bar" id="wBar" hidden>وضع التاجر: أسعار الجملة ظاهرة لإلك</div>
 <header class="top"><div class="wrap">
   <a class="logo" href="#/" aria-label="Tolay Makeup"><b>TOLAY</b><small>MAKEUP</small></a>
   <label class="srch"><span data-ic="search"></span><input id="q" type="search" placeholder="ابحثي عن منتج أو براند…" aria-label="بحث" autocomplete="off"></label>
-  <nav class="links"><a href="#/" data-tab="home">الرئيسية</a><a href="#/brands" data-tab="brands">الماركات</a><a href="#/cats" data-tab="cats">الأقسام</a><a href="#/club" data-tab="club" class="latin">Tolay Club</a><a href="#/account" data-tab="account">حسابي</a></nav>
+  <nav class="links"><a href="#/" data-tab="home">الرئيسية</a><a href="#/new" data-tab="new">جديدنا</a><a href="#/brands" data-tab="brands">الماركات</a><a href="#/cats" data-tab="cats">الأقسام</a><a href="#/arcade" data-tab="arcade">الألعاب</a><a href="#/club" data-tab="club" class="latin">Tolay Club</a><a href="#/account" data-tab="account">حسابي</a></nav>
   <a class="ib" href="#/wishlist" aria-label="المفضلة" data-ic="heart"><span class="n favN" hidden>0</span></a>
   <a class="ib cartib" href="#/cart" aria-label="السلة" data-ic="bag"><span class="n cartN" hidden>0</span></a>
   <select class="lang" id="lang" aria-label="لغة"><option value="ar">ع</option><option value="en">EN</option><option value="he">עב</option></select>
@@ -26,6 +26,9 @@
 <section class="page" id="pg-home">
   <div class="wrap">
     <div class="slider" id="slider"><div class="slides" id="slides"></div><div class="sdots" id="sdots"></div></div>
+    <div class="intro"><h2 class="latin">Your Beauty Business Starts Here.</h2>
+      <div class="cta"><a class="btn" href="#/club">ENTER THE CLUB</a><a class="btn ghost" href="#/account" data-wsale>EXPLORE WHOLESALE</a></div></div>
+    <div class="ticker" aria-label="روابط سريعة"><div class="track"><a href="#/new">New Arrivals</a><a href="#/club">Weekly Drops</a><a href="#/club">Exclusive Deals</a><a href="#/club">Mystery Box</a><a href="#/arcade">Beauty Games</a><a href="#/box">Build Your Box</a><a tabindex="-1" aria-hidden="true" href="#/new">New Arrivals</a><a tabindex="-1" aria-hidden="true" href="#/club">Weekly Drops</a><a tabindex="-1" aria-hidden="true" href="#/club">Exclusive Deals</a><a tabindex="-1" aria-hidden="true" href="#/club">Mystery Box</a><a tabindex="-1" aria-hidden="true" href="#/arcade">Beauty Games</a><a tabindex="-1" aria-hidden="true" href="#/box">Build Your Box</a></div></div>
     <div class="circles" id="circles"></div>
   </div>
   <section class="rowsec wrap" id="newin" hidden>
@@ -117,7 +120,7 @@
 <script src="config.js"></script>
 <script src="viz.js?v=1793632833"></script>
 <script src="desc.js?v=1793663490"></script>
-<script src="desc-i18n.js?v=1793735675"></script>
+<script src="desc-i18n.js?v=1793738558"></script>
 <script src="seed.js?v=1793632833"></script>
 <script>
 const $ = s => document.querySelector(s);
@@ -271,12 +274,12 @@ function paint() {
   render(); drawCart(); favView(); route();
 }
 
-let cat = "", q = "", brand = "";
+let cat = "", q = "", brand = "", onlyNew = false;
 function render() {
   const t = q.trim().toLowerCase();
-  const list = ALL.filter(p => (!cat || p.cat === cat) && (!brand || p.b === brand) && (!t || `${p.b} ${p.n} ${p.cat}`.toLowerCase().includes(t)));
+  const list = ALL.filter(p => (!onlyNew || p.isNew) && (!cat || p.cat === cat) && (!brand || p.b === brand) && (!t || `${p.b} ${p.n} ${p.cat}`.toLowerCase().includes(t)));
   $("#resultN").textContent = `${list.length} منتج`;
-  $("#shopTitle").textContent = brand || cat || "كل المنتجات";
+  $("#shopTitle").textContent = brand || cat || (onlyNew ? "وصل حديثاً" : "كل المنتجات");
   $("#brand").value = brand;
   $("#grid").innerHTML = list.length ? list.map(cardHTML).join("") : `<div class="empty">ما في نتائج، جرّبي كلمة تانية.</div>`;
   document.querySelectorAll("#chips .chip").forEach(b => b.setAttribute("aria-pressed", b.dataset.cat === cat));
@@ -307,13 +310,13 @@ function wishView() {
   $("#wgrid").innerHTML = l.length ? l.map(cardHTML).join("") : `<div class="empty"><p>لسا ما ضفتي ولا منتج للمفضلة.</p><a class="btn" href="#/shop">تصفّحي المنتجات</a></div>`;
 }
 
-const TABS = { home: "home", brands: "brands", cats: "cats", shop: "cats", cart: "cart", account: "account", wish: "account", arcade: "home", club: "club", box: "club" };
+const TABS = { home: "home", brands: "brands", cats: "cats", shop: "cats", cart: "cart", account: "account", wish: "account", arcade: "arcade", club: "club", box: "club" };
 function route() {
   const [, pg = "", arg = ""] = location.hash.split("/"), a = decodeURIComponent(arg);
-  const page = { "": "home", brands: "brands", cats: "cats", shop: "shop", brand: "shop", wishlist: "wish", cart: "cart", account: "account", arcade: "arcade", club: "club", box: "box" }[pg] || "home";
-  cat = pg === "shop" ? a : ""; brand = pg === "brand" ? a : "";
+  const page = { "": "home", brands: "brands", cats: "cats", shop: "shop", new: "shop", brand: "shop", wishlist: "wish", cart: "cart", account: "account", arcade: "arcade", club: "club", box: "box" }[pg] || "home";
+  cat = pg === "shop" ? a : ""; brand = pg === "brand" ? a : ""; onlyNew = pg === "new";
   ["home", "brands", "cats", "shop", "wish", "cart", "account", "arcade", "club", "box"].forEach(p => $("#pg-" + p).hidden = p !== page);
-  document.querySelectorAll("[data-tab]").forEach(t => t.toggleAttribute("aria-current", t.dataset.tab === TABS[page]));
+  document.querySelectorAll("[data-tab]").forEach(t => t.toggleAttribute("aria-current", t.dataset.tab === (onlyNew ? "new" : TABS[page])));
   if (page === "shop") render();
   else if (page === "brands") brandsView();
   else if (page === "cats") catsView(a);
@@ -423,7 +426,7 @@ function openProduct(id) {
         <button class="btn" type="button" id="pdAdd">أضيفي للسلة</button><span class="stk" id="stk"></span>
         <button class="btn ghost" type="button" data-share="${p.id}" aria-label="شاركي المنتج">شاركي 🔗</button>
       </div>
-      ${lookHTML(p)}
+      ${lookHTML(p)}${similarHTML(p)}
     </div>`;
   // real photos/video when the section has them, drawn SVG stage otherwise
   setShade = p.media.base || p.media.video || first?.vid ? mountReal($("#vz"), p.media, first) : window.mountViz ? mountViz($("#vz"), p.viz, p.fin, first?.hex) : null;
@@ -437,7 +440,7 @@ function pdStock() {
   const p = byId[pdState.id], n = stockOf(p, pdState.shade), b = $("#pdAdd");
   document.querySelectorAll("#pdBody .sw").forEach(x => x.classList.toggle("oos", stockOf(p, x.dataset.shade) === 0));
   b.disabled = n === 0 || !canBuy(p); b.textContent = !canBuy(p) ? "الدروب بيفتح قريباً" : n === 0 ? (pdState.shade ? "هالدرجة نفذت" : "نفذ من المخزون") : "أضيفي للسلة";
-  $("#stk").textContent = n !== null && n > 0 && n <= 3 ? `باقي ${n} بس` : "";
+  $("#stk").textContent = n === null || n === 0 ? "" : n <= 3 ? `باقي ${n} بس` : `متوفر ${n} قطعة`;
 }
 
 // "complete the look": one product from each of three complementary sections, picked by id so it stays stable
@@ -445,6 +448,12 @@ const LOOK = ["الشفاه", "الخدود", "الماسكارا", "ظلال ا
 function lookHTML(p) {
   const picks = LOOK.filter(c => c !== p.cat).slice(0, 3).map(c => { const l = ALL.filter(x => x.cat === c && x.img); return l[p.id % l.length]; }).filter(Boolean);
   return picks.length ? `<div class="look"><div class="shade-name">كمّلي الإطلالة</div><div class="lookrow">${picks.map(x => `<div class="lk"><button type="button" data-open="${x.id}" aria-label="${esc(x.n)}"><img src="${esc(x.img)}" alt=""></button><small>${esc(x.b)}</small><button class="btn ghost" type="button" data-add="${x.id}" aria-label="أضيفي ${esc(x.n)}">+</button></div>`).join("")}</div></div>` : "";
+}
+
+// similar: same section, same brand first
+function similarHTML(p) {
+  const l = ALL.filter(x => x.cat === p.cat && x.id !== p.id && x.img).sort((a, b) => (b.b === p.b) - (a.b === p.b)).slice(0, 6);
+  return l.length ? `<div class="look"><div class="shade-name">منتجات مشابهة</div><div class="hrow sim">${l.map(cardHTML).join("")}</div></div>` : "";
 }
 
 // shade finder: 3 answers -> a foundation and 3 lip shades from what we really stock
