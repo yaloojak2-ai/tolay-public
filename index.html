@@ -114,7 +114,7 @@
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-let S = {}, CATS = [], ALL = [], byId = {}, profile = null, WS = {};
+let S = {}, CATS = [], ALL = [], byId = {}, profile = null, WS = {}, DISC = { pct: 0 };
 const isTrader = () => profile && profile.status === "approved";
 const money = n => `${Number(n).toLocaleString("en-US")} ${S.currency || ""}`.trim();
 const has = n => n !== null && n !== undefined && n !== "";
@@ -157,13 +157,15 @@ async function load() {
 
 async function loadSession() {
   const { data: { session } } = await db.auth.getSession();
-  profile = null; WS = {};
+  profile = null; WS = {}; DISC = { pct: 0 };
   if (session) {
     const { data } = await db.from("profiles").select("*").eq("id", session.user.id).single();
     profile = data;
     if (isTrader()) {
       const { data: w } = await db.from("wholesale_prices").select("*");
       (w || []).forEach(r => WS[r.product_id] = r);
+      const { data: dd } = await db.rpc("my_discount");  // level discount, decided on the server
+      DISC = dd?.[0] || { pct: 0 };
     }
   }
   ALL.forEach(p => p.w = WS[p.id]);
@@ -341,8 +343,9 @@ function drawCart() {
       <div class="qty"><button type="button" data-q="${i}" data-d="-1" aria-label="أقل">−</button><span>${l.qty}</span><button type="button" data-q="${i}" data-d="1" aria-label="أكثر">+</button></div>
     </div>`; }).join("") : `<div class="empty">السلة فاضية. ضيفي منتجاتك المفضلة من المتجر.</div>`;
   const priced = cart.filter(l => unit(byId[l.id]) !== null);
-  const sum = priced.reduce((a, l) => a + unit(byId[l.id]) * l.qty, 0);
-  $("#total").textContent = !cart.length ? "—" : priced.length === cart.length ? money(sum) : "يتأكد بالواتساب";
+  const pct = isTrader() ? +DISC.pct || 0 : 0;
+  const sum = priced.reduce((a, l) => a + unit(byId[l.id]) * l.qty, 0) * (1 - pct / 100);
+  $("#total").textContent = !cart.length ? "—" : priced.length === cart.length ? money(Math.round(sum * 100) / 100) + (pct ? ` (بعد خصم ${DISC.tier} ${pct}%)` : "") : "يتأكد بالواتساب";
   cartSum = cart.length && priced.length === cart.length ? sum : null;
   shipView();
   if (profile) { $("#cName").value ||= profile.full_name || ""; $("#cAddr").value ||= profile.city || ""; }
@@ -478,6 +481,7 @@ function mountReal(el, m, first) {
 }
 function badge(s) { const b = $("#badge"); b.hidden = false; b.style.setProperty("--c", s.hex); b.querySelector("span").textContent = s.name; }
 
+
 // membership levels: spend of delivered orders in the previous calendar month decides this month's level
 const TIERS = {
   wholesale: [["Starter", 0], ["Pro", 10000], ["Elite", 20000], ["Black Diamond", 30000]],
@@ -496,6 +500,7 @@ async function tierCard() {
   el.innerHTML = `<div class="eyebrow">مستواكِ هالشهر</div><h3 class="latin">${t[0]}</h3>
     <div class="bar"><i style="width:${pct}%"></i></div>
     <p>مشترياتك هالشهر: ${money(cur)}. ${nx ? `باقيلك ${money(nx[1] - cur)} لتوصلي لمستوى <b class="latin">${nx[0]}</b> الشهر الجاي.` : `وصلتِ لأعلى مستوى <b class="latin">${top[0]}</b> 👑`}</p>
+    ${kind === "wholesale" ? `<p>الخصم: Pro 3% · Elite 5% · Black Diamond 8%${+DISC.pct ? ` · <b>خصمك هالشهر ${DISC.pct}%</b>` : ""}</p>` : ""}
     <small>المستوى بينحسب من الطلبات اللي تم تسليمها بالشهر اللي قبله.</small>`;
 }
 
