@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Reem+Kufi:wght@500;600&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&display=swap">
 <link rel="stylesheet" href="style.css?v=1793734543">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<script src="i18n.js?v=1793734543"></script>
+<script src="i18n.js?v=1793734728"></script>
 </head>
 <body>
 <div class="wholesale-bar" id="wBar" hidden>وضع التاجر: أسعار الجملة ظاهرة لإلك</div>
@@ -74,6 +74,7 @@
   <div class="dinfo"><b>أسعار التوصيل</b><span>الضفة 20 · القدس 30 · الداخل 70</span></div>
   <div class="lines" id="lines"></div>
   <label>منطقة التوصيل<select id="cZone"><option value="">اختاري المنطقة</option><option value="20">الضفة الغربية</option><option value="30">القدس</option><option value="70">الداخل</option></select></label>
+  <label id="payL" hidden>طريقة الدفع<select id="cPay"><option value="cash">كاش عند الاستلام</option><option value="credit">دين أو أقساط</option></select></label>
   <div class="total"><span>المنتجات</span><span id="total" class="price"></span></div>
   <div class="total"><span>التوصيل</span><span id="ship" class="price"></span></div>
   <div class="total"><span>الإجمالي</span><span id="grand" class="price"></span></div>
@@ -112,7 +113,7 @@
 <script src="config.js"></script>
 <script src="viz.js?v=1793632833"></script>
 <script src="desc.js?v=1793663490"></script>
-<script src="desc-i18n.js?v=1793734543"></script>
+<script src="desc-i18n.js?v=1793734728"></script>
 <script src="seed.js?v=1793632833"></script>
 <script>
 const $ = s => document.querySelector(s);
@@ -331,6 +332,7 @@ function shipView() {
   $("#grand").textContent = fee === null || !cart.length ? "—" : cartSum === null ? "يتأكد بالواتساب" : money(cartSum + fee);
 }
 $("#cZone").addEventListener("change", shipView);
+$("#cPay").addEventListener("change", () => drawCart());
 function addToCart(id, shade = "", qty = 1) {
   const l = cart.find(l => l.id === id && l.shade === shade);
   l ? l.qty += qty : cart.push({ id, shade, qty });
@@ -348,7 +350,8 @@ function drawCart() {
       <div class="qty"><button type="button" data-q="${i}" data-d="-1" aria-label="أقل">−</button><span>${l.qty}</span><button type="button" data-q="${i}" data-d="1" aria-label="أكثر">+</button></div>
     </div>`; }).join("") : `<div class="empty">السلة فاضية. ضيفي منتجاتك المفضلة من المتجر.</div>`;
   const priced = cart.filter(l => unit(byId[l.id]) !== null);
-  const pct = isTrader() ? +DISC.pct || 0 : 0;
+  $("#payL").hidden = !isTrader();
+  const pct = isTrader() && $("#cPay").value === "cash" ? +DISC.pct || 0 : 0;
   const sum = priced.reduce((a, l) => a + unit(byId[l.id]) * l.qty, 0) * (1 - pct / 100);
   $("#total").textContent = !cart.length ? "—" : priced.length === cart.length ? money(Math.round(sum * 100) / 100) + (pct ? ` (بعد خصم ${DISC.tier} ${pct}%)` : "") : "يتأكد بالواتساب";
   cartSum = cart.length && priced.length === cart.length ? sum : null;
@@ -358,7 +361,7 @@ function drawCart() {
 function waLink(no) {
   const lines = cart.map((l, i) => { const p = byId[l.id], u = unit(p); return `${i + 1}. ${p.b} - ${p.n}${l.shade ? ` (${l.shade})` : ""} × ${l.qty}${u !== null ? ` = ${money(u * l.qty)}` : ""}`; });
   const head = isTrader() ? `طلب جملة 🏷️ من محل: ${profile.shop_name || ""}` : "مرحبا Tolay Makeup، بدي أطلب:";
-  const msg = [head + (no ? ` (طلب رقم #${no})` : ""), ...lines, "", `المنتجات: ${$("#total").textContent}`, `التوصيل (${$("#cZone").selectedOptions[0].text}): ${money(zoneFee())}`, `الإجمالي: ${$("#grand").textContent}`, `الاسم: ${$("#cName").value}`, `العنوان: ${$("#cAddr").value}`, isTrader() && profile.phone ? `الهاتف: ${profile.phone}` : "", $("#cNote").value ? `ملاحظات: ${$("#cNote").value}` : ""].filter(Boolean).join("\n");
+  const msg = [head + (no ? ` (طلب رقم #${no})` : ""), ...lines, "", `المنتجات: ${$("#total").textContent}`, `التوصيل (${$("#cZone").selectedOptions[0].text}): ${money(zoneFee())}`, `الإجمالي: ${$("#grand").textContent}`, `الاسم: ${$("#cName").value}`, `العنوان: ${$("#cAddr").value}`, isTrader() && profile.phone ? `الهاتف: ${profile.phone}` : "", isTrader() ? `الدفع: ${$("#cPay").selectedOptions[0].text}` : "", $("#cNote").value ? `ملاحظات: ${$("#cNote").value}` : ""].filter(Boolean).join("\n");
   return `https://wa.me/${S.whatsapp}?text=${encodeURIComponent(msg)}`;
 }
 $("#send").addEventListener("click", async e => {
@@ -369,7 +372,7 @@ $("#send").addEventListener("click", async e => {
   const btn = e.currentTarget; if (btn.dataset.busy) return; btn.dataset.busy = 1;
   const win = window.open("", "_blank");  // opened now so the popup isn't blocked after the save finishes
   const { data, error } = await db.rpc("place_order", { p_items: cart.map(l => ({ id: l.id, shade: l.shade, qty: l.qty })), p_name: $("#cName").value.trim(),
-    p_phone: profile?.phone || "", p_address: $("#cAddr").value.trim(), p_note: $("#cNote").value.trim(), p_delivery: zoneFee() });
+    p_phone: profile?.phone || "", p_address: $("#cAddr").value.trim(), p_note: $("#cNote").value.trim(), p_delivery: zoneFee(), p_payment: isTrader() ? $("#cPay").value : "cash" });
   delete btn.dataset.busy;
   const no = !error && data?.[0]?.order_id;
   const url = waLink(no);  // even if saving failed, the order still reaches WhatsApp
@@ -489,7 +492,7 @@ function badge(s) { const b = $("#badge"); b.hidden = false; b.style.setProperty
 
 // membership levels: spend of delivered orders in the previous calendar month decides this month's level
 const TIERS = {
-  wholesale: [["Starter", 0], ["Pro", 10000], ["Elite", 20000], ["Black Diamond", 30000]],
+  wholesale: [["Starter", 0], ["Pro", 5000], ["Elite", 10000], ["Black Diamond", 30000]],
   retail: [["Member", 0], ["Glow", 500], ["Premium", 1000], ["VIP", 2000]],
 };
 const tierOf = (kind, amt) => TIERS[kind].filter(t => amt >= t[1]).at(-1);
@@ -505,7 +508,7 @@ async function tierCard() {
   el.innerHTML = `<div class="eyebrow">مستواكِ هالشهر</div><h3 class="latin">${t[0]}</h3>
     <div class="bar"><i style="width:${pct}%"></i></div>
     <p>مشترياتك هالشهر: ${money(cur)}. ${nx ? `باقيلك ${money(nx[1] - cur)} لتوصلي لمستوى <b class="latin">${nx[0]}</b> الشهر الجاي.` : `وصلتِ لأعلى مستوى <b class="latin">${top[0]}</b> 👑`}</p>
-    ${kind === "wholesale" ? `<p>الخصم: Pro 3% · Elite 5% · Black Diamond 8%${+DISC.pct ? ` · <b>خصمك هالشهر ${DISC.pct}%</b>` : ""}</p>` : ""}
+    ${kind === "wholesale" ? `<p>الخصم للدفع كاش: Pro 1% · Elite 2% · Black Diamond 3%${+DISC.pct ? ` · <b>خصمك هالشهر ${DISC.pct}%</b>` : ""}</p>` : ""}
     <small>المستوى بينحسب من الطلبات اللي تم تسليمها بالشهر اللي قبله.</small>`;
 }
 

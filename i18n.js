@@ -102,6 +102,8 @@ window.I18N_ROWS = [
   ["انبعتلك إيميل تأكيد. أكّديه وبعدين ادخلي.", "We sent you a confirmation email. Confirm it, then log in.", "שלחנו לך מייל אישור. אשרי אותו ואז התחברי."],
   ["الإيميل أو كلمة السر غلط، أو الإيميل لسا مش مأكّد.", "Wrong email or password, or the email isn't confirmed yet.", "אימייל או סיסמה שגויים, או שהאימייל עדיין לא אושר."],
   ["لغة", "Language", "שפה"],
+  ["طريقة الدفع", "Payment method", "אמצעי תשלום"], ["كاش عند الاستلام", "Cash on delivery", "מזומן במסירה"], ["دين أو أقساط", "Credit or instalments", "אשראי או תשלומים"],
+  ["الخصم للدفع كاش", "Cash-payment discount", "הנחה לתשלום במזומן"],
   // categories (from the database)
   ["البرايمر", "Primer", "פריימר"], ["البشرة والبودرة", "Face & powder", "פנים ופודרה"], ["الخدود", "Cheeks", "לחיים"], ["الماسكارا", "Mascara", "מסקרה"],
   ["ظلال العيون", "Eyes", "עיניים"], ["الحواجب", "Brows", "גבות"], ["الشفاه", "Lips", "שפתיים"], ["العناية بالبشرة", "Skincare", "טיפוח העור"],

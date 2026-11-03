@@ -231,7 +231,7 @@ async function loadAll() {
 }
 
 // levels: delivered spend in the previous calendar month (same table as the store)
-const TIERS = [["Starter", 0], ["Pro", 10000], ["Elite", 20000], ["Black Diamond", 30000]];
+const TIERS = [["Starter", 0], ["Pro", 5000], ["Elite", 10000], ["Black Diamond", 30000]];
 function lastMonthSpend(uid) {
   const n = new Date(), a = new Date(n.getFullYear(), n.getMonth() - 1, 1), b = new Date(n.getFullYear(), n.getMonth(), 1);
   return O.filter(o => o.user_id === uid && o.status === "delivered" && new Date(o.created_at) >= a && new Date(o.created_at) < b).reduce((s, o) => s + (+o.subtotal || 0), 0);
@@ -259,7 +259,7 @@ function drawO() {
   $("#oRows").innerHTML = list.length ? list.map(o => `
     <tr class="${o.status === "cancelled" ? "off" : ""}"><td><b>${o.id}</b></td><td dir="ltr">${new Date(o.created_at).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })}</td>
     <td class="nm">${esc(o.name)}<small dir="ltr">${esc(o.phone || "")}</small><small>${esc(o.address || "")}</small>${o.note ? `<small>📝 ${esc(o.note)}</small>` : ""}</td>
-    <td>${o.kind === "wholesale" ? "جملة" : "مفرق"}</td>
+    <td>${o.kind === "wholesale" ? "جملة" : "مفرق"}<small class="hint" style="display:block">${o.payment === "credit" ? "دين/أقساط" : "كاش"}</small></td>
     <td class="nm" style="min-width:220px">${o.items.map(it => `<small>${esc(it.brand)} – ${esc(it.name)}${it.shade ? " · " + esc(it.shade) : ""} × ${it.qty}</small>`).join("")}</td>
     <td>${money(o.total)}<small class="hint">توصيل ${money(o.delivery)}</small>${+o.discount ? `<small class="hint">خصم ${esc(o.tier || "")} −${money(o.discount)}</small>` : ""}</td>
     <td><select data-oid="${o.id}">${Object.entries(OST).map(([k, v]) => `<option value="${k}" ${k === o.status ? "selected" : ""}>${v}</option>`).join("")}</select></td></tr>`).join("")
