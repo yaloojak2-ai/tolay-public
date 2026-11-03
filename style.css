@@ -390,3 +390,10 @@ nav.links a[aria-current]{color:var(--rose)}
 .ord .of{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .os{font-size:12px;border-radius:999px;padding:2px 10px;background:var(--ink-3)}
 .os.new{color:var(--gold)} .os.confirmed{color:var(--rose)} .os.delivered{color:#9fd3a8} .os.cancelled{color:var(--muted)}
+.tier:empty{display:none}
+.tier{margin:14px 0;padding:18px 20px;border-radius:22px;border:1px solid var(--gold);background:linear-gradient(135deg,var(--ink-2),var(--ink-3))}
+.tier h3{margin:4px 0 10px;font-size:26px;color:var(--gold)}
+.tier .bar{height:8px;border-radius:999px;background:var(--ink);overflow:hidden}
+.tier .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--rose),var(--gold))}
+.tier p{margin:10px 0 4px;font-size:14px}
+.tier small{color:var(--muted);font-size:12px}

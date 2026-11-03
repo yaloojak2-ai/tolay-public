@@ -115,7 +115,7 @@ tr.off td{opacity:.45}
 
     <div class="panel" id="t-traders" hidden>
       <div class="tbl"><table>
-        <thead><tr><th>الاسم</th><th>المحل</th><th>الهاتف</th><th>المدينة</th><th>الإيميل</th><th>الحالة</th><th></th></tr></thead>
+        <thead><tr><th>الاسم</th><th>المحل</th><th>الهاتف</th><th>المدينة</th><th>الإيميل</th><th>الحالة</th><th>المستوى (الشهر الماضي)</th><th></th></tr></thead>
         <tbody id="tRows"></tbody>
       </table></div>
     </div>
@@ -230,6 +230,12 @@ async function loadAll() {
   $("#addN").textContent = SEED.add.filter(a => !have.has((a.brand + "|" + a.name).toLowerCase())).length;
 }
 
+// levels: delivered spend in the previous calendar month (same table as the store)
+const TIERS = [["Starter", 0], ["Pro", 10000], ["Elite", 20000], ["Black Diamond", 30000]];
+function lastMonthSpend(uid) {
+  const n = new Date(), a = new Date(n.getFullYear(), n.getMonth() - 1, 1), b = new Date(n.getFullYear(), n.getMonth(), 1);
+  return O.filter(o => o.user_id === uid && o.status === "delivered" && new Date(o.created_at) >= a && new Date(o.created_at) < b).reduce((s, o) => s + (+o.subtotal || 0), 0);
+}
 // orders
 const OST = { new: "جديد", confirmed: "مؤكد", delivered: "تم التسليم", cancelled: "ملغي" };
 let O = [];
@@ -237,7 +243,7 @@ const money = n => n === null || n === undefined ? "—" : `${Number(n).toLocale
 async function loadOrders() {
   const { data, error } = await db.from("orders").select("*").order("created_at", { ascending: false }).limit(500);
   if (error) { $("#oRows").innerHTML = `<tr><td colspan="7" class="hint">ما قدرنا نحمّل الطلبات: ${esc(error.message)}</td></tr>`; return; }
-  O = data || []; drawO();
+  O = data || []; drawO(); drawT();
   const since = Date.now() - 30 * 864e5, sold = {};
   O.filter(o => ["confirmed", "delivered"].includes(o.status) && Date.parse(o.created_at) > since).forEach(o => o.items.forEach(it => { const k = `${it.brand} – ${it.name}`; sold[k] = (sold[k] || 0) + it.qty; }));
   const top = Object.entries(sold).sort((a, b) => b[1] - a[1]).slice(0, 10);
@@ -373,8 +379,9 @@ function drawT() {
   $("#tRows").innerHTML = T.length ? T.map(t => `
     <tr><td>${esc(t.full_name)}</td><td>${esc(t.shop_name)}</td><td dir="ltr">${esc(t.phone)}</td><td>${esc(t.city)}</td><td dir="ltr">${esc(t.email)}</td>
     <td><span class="pill ${t.status}">${stName[t.status]}</span></td>
+    <td>${(() => { const v = lastMonthSpend(t.id); return `${TIERS.filter(x => v >= x[1]).at(-1)[0]}<small class="hint" style="display:block">${v.toLocaleString("en-US")} ₪</small>`; })()}</td>
     <td style="white-space:nowrap">${t.status !== "approved" ? `<button class="sm ok" type="button" data-st="approved" data-uid="${t.id}">موافقة</button>` : ""} ${t.status !== "rejected" ? `<button class="sm no" type="button" data-st="rejected" data-uid="${t.id}">رفض</button>` : ""}</td></tr>`).join("")
-    : `<tr><td colspan="7" class="hint">لسا ما في طلبات تجار. التاجر بيطلب حساب من زر "حساب التجار" بالمتجر.</td></tr>`;
+    : `<tr><td colspan="8" class="hint">لسا ما في طلبات تجار. التاجر بيطلب حساب من زر "حساب التجار" بالمتجر.</td></tr>`;
 }
 
 // categories

@@ -7,7 +7,7 @@
 <meta name="description" content="Tolay Makeup: منتجات مكياج وعناية وعطور أصلية من أمريكا">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Reem+Kufi:wght@500;600&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&display=swap">
-<link rel="stylesheet" href="style.css?v=1793733170">
+<link rel="stylesheet" href="style.css?v=1793733577">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
@@ -478,6 +478,27 @@ function mountReal(el, m, first) {
 }
 function badge(s) { const b = $("#badge"); b.hidden = false; b.style.setProperty("--c", s.hex); b.querySelector("span").textContent = s.name; }
 
+// membership levels: spend of delivered orders in the previous calendar month decides this month's level
+const TIERS = {
+  wholesale: [["Starter", 0], ["Pro", 10000], ["Elite", 20000], ["Black Diamond", 30000]],
+  retail: [["Member", 0], ["Glow", 500], ["Premium", 1000], ["VIP", 2000]],
+};
+const tierOf = (kind, amt) => TIERS[kind].filter(t => amt >= t[1]).at(-1);
+const nextTier = (kind, amt) => TIERS[kind].find(t => amt < t[1]);
+async function tierCard() {
+  const el = $("#tier"); if (!el || !profile || profile.role === "admin") return;
+  const kind = isTrader() ? "wholesale" : "retail";
+  const now = new Date(), m0 = new Date(now.getFullYear(), now.getMonth(), 1), p0 = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const { data } = await db.from("orders").select("subtotal,created_at").eq("status", "delivered").gte("created_at", p0.toISOString());
+  let last = 0, cur = 0; (data || []).forEach(o => { const v = +o.subtotal || 0; new Date(o.created_at) >= m0 ? cur += v : last += v; });
+  const t = tierOf(kind, last), nx = nextTier(kind, cur), top = TIERS[kind].at(-1);
+  const pct = nx ? Math.min(100, Math.round(cur / nx[1] * 100)) : 100;
+  el.innerHTML = `<div class="eyebrow">مستواكِ هالشهر</div><h3 class="latin">${t[0]}</h3>
+    <div class="bar"><i style="width:${pct}%"></i></div>
+    <p>مشترياتك هالشهر: ${money(cur)}. ${nx ? `باقيلك ${money(nx[1] - cur)} لتوصلي لمستوى <b class="latin">${nx[0]}</b> الشهر الجاي.` : `وصلتِ لأعلى مستوى <b class="latin">${top[0]}</b> 👑`}</p>
+    <small>المستوى بينحسب من الطلبات اللي تم تسليمها بالشهر اللي قبله.</small>`;
+}
+
 const OST = { new: "جديد", confirmed: "مؤكد", delivered: "تم التسليم", cancelled: "ملغي" };
 let myOrders = [];
 async function ordersView() {
@@ -502,7 +523,8 @@ function acctView(mode) {
     const st = { active: "حسابك فعّال. طلباتك بتنحفظ هون وبتقدري تعيديها بضغطة.", pending: "طلبك قيد المراجعة. رح نفعّل حسابك بأقرب وقت ونبلّغك.", approved: "حسابك مفعّل وأسعار الجملة ظاهرة لإلك.", rejected: "للأسف ما تمت الموافقة على الحساب. تواصلي معنا عالواتساب." }[profile.status];
     const nm = profile.shop_name || profile.full_name || "حسابي";
     b.innerHTML = `<div class="pcard"><span class="av">${esc(nm.trim()[0] || "T")}</span><div><h2>${esc(nm)}</h2><p>${st}</p></div></div>
-      <div class="mlist">${base}${row("bag", "طلباتي", "كل طلباتك وإعادة الطلب", 'type=button data-orders')}${profile.role === "admin" ? row("shop", "لوحة التحكم", "إدارة المنتجات والطلبات", 'href="admin.html"', "a") : ""}${row("out", "تسجيل خروج", "", 'type=button id="logout"')}</div>`;
+      <div class="tier" id="tier"></div><div class="mlist">${base}${row("bag", "طلباتي", "كل طلباتك وإعادة الطلب", 'type=button data-orders')}${profile.role === "admin" ? row("shop", "لوحة التحكم", "إدارة المنتجات والطلبات", 'href="admin.html"', "a") : ""}${row("out", "تسجيل خروج", "", 'type=button id="logout"')}</div>`;
+    tierCard();
     return;
   }
   if (!mode) {
