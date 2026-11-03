@@ -15,6 +15,9 @@ body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .bar input,.bar select,.f input,.f select,.f textarea,td input{background:var(--ink-2);border:1px solid var(--line);color:var(--ivory);border-radius:10px;padding:8px 12px;font:inherit;font-size:14px;min-width:0}
 .tbl{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin-top:22px}
+.two h3{font-size:16px;margin:0 0 8px}
+td.nm small{display:block}
 table{border-collapse:collapse;width:100%;font-size:14px}
 th,td{padding:10px;border-bottom:1px solid var(--line);text-align:start;vertical-align:middle}
 th{color:var(--muted);font-weight:500;font-size:12px;background:var(--ink-2);position:sticky;top:0}
@@ -65,13 +68,39 @@ tr.off td{opacity:.45}
 
   <section id="app" hidden>
     <div class="tabbar">
-      <button class="chip" type="button" data-tab="products" aria-pressed="true">المنتجات والأسعار</button>
+      <button class="chip" type="button" data-tab="orders" aria-pressed="true">الطلبات <span id="newN"></span></button>
+      <button class="chip" type="button" data-tab="products">المنتجات والأسعار</button>
       <button class="chip" type="button" data-tab="traders">التجار <span id="pendN"></span></button>
       <button class="chip" type="button" data-tab="cats">الأقسام</button>
+      <button class="chip" type="button" data-tab="searches">شو بيدوّروا</button>
       <button class="chip" type="button" data-tab="settings">نصوص وإعدادات</button>
     </div>
 
-    <div class="panel" id="t-products">
+    <div class="panel" id="t-orders">
+      <div class="bar">
+        <select id="ost"><option value="">كل الطلبات</option><option value="new">جديد</option><option value="confirmed">مؤكد</option><option value="delivered">تم التسليم</option><option value="cancelled">ملغي</option></select>
+        <span class="hint" id="oSum"></span>
+      </div>
+      <p class="hint">لما تحوّل الطلب لـ"مؤكد" بتنخصم الكميات من المخزون لحالها، ولو لغيته بترجع.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>#</th><th>التاريخ</th><th>الزبون</th><th>النوع</th><th>المنتجات</th><th>المجموع</th><th>الحالة</th></tr></thead>
+        <tbody id="oRows"></tbody>
+      </table></div>
+      <div class="two">
+        <div><h3>الأكثر مبيعاً (آخر 30 يوم)</h3><ol id="topSold" class="hint"></ol></div>
+        <div><h3>تجار وقفوا عن الشراء (+30 يوم)</h3><ul id="idle" class="hint"></ul></div>
+      </div>
+    </div>
+
+    <div class="panel" id="t-searches" hidden>
+      <p class="hint">كل كلمة دوّر عليها الزبائن بآخر 30 يوم. اللي مكتوب جنبها "مش متوفر" ما طلعلها ولا نتيجة، يعني فرصة تجيبها.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>الكلمة</th><th>عدد مرات البحث</th><th>النتائج</th></tr></thead>
+        <tbody id="sRows"></tbody>
+      </table></div>
+    </div>
+
+    <div class="panel" id="t-products" hidden>
       <div class="bar">
         <input id="pq" type="search" placeholder="بحث…" style="flex:1 1 200px">
         <select id="pcat"><option value="">كل الأقسام</option></select>
@@ -123,7 +152,9 @@ tr.off td{opacity:.45}
     <label>اسم المنتج<input name="name" required></label>
     <label>القسم<select name="category_id" id="eCat"></select></label>
     <label>الحجم<input name="size"></label>
-    <div class="full"><div class="hint" style="margin-bottom:6px">الدرجات وألوانها (بتطلع بالتجربة المتحركة بصفحة المنتج)</div><div id="swList" class="swl"></div><button class="sm" type="button" id="addSw">+ درجة</button></div>
+    <div class="full"><div class="hint" style="margin-bottom:6px">الدرجات وألوانها (بتطلع بالتجربة المتحركة بصفحة المنتج)</div><div id="swList" class="swl"></div><button class="sm" type="button" id="addSw">+ درجة</button><div class="hint">خانة الكمية جنب كل درجة: اتركها فاضية إذا ما بدك تتابع مخزونها، و0 يعني نفذت.</div></div>
+    <label>الكمية المتوفرة (لمنتج بدون درجات)<input name="stock0" type="number" min="0" dir="ltr" placeholder="فاضي = ما بنتابع"></label>
+    <label>تاريخ الوصول (بيطلع "وصل حديثاً" 30 يوم)<input name="arrived_at" type="date" dir="ltr"></label>
     <label>الملمس<select name="finish"><option value="">عادي</option><option value="matte">Matte مات</option><option value="satin">Satin ستان</option><option value="gloss">Gloss لامع</option><option value="shimmer">Shimmer براق</option></select></label>
     <label>ملاحظة ألوان (اختياري)<input name="shades" placeholder="مثلاً: ألوان متعددة"></label>
     <label class="full">وصف<textarea name="description" rows="2"></textarea></label>
@@ -194,9 +225,55 @@ async function loadAll() {
   const opts = C.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
   $("#pcat").innerHTML = `<option value="">كل الأقسام</option>` + opts;
   $("#eCat").innerHTML = opts;
-  drawP(); drawT(); drawC();
+  drawP(); drawT(); drawC(); loadOrders(); loadSearches();
   const have = new Set(P.map(p => (p.brand + "|" + p.name).toLowerCase()));
   $("#addN").textContent = SEED.add.filter(a => !have.has((a.brand + "|" + a.name).toLowerCase())).length;
+}
+
+// orders
+const OST = { new: "جديد", confirmed: "مؤكد", delivered: "تم التسليم", cancelled: "ملغي" };
+let O = [];
+const money = n => n === null || n === undefined ? "—" : `${Number(n).toLocaleString("en-US")} ₪`;
+async function loadOrders() {
+  const { data, error } = await db.from("orders").select("*").order("created_at", { ascending: false }).limit(500);
+  if (error) { $("#oRows").innerHTML = `<tr><td colspan="7" class="hint">ما قدرنا نحمّل الطلبات: ${esc(error.message)}</td></tr>`; return; }
+  O = data || []; drawO();
+  const since = Date.now() - 30 * 864e5, sold = {};
+  O.filter(o => ["confirmed", "delivered"].includes(o.status) && Date.parse(o.created_at) > since).forEach(o => o.items.forEach(it => { const k = `${it.brand} – ${it.name}`; sold[k] = (sold[k] || 0) + it.qty; }));
+  const top = Object.entries(sold).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  $("#topSold").innerHTML = top.length ? top.map(([k, n]) => `<li>${esc(k)} <b>× ${n}</b></li>`).join("") : "<li>لسا ما في طلبات مؤكدة.</li>";
+  const last = {}; O.filter(o => o.user_id && o.status !== "cancelled").forEach(o => { last[o.user_id] = Math.max(last[o.user_id] || 0, Date.parse(o.created_at)); });
+  const idle = T.filter(t => t.status === "approved" && last[t.id] && last[t.id] < since);
+  $("#idle").innerHTML = idle.length ? idle.map(t => `<li>${esc(t.shop_name || t.full_name)} · <span dir="ltr">${esc(t.phone || "")}</span> · آخر طلب ${new Date(last[t.id]).toLocaleDateString("en-GB")}</li>`).join("") : "<li>ما في حدا.</li>";
+}
+function drawO() {
+  const f = $("#ost").value, list = O.filter(o => !f || o.status === f), nNew = O.filter(o => o.status === "new").length;
+  $("#newN").textContent = nNew ? `(${nNew})` : "";
+  $("#oSum").textContent = `${list.length} طلب`;
+  $("#oRows").innerHTML = list.length ? list.map(o => `
+    <tr class="${o.status === "cancelled" ? "off" : ""}"><td><b>${o.id}</b></td><td dir="ltr">${new Date(o.created_at).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })}</td>
+    <td class="nm">${esc(o.name)}<small dir="ltr">${esc(o.phone || "")}</small><small>${esc(o.address || "")}</small>${o.note ? `<small>📝 ${esc(o.note)}</small>` : ""}</td>
+    <td>${o.kind === "wholesale" ? "جملة" : "مفرق"}</td>
+    <td class="nm" style="min-width:220px">${o.items.map(it => `<small>${esc(it.brand)} – ${esc(it.name)}${it.shade ? " · " + esc(it.shade) : ""} × ${it.qty}</small>`).join("")}</td>
+    <td>${money(o.total)}<small class="hint">توصيل ${money(o.delivery)}</small></td>
+    <td><select data-oid="${o.id}">${Object.entries(OST).map(([k, v]) => `<option value="${k}" ${k === o.status ? "selected" : ""}>${v}</option>`).join("")}</select></td></tr>`).join("")
+    : `<tr><td colspan="7" class="hint">لسا ما في طلبات.</td></tr>`;
+}
+$("#ost").addEventListener("change", drawO);
+$("#oRows").addEventListener("change", async e => {
+  const id = +e.target.dataset.oid; if (!id) return;
+  const { error } = await db.from("orders").update({ status: e.target.value }).eq("id", id);
+  if (fail(error)) return;
+  toast("انحفظ ✓"); loadOrders(); loadAll();
+});
+
+// what customers search for
+async function loadSearches() {
+  const { data, error } = await db.from("search_log").select("term,results").gte("created_at", new Date(Date.now() - 30 * 864e5).toISOString()).limit(5000);
+  if (error) { $("#sRows").innerHTML = `<tr><td colspan="3" class="hint">${esc(error.message)}</td></tr>`; return; }
+  const g = {}; (data || []).forEach(r => { const x = g[r.term] ||= { n: 0, r: 0 }; x.n++; x.r = Math.max(x.r, r.results); });
+  const rows = Object.entries(g).sort((a, b) => (a[1].r === 0) - (b[1].r === 0) ? (b[1].r === 0) - (a[1].r === 0) : b[1].n - a[1].n).slice(0, 100);
+  $("#sRows").innerHTML = rows.length ? rows.map(([t, x]) => `<tr><td>${esc(t)}</td><td>${x.n}</td><td>${x.r ? x.r : `<span class="pill rejected">مش متوفر</span>`}</td></tr>`).join("") : `<tr><td colspan="3" class="hint">لسا ما حدا دوّر على إشي.</td></tr>`;
 }
 
 // products
@@ -240,7 +317,9 @@ function openEdit(id) {
   const p = editing || { brand: "", name: "", category_id: C[0]?.id, size: "", shades: "", description: "", retail_price: "", sort: (P.at(-1)?.sort || 0) + 1, active: true, featured: false, image_url: "" };
   const f = $("#eForm").elements;
   ["brand", "name", "category_id", "size", "shades", "description", "sort", "finish"].forEach(k => f[k].value = p[k] ?? "");
-  $("#swList").innerHTML = ""; (p.swatches || []).forEach(s => addSwRow(s));
+  const st = p.stock || {};
+  $("#swList").innerHTML = ""; (p.swatches || []).forEach(s => addSwRow({ ...s, qty: st[s.name] }));
+  f.stock0.value = st[""] ?? ""; f.arrived_at.value = p.arrived_at ? p.arrived_at.slice(0, 10) : "";
   f.retail_price.value = p.retail_price ?? "";
   f.w_price.value = W[p.id]?.price ?? ""; f.w_min.value = W[p.id]?.min_qty ?? 1;
   f.active.checked = p.active; f.featured.checked = p.featured;
@@ -253,8 +332,10 @@ $("#eFile").addEventListener("change", e => { pickedFile = e.target.files[0] || 
 $("#eForm").addEventListener("submit", async e => {
   e.preventDefault();
   const f = e.target.elements, m = $("#eMsg"); m.textContent = "عم نحفظ…";
-  const swatches = [...$("#swList").children].map(d => ({ name: d.querySelector("[type=text]").value.trim(), hex: d.querySelector("[type=color]").value })).filter(s => s.name);
-  const row = { swatches, finish: f.finish.value, brand: f.brand.value.trim(), name: f.name.value.trim(), category_id: +f.category_id.value || null, size: f.size.value.trim(), shades: f.shades.value.trim(), description: f.description.value.trim(), retail_price: num(f.retail_price.value), sort: +f.sort.value || 0, active: f.active.checked, featured: f.featured.checked };
+  const rows = [...$("#swList").children].map(d => ({ name: d.querySelector("[type=text]").value.trim(), hex: d.querySelector("[type=color]").value, qty: d.querySelector("[type=number]").value })).filter(s => s.name);
+  const swatches = rows.map(({ name, hex }) => ({ name, hex }));
+  const stock = {}; rows.forEach(r => { if (r.qty !== "") stock[r.name] = Math.max(0, +r.qty); }); if (f.stock0.value !== "") stock[""] = Math.max(0, +f.stock0.value);
+  const row = { swatches, stock, arrived_at: f.arrived_at.value || null, finish: f.finish.value, brand: f.brand.value.trim(), name: f.name.value.trim(), category_id: +f.category_id.value || null, size: f.size.value.trim(), shades: f.shades.value.trim(), description: f.description.value.trim(), retail_price: num(f.retail_price.value), sort: +f.sort.value || 0, active: f.active.checked, featured: f.featured.checked };
   if (pickedFile) {
     const path = `${Date.now()}-${pickedFile.name.replace(/[^\w.]+/g, "_")}`;
     const up = await db.storage.from("products").upload(path, pickedFile, { contentType: pickedFile.type });
@@ -278,7 +359,7 @@ $("#eDel").addEventListener("click", async () => {
 $("#newP").addEventListener("click", () => openEdit(null));
 function addSwRow(s = { name: "", hex: "#c25a5a" }) {
   const d = document.createElement("div");
-  d.innerHTML = `<input type="color" value="${esc(s.hex || "#c25a5a")}" aria-label="لون الدرجة"><input type="text" value="${esc(s.name)}" placeholder="اسم الدرجة" aria-label="اسم الدرجة"><button class="sm no" type="button" aria-label="حذف الدرجة">✕</button>`;
+  d.innerHTML = `<input type="color" value="${esc(s.hex || "#c25a5a")}" aria-label="لون الدرجة"><input type="text" value="${esc(s.name)}" placeholder="اسم الدرجة" aria-label="اسم الدرجة"><input type="number" min="0" value="${s.qty ?? ""}" placeholder="كمية" aria-label="الكمية" style="width:80px" dir="ltr"><button class="sm no" type="button" aria-label="حذف الدرجة">✕</button>`;
   d.querySelector("button").onclick = () => d.remove();
   $("#swList").append(d);
 }
@@ -354,7 +435,7 @@ document.addEventListener("click", async e => {
   const d = t.dataset;
   if (d.tab) {
     document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-pressed", b === t));
-    ["products", "traders", "cats", "settings"].forEach(k => $("#t-" + k).hidden = k !== d.tab);
+    ["orders", "products", "traders", "cats", "searches", "settings"].forEach(k => $("#t-" + k).hidden = k !== d.tab);
   }
   else if (d.edit) openEdit(+d.edit);
   else if (d.close !== undefined) t.closest("dialog").close();
