@@ -7,9 +7,9 @@
 <meta name="description" content="Tolay Makeup: منتجات مكياج وعناية وعطور أصلية من أمريكا">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Reem+Kufi:wght@500;600&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&display=swap">
-<link rel="stylesheet" href="style.css?v=1793734543">
+<link rel="stylesheet" href="style.css?v=1793735069">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<script src="i18n.js?v=1793734728"></script>
+<script src="i18n.js?v=1793735069"></script>
 </head>
 <body>
 <div class="wholesale-bar" id="wBar" hidden>وضع التاجر: أسعار الجملة ظاهرة لإلك</div>
@@ -33,6 +33,7 @@
     <div class="hrow" id="newRow"></div>
   </section>
   <div id="brandRows"></div>
+  <div class="wrap"><a class="qbanner arc" href="#/arcade"><span><b>Beauty Arcade 🎡</b><small>لفّي العجلة كل يوم، اكشطي كرتك، جاوبي سؤال اليوم واجمعي Tolay Coins</small></span><span class="go">العبي ‹</span></a></div>
   <div class="wrap"><button class="qbanner" type="button" data-quiz><span><b>اكتشفي درجتك ✨</b><small>3 أسئلة وبنختارلك الفاونديشن وأحمر الشفاه المناسبين</small></span><span class="go">ابدئي ‹</span></button></div>
   <section class="spot" id="perfume"><div class="wrap">
     <div class="sec-head"><div><div class="eyebrow latin">The Scent Edit</div><h2>العطور</h2></div><a class="btn ghost" href="#/shop/%D8%A7%D9%84%D8%B9%D8%B7%D9%88%D8%B1">كل العطور</a></div>
@@ -85,6 +86,7 @@
   <div class="note">إذا ما فتح واتساب، ابعتي لنا على <span class="num" id="waNum2"></span></div>
 </div></section>
 
+<section class="page" id="pg-arcade" hidden><div class="wrap arcpg" id="arcBody"></div></section>
 <section class="page" id="pg-account" hidden><div class="wrap acctpg" id="acctBody"></div></section>
 </main>
 
@@ -113,7 +115,7 @@
 <script src="config.js"></script>
 <script src="viz.js?v=1793632833"></script>
 <script src="desc.js?v=1793663490"></script>
-<script src="desc-i18n.js?v=1793734728"></script>
+<script src="desc-i18n.js?v=1793735069"></script>
 <script src="seed.js?v=1793632833"></script>
 <script>
 const $ = s => document.querySelector(s);
@@ -292,18 +294,19 @@ function wishView() {
   $("#wgrid").innerHTML = l.length ? l.map(cardHTML).join("") : `<div class="empty"><p>لسا ما ضفتي ولا منتج للمفضلة.</p><a class="btn" href="#/shop">تصفّحي المنتجات</a></div>`;
 }
 
-const TABS = { home: "home", brands: "brands", cats: "cats", shop: "cats", cart: "cart", account: "account", wish: "account" };
+const TABS = { home: "home", brands: "brands", cats: "cats", shop: "cats", cart: "cart", account: "account", wish: "account", arcade: "home" };
 function route() {
   const [, pg = "", arg = ""] = location.hash.split("/"), a = decodeURIComponent(arg);
-  const page = { "": "home", brands: "brands", cats: "cats", shop: "shop", brand: "shop", wishlist: "wish", cart: "cart", account: "account" }[pg] || "home";
+  const page = { "": "home", brands: "brands", cats: "cats", shop: "shop", brand: "shop", wishlist: "wish", cart: "cart", account: "account", arcade: "arcade" }[pg] || "home";
   cat = pg === "shop" ? a : ""; brand = pg === "brand" ? a : "";
-  ["home", "brands", "cats", "shop", "wish", "cart", "account"].forEach(p => $("#pg-" + p).hidden = p !== page);
+  ["home", "brands", "cats", "shop", "wish", "cart", "account", "arcade"].forEach(p => $("#pg-" + p).hidden = p !== page);
   document.querySelectorAll("[data-tab]").forEach(t => t.toggleAttribute("aria-current", t.dataset.tab === TABS[page]));
   if (page === "shop") render();
   else if (page === "brands") brandsView();
   else if (page === "cats") catsView(a);
   else if (page === "wish") wishView();
   else if (page === "account") acctView();
+  else if (page === "arcade") arcadeView();
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", route);
@@ -490,6 +493,63 @@ function mountReal(el, m, first) {
 function badge(s) { const b = $("#badge"); b.hidden = false; b.style.setProperty("--c", s.hex); b.querySelector("span").textContent = s.name; }
 
 
+// referral link: ?ref=CODE is kept until the visitor signs up
+try { const r = new URLSearchParams(location.search).get("ref"); if (r) localStorage.setItem("tolay-ref", r.slice(0, 12)); } catch {}
+
+// Beauty Arcade: every coin is awarded by the database, the page only shows and asks
+const WHEEL = [5, 10, 5, 20, 10, 50, 5, 15];
+const WHY = { order: "طلب", spin: "عجلة الحظ", quiz: "سؤال اليوم", scratch: "كرت كشط", referral: "إحالة صديقة", redeem: "استبدال جائزة", refund: "استرجاع نقاط" };
+async function arcadeView() {
+  const b = $("#arcBody");
+  if (!profile) {
+    b.innerHTML = `<div class="eyebrow latin">Beauty Arcade</div><h2>العبي واجمعي Tolay Coins</h2>
+      <p class="meta">عجلة حظ يومية، كرت كشط بعد كل طلب، سؤال يومي، وجوائز بتستبدليها بنقاطك. سجّلي دخول لتبلّشي.</p>
+      <a class="btn" href="#/account">تسجيل دخول</a>`;
+    return;
+  }
+  b.innerHTML = `<div class="empty">لحظة…</div>`;
+  const today = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jerusalem" })).toLocaleDateString("en-CA");
+  const [bal, led, cards, quiz, rw, red] = await Promise.all([
+    db.rpc("my_coins"), db.from("coins").select("*").order("created_at", { ascending: false }).limit(30),
+    db.from("scratch_cards").select("id,revealed,prize,created_at").order("created_at", { ascending: false }).limit(20),
+    db.rpc("quiz_today"), db.from("rewards").select("*").eq("active", true).order("sort"),
+    db.from("redemptions").select("*").order("created_at", { ascending: false }).limit(20)]);
+  if (bal.error) { b.innerHTML = `<div class="empty">الألعاب لسا مش جاهزة، جرّبي بعد شوي.</div>`; return; }
+  const coins = bal.data || 0, L = led.data || [], spun = L.some(c => c.reason === "spin" && c.ref === today), q = quiz.data?.[0];
+  const link = `${location.origin}${location.pathname}?ref=${profile.ref_code || ""}`;
+  const fresh = (cards.data || []).filter(c => !c.revealed);
+  b.innerHTML = `
+    <div class="wallet"><div><div class="eyebrow latin">Tolay Coins</div><b id="bal">${coins}</b></div><span class="coin">🪙</span></div>
+    <div class="arcgrid">
+      <div class="game"><h3>عجلة الحظ اليومية</h3>
+        <div class="wheelbox"><div class="wheel" id="wheel">${WHEEL.map((v, i) => `<span style="--i:${i}">${v}</span>`).join("")}</div><i class="pin"></i></div>
+        <button class="btn" type="button" id="spinBtn" ${spun ? "disabled" : ""}>${spun ? "رجعي بكرا للفّة الجاية" : "لفّي العجلة"}</button></div>
+      <div class="game"><h3>كروت الكشط</h3>
+        ${fresh.length ? fresh.map(c => `<button class="scard" type="button" data-scratch="${c.id}"><span>اكشطي هون ✨</span></button>`).join("") : `<p class="meta">بتاخدي كرت كشط مع كل طلب بيتم تسليمه.</p>`}</div>
+      <div class="game"><h3>سؤال اليوم</h3>
+        ${q ? `<p class="meta">لأي ماركة هالمنتج؟</p><img class="qimg" src="${esc(q.image_url)}" alt="">
+        ${q.answered ? `<p class="meta">جاوبتِ اليوم. رجعي بكرا لسؤال جديد.</p>` : `<div class="qopts">${(q.options || []).map(o => `<button class="btn ghost" type="button" data-qans="${esc(o)}">${esc(o)}</button>`).join("")}</div>`}` : ""}</div>
+    </div>
+    <h3 class="arch">بدّلي نقاطك</h3>
+    <div class="rewards">${(rw.data || []).map(r => `<div class="rw"><b>${esc(r.title)}</b><span>${r.cost} 🪙</span><button class="btn ${coins >= r.cost ? "" : "ghost"}" type="button" data-redeem="${r.id}" ${coins >= r.cost ? "" : "disabled"}>${coins >= r.cost ? "استبدلي" : `باقيلك ${r.cost - coins}`}</button></div>`).join("")}</div>
+    ${(red.data || []).length ? `<div class="meta" style="margin-top:10px">${red.data.map(r => `<div>${esc(r.title)} · ${{ pending: "قيد التجهيز", done: "تم ✓", cancelled: "ملغي" }[r.status]}</div>`).join("")}</div>` : ""}
+    <h3 class="arch">جيبي صاحبتك</h3>
+    <p class="meta">لما صاحبتك تسجّل من رابطك ويتسلّم أول طلب إلها، بتاخدي نقاط هدية.</p>
+    <div class="reflink"><input readonly value="${esc(link)}" dir="ltr" aria-label="رابط الإحالة"><button class="btn" type="button" data-copyref>انسخي الرابط</button></div>
+    <h3 class="arch">كيف بتجمعي نقاط؟</h3>
+    <ul class="meta howto"><li>كل طلب بيتسلّم: نقطة عن كل 10 ₪</li><li>عجلة الحظ: مرة كل يوم</li><li>سؤال اليوم: 15 نقطة للجواب الصح</li><li>كرت كشط مع كل طلب</li><li>إحالة صديقة: 200 نقطة</li></ul>
+    <h3 class="arch">آخر الحركات</h3>
+    <div class="ledger">${L.length ? L.map(c => `<div><span>${WHY[c.reason] || esc(c.reason)}</span><b class="${c.amount < 0 ? "neg" : ""}">${c.amount > 0 ? "+" : ""}${c.amount}</b></div>`).join("") : `<p class="meta">لسا ما في حركات.</p>`}</div>`;
+}
+async function doSpin() {
+  const btn = $("#spinBtn"); btn.disabled = true;
+  const { data, error } = await db.rpc("spin");
+  if (error) { toast("لفّيتِ اليوم، رجعي بكرا"); return; }
+  const { slot, prize } = data[0], w = $("#wheel");
+  w.style.transform = `rotate(${360 * 5 - slot * 45 - 22.5}deg)`;
+  setTimeout(() => { toast(`ربحتِ ${prize} نقطة 🎉`); arcadeView(); }, 4200);
+}
+
 // membership levels: spend of delivered orders in the previous calendar month decides this month's level
 const TIERS = {
   wholesale: [["Starter", 0], ["Pro", 5000], ["Elite", 10000], ["Black Diamond", 30000]],
@@ -536,7 +596,7 @@ function acctView(mode) {
     const st = { active: "حسابك فعّال. طلباتك بتنحفظ هون وبتقدري تعيديها بضغطة.", pending: "طلبك قيد المراجعة. رح نفعّل حسابك بأقرب وقت ونبلّغك.", approved: "حسابك مفعّل وأسعار الجملة ظاهرة لإلك.", rejected: "للأسف ما تمت الموافقة على الحساب. تواصلي معنا عالواتساب." }[profile.status];
     const nm = profile.shop_name || profile.full_name || "حسابي";
     b.innerHTML = `<div class="pcard"><span class="av">${esc(nm.trim()[0] || "T")}</span><div><h2>${esc(nm)}</h2><p>${st}</p></div></div>
-      <div class="tier" id="tier"></div><div class="mlist">${base}${row("bag", "طلباتي", "كل طلباتك وإعادة الطلب", 'type=button data-orders')}${profile.role === "admin" ? row("shop", "لوحة التحكم", "إدارة المنتجات والطلبات", 'href="admin.html"', "a") : ""}${row("out", "تسجيل خروج", "", 'type=button id="logout"')}</div>`;
+      <div class="tier" id="tier"></div><div class="mlist">${base}${row("spark", "Beauty Arcade", "نقاطك وألعابك وجوائزك", 'href="#/arcade"', "a")}${row("bag", "طلباتي", "كل طلباتك وإعادة الطلب", 'type=button data-orders')}${profile.role === "admin" ? row("shop", "لوحة التحكم", "إدارة المنتجات والطلبات", 'href="admin.html"', "a") : ""}${row("out", "تسجيل خروج", "", 'type=button id="logout"')}</div>`;
     tierCard();
     return;
   }
@@ -567,7 +627,7 @@ function acctView(mode) {
     const m = $("#aMsg"); m.textContent = "لحظة…";
     const email = $("#aEmail").value.trim(), password = $("#aPass").value;
     if (signup) {
-      const { data, error } = await db.auth.signUp({ email, password, options: { emailRedirectTo: location.href.split("#")[0], data: { account: cust ? "customer" : "merchant", full_name: $("#aName").value, shop_name: cust ? "" : $("#aShop").value, phone: $("#aPhone").value, city: $("#aCity").value } } });
+      const { data, error } = await db.auth.signUp({ email, password, options: { emailRedirectTo: location.href.split("#")[0], data: { ref: (() => { try { return localStorage.getItem("tolay-ref") || ""; } catch { return ""; } })(), account: cust ? "customer" : "merchant", full_name: $("#aName").value, shop_name: cust ? "" : $("#aShop").value, phone: $("#aPhone").value, city: $("#aCity").value } } });
       if (error) { m.textContent = error.message; return; }
       if (!data.session) { m.textContent = cust ? "انبعتلك إيميل تأكيد. أكّديه وبعدين ادخلي." : "انبعتلك إيميل تأكيد. أكّديه وبعدين ادخلي، وطلبك رح يتراجع ويتفعّل."; return; }
     } else {
@@ -587,6 +647,11 @@ document.addEventListener("click", async e => {
   else if (d.cbrand !== undefined) { cbrand = d.cbrand; catsView(ccur); }
   else if (d.open) openProduct(+d.open);
   else if (d.orders !== undefined) ordersView();
+  else if (t.id === "spinBtn") doSpin();
+  else if (d.scratch) { t.disabled = true; const { data, error } = await db.rpc("scratch", { p_card: +d.scratch }); if (error) { toast("ما زبط، جرّبي كمان مرة"); t.disabled = false; return; } t.classList.add("open"); t.innerHTML = `<b>+${data} 🪙</b>`; setTimeout(arcadeView, 1600); }
+  else if (d.qans !== undefined) { const { data, error } = await db.rpc("quiz_answer", { p_brand: d.qans }); if (error) { toast("جاوبتِ اليوم"); return; } const r = data[0]; toast(r.correct ? `صح! +${r.prize} نقطة 🎉` : `الجواب الصح: ${r.brand}`); arcadeView(); }
+  else if (d.redeem) { t.disabled = true; const { error } = await db.rpc("redeem", { p_reward: +d.redeem }); if (error) { toast("ما في نقاط كفاية"); t.disabled = false; return; } toast("انحجزت جائزتك ✓ بتوصلك مع الطلب الجاي"); arcadeView(); }
+  else if (d.copyref !== undefined) { const v = t.previousElementSibling.value; try { await navigator.clipboard.writeText(v); toast("انتسخ الرابط ✓"); } catch { t.previousElementSibling.select(); } }
   else if (d.reorder !== undefined) { let n = 0; myOrders[+d.reorder].items.forEach(it => { const p = byId[it.id]; if (p && stockOf(p, it.shade) !== 0) { addToCart(p.id, it.shade, it.qty); n++; } }); toast(n ? "رجعت المنتجات للسلة ✓" : "المنتجات مش متوفرة حالياً"); if (n) location.hash = "#/cart"; }
   else if (d.add) { const p = byId[d.add]; if (soldOut(p)) { toast("نفذ من المخزون"); return; } shadesOf(p).length ? openProduct(p.id) : addToCart(p.id, "", minQty(p)); }
   else if (d.shade !== undefined) {

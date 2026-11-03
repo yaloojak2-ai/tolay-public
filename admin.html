@@ -72,6 +72,7 @@ tr.off td{opacity:.45}
       <button class="chip" type="button" data-tab="products">المنتجات والأسعار</button>
       <button class="chip" type="button" data-tab="traders">التجار <span id="pendN"></span></button>
       <button class="chip" type="button" data-tab="cats">الأقسام</button>
+      <button class="chip" type="button" data-tab="coins">النقاط والجوائز <span id="redN"></span></button>
       <button class="chip" type="button" data-tab="searches">شو بيدوّروا</button>
       <button class="chip" type="button" data-tab="settings">نصوص وإعدادات</button>
     </div>
@@ -90,6 +91,21 @@ tr.off td{opacity:.45}
         <div><h3>الأكثر مبيعاً (آخر 30 يوم)</h3><ol id="topSold" class="hint"></ol></div>
         <div><h3>تجار وقفوا عن الشراء (+30 يوم)</h3><ul id="idle" class="hint"></ul></div>
       </div>
+    </div>
+
+    <div class="panel" id="t-coins" hidden>
+      <h3>طلبات استبدال الجوائز</h3>
+      <p class="hint">لما زبونة تستبدل نقاطها بتطلع هون. جهّز الجائزة مع طلبها الجاي وعلّمها "تم". إذا لغيتها النقاط بترجعلها لحالها.</p>
+      <div class="tbl"><table><thead><tr><th>التاريخ</th><th>الزبونة</th><th>الجائزة</th><th>النقاط</th><th>الحالة</th></tr></thead><tbody id="rdRows"></tbody></table></div>
+      <h3 style="margin-top:26px">الجوائز</h3>
+      <div class="bar"><input id="rwTitle" placeholder="اسم الجائزة (مثلاً: توصيل مجاني)" style="flex:1 1 220px"><input id="rwCost" type="number" min="1" placeholder="كم نقطة" dir="ltr" style="width:110px"><button class="btn" type="button" id="rwAdd">+ إضافة</button></div>
+      <div class="tbl"><table><thead><tr><th>الجائزة</th><th>النقاط</th><th>ظاهرة</th></tr></thead><tbody id="rwRows"></tbody></table></div>
+      <h3 style="margin-top:26px">قواعد النقاط</h3>
+      <form id="cForm" class="f" style="padding:0">
+        <label>كم نقطة عن كل شيكل بالطلب المسلَّم<input name="coin_rate" type="number" step="0.01" min="0" dir="ltr"><small class="hint">0.1 يعني نقطة عن كل 10 ₪</small></label>
+        <label>نقاط الإحالة (لما أول طلب للصديقة يتسلّم)<input name="referral_bonus" type="number" min="0" dir="ltr"></label>
+        <div class="full"><button class="btn" type="submit">حفظ</button></div>
+      </form>
     </div>
 
     <div class="panel" id="t-searches" hidden>
@@ -225,7 +241,8 @@ async function loadAll() {
   const opts = C.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
   $("#pcat").innerHTML = `<option value="">كل الأقسام</option>` + opts;
   $("#eCat").innerHTML = opts;
-  drawP(); drawT(); drawC(); loadOrders(); loadSearches();
+  drawP(); drawT(); drawC(); loadOrders(); loadSearches(); loadCoins();
+  (s.data || []).forEach(r => { const i = $("#cForm").elements[r.key]; if (i) i.value = r.value; });
   const have = new Set(P.map(p => (p.brand + "|" + p.name).toLowerCase()));
   $("#addN").textContent = SEED.add.filter(a => !have.has((a.brand + "|" + a.name).toLowerCase())).length;
 }
@@ -271,6 +288,41 @@ $("#oRows").addEventListener("change", async e => {
   const { error } = await db.from("orders").update({ status: e.target.value }).eq("id", id);
   if (fail(error)) return;
   toast("انحفظ ✓"); loadOrders(); loadAll();
+});
+
+// coins: rewards and redemptions
+let RW = [], RD = [];
+const RST = { pending: "قيد التجهيز", done: "تم", cancelled: "ملغي (رجعت النقاط)" };
+async function loadCoins() {
+  const [rw, rd, pr] = await Promise.all([db.from("rewards").select("*").order("sort"), db.from("redemptions").select("*").order("created_at", { ascending: false }).limit(200), db.from("profiles").select("id,full_name,shop_name,phone")]);
+  if (rw.error) { $("#rwRows").innerHTML = `<tr><td colspan="3" class="hint">${esc(rw.error.message)}</td></tr>`; return; }
+  RW = rw.data || []; RD = rd.data || [];
+  const who = Object.fromEntries((pr.data || []).map(p => [p.id, p]));
+  const n = RD.filter(r => r.status === "pending").length; $("#redN").textContent = n ? `(${n})` : "";
+  $("#rwRows").innerHTML = RW.map(r => `<tr class="${r.active ? "" : "off"}"><td><input value="${esc(r.title)}" data-rw="${r.id}" data-f="title" style="width:100%"></td><td><input type="number" min="1" value="${r.cost}" data-rw="${r.id}" data-f="cost" dir="ltr"></td><td><input type="checkbox" ${r.active ? "checked" : ""} data-rw="${r.id}" data-f="active" style="width:auto"></td></tr>`).join("");
+  $("#rdRows").innerHTML = RD.length ? RD.map(r => { const p = who[r.user_id] || {}; return `<tr><td dir="ltr">${new Date(r.created_at).toLocaleDateString("en-GB")}</td><td class="nm">${esc(p.shop_name || p.full_name || "")}<small dir="ltr">${esc(p.phone || "")}</small></td><td>${esc(r.title)}</td><td>${r.cost}</td>
+    <td>${r.status === "cancelled" ? RST.cancelled : `<select data-rd="${r.id}">${["pending", "done", "cancelled"].map(k => `<option value="${k}" ${k === r.status ? "selected" : ""}>${RST[k]}</option>`).join("")}</select>`}</td></tr>`; }).join("")
+    : `<tr><td colspan="5" class="hint">لسا ما حدا استبدل نقاط.</td></tr>`;
+}
+$("#rwRows").addEventListener("change", async e => {
+  const i = e.target, id = +i.dataset.rw, f = i.dataset.f; if (!id) return;
+  const v = f === "active" ? i.checked : f === "cost" ? Math.max(1, +i.value || 1) : i.value.trim();
+  if (!fail((await db.from("rewards").update({ [f]: v }).eq("id", id)).error)) { toast("انحفظ ✓"); if (f === "active") loadCoins(); }
+});
+$("#rwAdd").addEventListener("click", async () => {
+  const title = $("#rwTitle").value.trim(), cost = +$("#rwCost").value;
+  if (!title || !(cost > 0)) { toast("اكتب اسم الجائزة وعدد النقاط"); return; }
+  if (!fail((await db.from("rewards").insert({ title, cost, sort: RW.length + 1 })).error)) { $("#rwTitle").value = ""; $("#rwCost").value = ""; loadCoins(); }
+});
+$("#rdRows").addEventListener("change", async e => {
+  const id = +e.target.dataset.rd; if (!id) return;
+  if (e.target.value === "cancelled" && !confirm("إلغاء الطلب بيرجّع النقاط للزبونة. متأكد؟")) { e.target.value = RD.find(r => r.id === id).status; return; }
+  if (!fail((await db.from("redemptions").update({ status: e.target.value }).eq("id", id)).error)) { toast("انحفظ ✓"); loadCoins(); }
+});
+$("#cForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const rows = [...e.target.elements].filter(i => i.name).map(i => ({ key: i.name, value: i.value.trim() }));
+  if (!fail((await db.from("settings").upsert(rows)).error)) toast("انحفظ ✓");
 });
 
 // what customers search for
@@ -442,7 +494,7 @@ document.addEventListener("click", async e => {
   const d = t.dataset;
   if (d.tab) {
     document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-pressed", b === t));
-    ["orders", "products", "traders", "cats", "searches", "settings"].forEach(k => $("#t-" + k).hidden = k !== d.tab);
+    ["orders", "products", "traders", "cats", "coins", "searches", "settings"].forEach(k => $("#t-" + k).hidden = k !== d.tab);
   }
   else if (d.edit) openEdit(+d.edit);
   else if (d.close !== undefined) t.closest("dialog").close();
