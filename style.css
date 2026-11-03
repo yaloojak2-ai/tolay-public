@@ -464,3 +464,16 @@ html[dir=ltr] .chev{display:inline-block;transform:scaleX(-1)}
 .ticker a::after{content:"✦";margin-left:40px;color:var(--sun)}
 .hrow.sim{grid-auto-columns:150px;margin-top:10px}
 @media (prefers-reduced-motion:reduce){.ticker .track{animation:none}}
+/* phase 4: memory, hunt, surprise */
+.mem{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:100%}
+.mc{aspect-ratio:1;border:0;padding:0;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--rose));overflow:hidden;position:relative}
+.mc::after{content:"?";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-weight:700;font-size:20px}
+.mc img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .2s}
+.mc.on img{opacity:1}.mc.on::after{content:none}
+.mc.ok{outline:2px solid var(--gold)}
+.hunt{position:absolute;bottom:18px;inset-inline-end:18px;z-index:3;border:0;background:none;font-size:20px;opacity:.55;padding:6px}
+.hunt:hover{opacity:1;transform:scale(1.3)}
+.sform{align-items:flex-end;gap:12px;flex-wrap:wrap;display:flex;margin:14px 0}
+.sform label{display:flex;flex-direction:column;font-size:13px;color:var(--muted);gap:4px}
+.sform input,.sform select{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--ink-2);color:var(--ivory);font:inherit}
+footer a{color:var(--gold)}

@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Tolay Admin</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700&family=Rubik:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1793738558">
+<link rel="stylesheet" href="style.css?v=1793739853">
 <style>
 body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 .adm{padding-block:28px 80px;display:flex;flex-direction:column;gap:20px}
@@ -74,6 +74,7 @@ tr.off td{opacity:.45}
       <button class="chip" type="button" data-tab="cats">الأقسام</button>
       <button class="chip" type="button" data-tab="coins">النقاط والجوائز <span id="redN"></span></button>
       <button class="chip" type="button" data-tab="battles">معركة الماركات</button>
+      <button class="chip" type="button" data-tab="alerts">نبّهوني <span id="alN"></span></button>
       <button class="chip" type="button" data-tab="searches">شو بيدوّروا</button>
       <button class="chip" type="button" data-tab="settings">نصوص وإعدادات</button>
     </div>
@@ -101,6 +102,9 @@ tr.off td{opacity:.45}
       <h3 style="margin-top:26px">الجوائز</h3>
       <div class="bar"><input id="rwTitle" placeholder="اسم الجائزة (مثلاً: توصيل مجاني)" style="flex:1 1 220px"><input id="rwCost" type="number" min="1" placeholder="كم نقطة" dir="ltr" style="width:110px"><button class="btn" type="button" id="rwAdd">+ إضافة</button></div>
       <div class="tbl"><table><thead><tr><th>الجائزة</th><th>النقاط</th><th>ظاهرة</th></tr></thead><tbody id="rwRows"></tbody></table></div>
+      <h3 style="margin-top:26px">الأكواد السرية (للإنستغرام)</h3>
+      <div class="bar"><input id="scCode" placeholder="مثلاً GLOW25" dir="ltr" style="flex:1 1 160px;text-transform:uppercase"><input id="scRw" type="number" min="1" placeholder="كم نقطة" dir="ltr" style="width:100px"><input id="scMax" type="number" min="1" placeholder="أقصى عدد استعمال (اختياري)" dir="ltr" style="width:190px"><button class="btn" type="button" id="scAdd">+ كود</button></div>
+      <div class="tbl"><table><thead><tr><th>الكود</th><th>النقاط</th><th>استُعمل</th><th>شغّال</th></tr></thead><tbody id="scRows"></tbody></table></div>
       <h3 style="margin-top:26px">قواعد النقاط</h3>
       <form id="cForm" class="f" style="padding:0">
         <label>كم نقطة عن كل شيكل بالطلب المسلَّم<input name="coin_rate" type="number" step="0.01" min="0" dir="ltr"><small class="hint">0.1 يعني نقطة عن كل 10 ₪</small></label>
@@ -115,6 +119,11 @@ tr.off td{opacity:.45}
       <div class="bar"><select id="bA" style="flex:1 1 200px"></select><b>VS</b><select id="bB" style="flex:1 1 200px"></select>
         <label class="hint">لحد<input id="bEnd" type="datetime-local" dir="ltr"></label><label class="hint">نقاط التوقع الصح<input id="bRw" type="number" min="0" value="20" dir="ltr" style="width:80px"></label><button class="btn" type="button" id="bAdd">+ معركة</button></div>
       <div class="tbl"><table><thead><tr><th>المعركة</th><th>لحد</th><th>المتوقعين</th><th>النتيجة</th></tr></thead><tbody id="bRows"></tbody></table></div>
+    </div>
+
+    <div class="panel" id="t-alerts" hidden>
+      <p class="hint">زبائن طلبوا تنبيه لما المنتج يتوفر. لما ترجّع الكمية، راسلهم واتساب من الزر وبعدين امسح الطلب.</p>
+      <div class="tbl"><table><thead><tr><th>المنتج</th><th>الزبونة</th><th>متوفر هلأ؟</th><th></th></tr></thead><tbody id="alRows"></tbody></table></div>
     </div>
 
     <div class="panel" id="t-searches" hidden>
@@ -254,7 +263,7 @@ async function loadAll() {
   const opts = C.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
   $("#pcat").innerHTML = `<option value="">كل الأقسام</option>` + opts;
   $("#eCat").innerHTML = opts;
-  drawP(); drawT(); drawC(); loadOrders(); loadSearches(); loadCoins(); loadBattles();
+  drawP(); drawT(); drawC(); loadOrders(); loadSearches(); loadCoins(); loadBattles(); loadExtras();
   (s.data || []).forEach(r => { const i = $("#cForm").elements[r.key]; if (i) i.value = r.value; });
   const have = new Set(P.map(p => (p.brand + "|" + p.name).toLowerCase()));
   $("#addN").textContent = SEED.add.filter(a => !have.has((a.brand + "|" + a.name).toLowerCase())).length;
@@ -337,6 +346,26 @@ $("#cForm").addEventListener("submit", async e => {
   const rows = [...e.target.elements].filter(i => i.name).map(i => ({ key: i.name, value: i.value.trim() }));
   if (!fail((await db.from("settings").upsert(rows)).error)) toast("انحفظ ✓");
 });
+
+// secret codes + restock alerts
+async function loadExtras() {
+  const [sc, al, pr] = await Promise.all([db.from("secret_codes").select("*").order("created_at", { ascending: false }), db.from("restock_alerts").select("*").order("created_at", { ascending: false }), db.from("profiles").select("id,full_name,shop_name,phone")]);
+  $("#scRows").innerHTML = sc.error ? `<tr><td colspan="4" class="hint">${esc(sc.error.message)}</td></tr>` : (sc.data || []).map(c => `<tr class="${c.active ? "" : "off"}"><td dir="ltr"><b>${esc(c.code)}</b></td><td>${c.reward}</td><td>${c.uses}${c.max_uses ? " / " + c.max_uses : ""}</td><td><input type="checkbox" ${c.active ? "checked" : ""} data-sc="${esc(c.code)}" style="width:auto"></td></tr>`).join("") || `<tr><td colspan="4" class="hint">لسا ما في أكواد.</td></tr>`;
+  if (al.error) { $("#alRows").innerHTML = `<tr><td colspan="4" class="hint">${esc(al.error.message)}</td></tr>`; return; }
+  const who = Object.fromEntries((pr.data || []).map(p => [p.id, p])), A = al.data || [];
+  const avail = (p, sh) => { if (!p) return false; const st = p.stock || {}; return sh in st ? +st[sh] > 0 : !Object.keys(st).length || Object.values(st).some(n => +n > 0); };
+  $("#alN").textContent = A.length ? `(${A.length})` : "";
+  $("#alRows").innerHTML = A.length ? A.map(a => { const p = P.find(x => x.id === a.product_id), u = who[a.user_id] || {}, ok = avail(p, a.shade), ph = (u.phone || "").replace(/\D/g, "");
+    return `<tr><td class="nm">${esc(p?.brand || "")} – ${esc(p?.name || "#" + a.product_id)}${a.shade ? `<small>${esc(a.shade)}</small>` : ""}</td><td class="nm">${esc(u.shop_name || u.full_name || "")}<small dir="ltr">${esc(u.phone || "")}</small></td><td>${ok ? "✓ متوفر" : "لسا لا"}</td>
+    <td>${ph ? `<a class="sm" target="_blank" rel="noopener" href="https://wa.me/${ph}?text=${encodeURIComponent(`مرحبا ${u.full_name || ""}، ${p?.name || "المنتج"} رجع توفر عند Tolay Makeup 💗`)}">واتساب</a> ` : ""}<button class="sm no" type="button" data-alu="${a.user_id}" data-alp="${a.product_id}" data-als="${esc(a.shade)}">مسح</button></td></tr>`; }).join("")
+    : `<tr><td colspan="4" class="hint">ما في طلبات تنبيه.</td></tr>`;
+}
+$("#scAdd").addEventListener("click", async () => {
+  const code = $("#scCode").value.trim().toUpperCase(), reward = +$("#scRw").value, max = +$("#scMax").value || null;
+  if (code.length < 3 || !(reward > 0)) { toast("اكتب كود (3 أحرف وأكثر) وعدد النقاط"); return; }
+  if (!fail((await db.from("secret_codes").insert({ code, reward, max_uses: max })).error)) { ["#scCode", "#scRw", "#scMax"].forEach(k => $(k).value = ""); toast("انضاف الكود ✓"); loadExtras(); }
+});
+$("#scRows").addEventListener("change", async e => { const c = e.target.dataset.sc; if (c && !fail((await db.from("secret_codes").update({ active: e.target.checked }).eq("code", c)).error)) loadExtras(); });
 
 // beauty battle
 async function loadBattles() {
@@ -530,9 +559,10 @@ document.addEventListener("click", async e => {
   const d = t.dataset;
   if (d.tab) {
     document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-pressed", b === t));
-    ["orders", "products", "traders", "cats", "coins", "battles", "searches", "settings"].forEach(k => $("#t-" + k).hidden = k !== d.tab);
+    ["orders", "products", "traders", "cats", "coins", "battles", "alerts", "searches", "settings"].forEach(k => $("#t-" + k).hidden = k !== d.tab);
   }
   else if (d.edit) openEdit(+d.edit);
+  else if (d.alu) { if (!fail((await db.from("restock_alerts").delete().eq("user_id", d.alu).eq("product_id", +d.alp).eq("shade", d.als)).error)) loadExtras(); }
   else if (d.resolve) { t.disabled = true; const { error } = await db.rpc("resolve_battle", { p_battle: +d.resolve }); if (!fail(error)) { toast("انعلنت النتيجة ✓"); loadBattles(); } else t.disabled = false; }
   else if (d.close !== undefined) t.closest("dialog").close();
   else if (d.st) {

@@ -7,9 +7,9 @@
 <meta name="description" content="Tolay Makeup: منتجات مكياج وعناية وعطور أصلية من أمريكا">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Rubik:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1793738558">
+<link rel="stylesheet" href="style.css?v=1793739853">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<script src="i18n.js?v=1793738558"></script>
+<script src="i18n.js?v=1793739853"></script>
 </head>
 <body>
 <div class="wholesale-bar" id="wBar" hidden>وضع التاجر: أسعار الجملة ظاهرة لإلك</div>
@@ -28,12 +28,16 @@
     <div class="slider" id="slider"><div class="slides" id="slides"></div><div class="sdots" id="sdots"></div></div>
     <div class="intro"><h2 class="latin">Your Beauty Business Starts Here.</h2>
       <div class="cta"><a class="btn" href="#/club">ENTER THE CLUB</a><a class="btn ghost" href="#/account" data-wsale>EXPLORE WHOLESALE</a></div></div>
-    <div class="ticker" aria-label="روابط سريعة"><div class="track"><a href="#/new">New Arrivals</a><a href="#/club">Weekly Drops</a><a href="#/club">Exclusive Deals</a><a href="#/club">Mystery Box</a><a href="#/arcade">Beauty Games</a><a href="#/box">Build Your Box</a><a tabindex="-1" aria-hidden="true" href="#/new">New Arrivals</a><a tabindex="-1" aria-hidden="true" href="#/club">Weekly Drops</a><a tabindex="-1" aria-hidden="true" href="#/club">Exclusive Deals</a><a tabindex="-1" aria-hidden="true" href="#/club">Mystery Box</a><a tabindex="-1" aria-hidden="true" href="#/arcade">Beauty Games</a><a tabindex="-1" aria-hidden="true" href="#/box">Build Your Box</a></div></div>
+    <div class="ticker" aria-label="روابط سريعة"><div class="track"><a href="#/new">New Arrivals</a><a href="#/club">Weekly Drops</a><a href="#/club">Exclusive Deals</a><a href="#/club">Mystery Box</a><a href="#/arcade">Beauty Games</a><a href="#/box">Build Your Box</a><a href="#/surprise">Surprise Me</a><a tabindex="-1" aria-hidden="true" href="#/new">New Arrivals</a><a tabindex="-1" aria-hidden="true" href="#/club">Weekly Drops</a><a tabindex="-1" aria-hidden="true" href="#/club">Exclusive Deals</a><a tabindex="-1" aria-hidden="true" href="#/club">Mystery Box</a><a tabindex="-1" aria-hidden="true" href="#/arcade">Beauty Games</a><a tabindex="-1" aria-hidden="true" href="#/box">Build Your Box</a></div></div>
     <div class="circles" id="circles"></div>
   </div>
   <section class="rowsec wrap" id="newin" hidden>
     <div class="rowhead"><div><div class="eyebrow latin">New In</div><h2>جديدنا</h2></div><a class="more" href="#/shop">عرض الكل ‹</a></div>
     <div class="hrow" id="newRow"></div>
+  </section>
+  <section class="rowsec wrap" id="best" hidden>
+    <div class="rowhead"><div><div class="eyebrow latin">Best Sellers</div><h2>الأكثر مبيعاً</h2></div><small class="meta">من طلبات آخر 30 يوم</small></div>
+    <div class="hrow" id="bestRow"></div>
   </section>
   <div id="brandRows"></div>
   <div class="wrap"><a class="qbanner arc" href="#/arcade"><span><b>Beauty Arcade 🎡</b><small>لفّي العجلة كل يوم، اكشطي كرتك، جاوبي سؤال اليوم واجمعي Tolay Coins</small></span><span class="go">العبي ‹</span></a><a class="qbanner arc club" href="#/club"><span><b>Tolay Club 💎</b><small>دروبات محدودة، صناديق مفاجآت، معركة الماركات والقبو السري</small></span><span class="go">ادخلي ‹</span></a></div>
@@ -92,12 +96,25 @@
 <section class="page" id="pg-arcade" hidden><div class="wrap arcpg" id="arcBody"></div></section>
 <section class="page" id="pg-club" hidden><div class="wrap arcpg" id="clubBody"></div></section>
 <section class="page" id="pg-box" hidden><div class="wrap arcpg" id="boxBody"></div></section>
+<section class="page" id="pg-surprise" hidden><div class="wrap arcpg">
+  <div class="eyebrow latin">Surprise Me</div><h2>فاجئيني</h2>
+  <p class="meta">حطي ميزانيتك واختاري القسم، ومنقترحلك سلة من المنتجات المتوفرة بأسعارها الحقيقية.</p>
+  <div class="bar sform"><label>الميزانية (₪)<input id="spBudget" type="number" min="20" step="10" value="200" dir="ltr"></label><label>القسم<select id="spCat"></select></label><button class="btn" type="button" id="spGo">اقترحيلي</button></div>
+  <div id="spOut"></div>
+</div></section>
+<section class="page" id="pg-about" hidden><div class="wrap arcpg">
+  <div class="eyebrow latin">About Tolay</div><h2>مين إحنا</h2>
+  <p>Tolay Makeup متجر مكياج وعناية وعطور أصلية، كل قطعة مستوردة من أمريكا. بنبيع للزبائن بالمفرق، وللمحلات بأسعار جملة بعد اعتماد حسابهم.</p>
+  <h3 class="arch">التوصيل</h3><ul class="meta howto"><li>الضفة: 20 ₪</li><li>القدس: 30 ₪</li><li>الداخل: 70 ₪</li><li>الدفع كاش عند الاستلام</li></ul>
+  <h3 class="arch" id="contactUs">تواصلي معنا</h3><p class="meta">للطلبات والأسئلة واتساب، ومنرد بأسرع وقت.</p><a class="btn" id="waBtn" href="#" target="_blank" rel="noopener">راسلينا واتساب</a>
+</div></section>
 <section class="page" id="pg-account" hidden><div class="wrap acctpg" id="acctBody"></div></section>
 </main>
 
 <footer id="contact"><div class="wrap">
   <a class="logo" href="#/"><b>TOLAY</b><small>MAKEUP</small></a>
   <p>للطلب والاستفسار واتساب: <span class="num" id="waNum"></span></p>
+  <p><a href="#/about">من نحن</a> · <a href="#/about">تواصلي معنا</a> · <a href="#/surprise">فاجئيني</a></p>
   <p class="latin" style="color:var(--muted)">From U.S.A with love</p>
 </div></footer>
 
@@ -119,13 +136,13 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
 <script src="viz.js?v=1793632833"></script>
-<script src="desc.js?v=1793663490"></script>
-<script src="desc-i18n.js?v=1793738558"></script>
+<script src="desc.js?v=1793739853"></script>
+<script src="desc-i18n.js?v=1793739853"></script>
 <script src="seed.js?v=1793632833"></script>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-let S = {}, CATS = [], ALL = [], byId = {}, profile = null, WS = {}, DISC = { pct: 0 }, VM = false, toP;
+let S = {}, CATS = [], ALL = [], byId = {}, profile = null, WS = {}, DISC = { pct: 0 }, VM = false, toP, HID = null, BEST = [];
 const isTrader = () => profile && profile.status === "approved";
 const money = n => `${Number(n).toLocaleString("en-US")} ${S.currency || ""}`.trim();
 const has = n => n !== null && n !== undefined && n !== "";
@@ -171,6 +188,8 @@ async function load() {
   ALL = prods.filter(p => !p.vault && !(p.drop_end && Date.parse(p.drop_end) < Date.now())).map(toP);
   byId = Object.fromEntries(ALL.map(p => [p.id, p]));
   CATS = (cats || []).map(c => ({ s: c.name, p: ALL.filter(p => p.cat === c.name) })).filter(c => c.p.length);
+  const [h, bs] = await Promise.all([db.rpc("hidden_today"), db.rpc("best_sellers")]);  // null until the phase 4 SQL runs
+  HID = h.data || null; BEST = (bs.data || []).map(r => byId[r.product_id]).filter(p => p?.img);
   await loadSession();
   paint();
 }
@@ -213,7 +232,7 @@ const enc = encodeURIComponent;
 const SKIP_BRANDS = ["Tolay Select", "Tolay Mystery", "—", ""];
 const brandMap = () => { const m = new Map(); ALL.forEach(p => { if (!SKIP_BRANDS.includes(p.b)) (m.get(p.b) || m.set(p.b, []).get(p.b)).push(p); }); return m; };
 const descHTML = p => { const x = ((window.LANG !== "ar" && window["DESC_" + window.LANG]) || window.DESC || {})[p.b + "|" + p.n]; if (!p.d && !x) return ""; if (!x) return `<p class="meta" style="margin:0">${esc(p.d)}</p>`;
-  return `<div class="pdesc"><h4>${esc(x.t)}</h4><p>${esc(p.d || x.d)}</p><ul>${x.f.map(f => `<li>${esc(f)}</li>`).join("")}</ul></div>`; };
+  return `<div class="pdesc"><h4>${esc(x.t)}</h4><p>${esc(window.LANG !== "ar" ? x.d : p.d || x.d)}</p><ul>${x.f.map(f => `<li>${esc(f)}</li>`).join("")}</ul></div>`; };
 const withImg = l => l.filter(p => p.img);
 
 // wishlist (per-browser)
@@ -265,6 +284,9 @@ function paint() {
   const fresh = withImg(ALL.filter(p => p.isNew && !["الهدايا", "أدوات المكياج"].includes(p.cat))).slice(-10).reverse();
   $("#newin").hidden = fresh.length < 3;
   $("#newRow").innerHTML = fresh.map(cardHTML).join("");
+  $("#best").hidden = BEST.length < 3; $("#bestRow").innerHTML = BEST.map(cardHTML).join("");
+  $("#spCat").innerHTML = `<option value="">كل الأقسام</option>` + CATS.map(c => `<option>${esc(c.s)}</option>`).join("");
+  $("#waBtn").href = `https://wa.me/${S.whatsapp}`;
   const top = [...bm].filter(([, l]) => withImg(l).length >= 3).sort((a, b) => b[1].length - a[1].length).slice(0, 5);
   $("#brandRows").innerHTML = top.map(([b, l]) => `<section class="rowsec wrap"><div class="rowhead"><h2 class="latin">${esc(b)}</h2><a class="more" href="#/brand/${enc(b)}">عرض الكل ‹</a></div><div class="hrow">${withImg(l).slice(0, 10).map(cardHTML).join("")}</div></section>`).join("");
   const perf = CATS.find(c => c.s === "العطور");
@@ -310,12 +332,12 @@ function wishView() {
   $("#wgrid").innerHTML = l.length ? l.map(cardHTML).join("") : `<div class="empty"><p>لسا ما ضفتي ولا منتج للمفضلة.</p><a class="btn" href="#/shop">تصفّحي المنتجات</a></div>`;
 }
 
-const TABS = { home: "home", brands: "brands", cats: "cats", shop: "cats", cart: "cart", account: "account", wish: "account", arcade: "arcade", club: "club", box: "club" };
+const TABS = { home: "home", brands: "brands", cats: "cats", shop: "cats", cart: "cart", account: "account", wish: "account", arcade: "arcade", club: "club", box: "club", surprise: "club", about: "account" };
 function route() {
   const [, pg = "", arg = ""] = location.hash.split("/"), a = decodeURIComponent(arg);
-  const page = { "": "home", brands: "brands", cats: "cats", shop: "shop", new: "shop", brand: "shop", wishlist: "wish", cart: "cart", account: "account", arcade: "arcade", club: "club", box: "box" }[pg] || "home";
+  const page = { "": "home", brands: "brands", cats: "cats", shop: "shop", new: "shop", brand: "shop", wishlist: "wish", cart: "cart", account: "account", arcade: "arcade", club: "club", box: "box", surprise: "surprise", about: "about" }[pg] || "home";
   cat = pg === "shop" ? a : ""; brand = pg === "brand" ? a : ""; onlyNew = pg === "new";
-  ["home", "brands", "cats", "shop", "wish", "cart", "account", "arcade", "club", "box"].forEach(p => $("#pg-" + p).hidden = p !== page);
+  ["home", "brands", "cats", "shop", "wish", "cart", "account", "arcade", "club", "box", "surprise", "about"].forEach(p => $("#pg-" + p).hidden = p !== page);
   document.querySelectorAll("[data-tab]").forEach(t => t.toggleAttribute("aria-current", t.dataset.tab === (onlyNew ? "new" : TABS[page])));
   if (page === "shop") render();
   else if (page === "brands") brandsView();
@@ -410,7 +432,7 @@ function openProduct(id) {
     <div class="stage" id="stage">
       <div class="photo"><img src="${esc(p.img)}" alt="${esc(p.n)}"></div>
       <div class="vzwrap" id="vz"></div>
-      <div class="badge" id="badge" hidden><i></i><span></span></div>
+      <div class="badge" id="badge" hidden><i></i><span></span></div>${p.id === HID ? `<button class="hunt" type="button" data-hunt="${p.id}" aria-label="لقيتيها!">✨</button>` : ""}
       <button class="thumb" type="button" id="swap" hidden aria-label="بدّلي بين صورة المنتج والتجربة"><img src="${esc(p.img)}" alt=""></button>
     </div>
     <div class="body">
@@ -423,7 +445,7 @@ function openProduct(id) {
         : p.s ? `<div class="meta">${esc(p.s)}، اكتبي اللون اللي بدك ياه بالملاحظات.</div>` : ""}
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:auto">
         <div class="qty"><button type="button" data-pq="-1" aria-label="أقل">−</button><span id="pq">${mq}</span><button type="button" data-pq="1" aria-label="أكثر">+</button></div>
-        <button class="btn" type="button" id="pdAdd">أضيفي للسلة</button><span class="stk" id="stk"></span>
+        <button class="btn" type="button" id="pdAdd">أضيفي للسلة</button><span class="stk" id="stk"></span><button class="btn ghost" type="button" id="notify" hidden>🔔 نبّهيني لما يتوفر</button>
         <button class="btn ghost" type="button" data-share="${p.id}" aria-label="شاركي المنتج">شاركي 🔗</button>
       </div>
       ${lookHTML(p)}${similarHTML(p)}
@@ -440,6 +462,7 @@ function pdStock() {
   const p = byId[pdState.id], n = stockOf(p, pdState.shade), b = $("#pdAdd");
   document.querySelectorAll("#pdBody .sw").forEach(x => x.classList.toggle("oos", stockOf(p, x.dataset.shade) === 0));
   b.disabled = n === 0 || !canBuy(p); b.textContent = !canBuy(p) ? "الدروب بيفتح قريباً" : n === 0 ? (pdState.shade ? "هالدرجة نفذت" : "نفذ من المخزون") : "أضيفي للسلة";
+  $("#notify").hidden = !(n === 0 || !canBuy(p));
   $("#stk").textContent = n === null || n === 0 ? "" : n <= 3 ? `باقي ${n} بس` : `متوفر ${n} قطعة`;
 }
 
@@ -522,7 +545,7 @@ try { const r = new URLSearchParams(location.search).get("ref"); if (r) localSto
 
 // Beauty Arcade: every coin is awarded by the database, the page only shows and asks
 const WHEEL = [5, 10, 5, 20, 10, 50, 5, 15];
-const WHY = { order: "طلب", spin: "عجلة الحظ", quiz: "سؤال اليوم", scratch: "كرت كشط", referral: "إحالة صديقة", redeem: "استبدال جائزة", refund: "استرجاع نقاط", battle: "توقع المعركة" };
+const WHY = { order: "طلب", spin: "عجلة الحظ", quiz: "سؤال اليوم", scratch: "كرت كشط", referral: "إحالة صديقة", redeem: "استبدال جائزة", refund: "استرجاع نقاط", battle: "توقع المعركة", memory: "لعبة الذاكرة", hunt: "المنتج المخفي", code: "كود سري" };
 async function arcadeView() {
   const b = $("#arcBody");
   if (!profile) {
@@ -550,6 +573,9 @@ async function arcadeView() {
         <button class="btn" type="button" id="spinBtn" ${spun ? "disabled" : ""}>${spun ? "رجعي بكرا للفّة الجاية" : "لفّي العجلة"}</button></div>
       <div class="game"><h3>كروت الكشط</h3>
         ${fresh.length ? fresh.map(c => `<button class="scard" type="button" data-scratch="${c.id}"><span>اكشطي هون ✨</span></button>`).join("") : `<p class="meta">بتاخدي كرت كشط مع كل طلب بيتم تسليمه.</p>`}</div>
+      <div class="game"><h3>لعبة الذاكرة</h3><p class="meta">طابقي كل منتجين متشابهين. أول مرة كل يوم = 10 نقاط.</p><div class="mem" id="mem"></div><button class="btn ghost" type="button" data-memnew>لعبة جديدة</button></div>
+      <div class="game"><h3>المنتج المخفي ✨</h3><p class="meta">في نجمة ✨ صغيرة مخبّاية بصفحة منتج واحد كل يوم. دوّري بين المنتجات، ولما تلاقيها اكبسي عليها وخدي 20 نقطة.</p></div>
+      <div class="game"><h3>الكود السري</h3><p class="meta">تابعينا عالإنستغرام، وبننزل أكواد سرية بتفتحلك نقاط.</p><div class="reflink"><input id="codeIn" dir="ltr" placeholder="CODE" aria-label="الكود السري"><button class="btn" type="button" id="codeBtn">فعّلي</button></div></div>
       <div class="game"><h3>سؤال اليوم</h3>
         ${q ? `<p class="meta">لأي ماركة هالمنتج؟</p><img class="qimg" src="${esc(q.image_url)}" alt="">
         ${q.answered ? `<p class="meta">جاوبتِ اليوم. رجعي بكرا لسؤال جديد.</p>` : `<div class="qopts">${(q.options || []).map(o => `<button class="btn ghost" type="button" data-qans="${esc(o)}">${esc(o)}</button>`).join("")}</div>`}` : ""}</div>
@@ -561,10 +587,41 @@ async function arcadeView() {
     <p class="meta">لما صاحبتك تسجّل من رابطك ويتسلّم أول طلب إلها، بتاخدي نقاط هدية.</p>
     <div class="reflink"><input readonly value="${esc(link)}" dir="ltr" aria-label="رابط الإحالة"><button class="btn" type="button" data-copyref>انسخي الرابط</button></div>
     <h3 class="arch">كيف بتجمعي نقاط؟</h3>
-    <ul class="meta howto"><li>كل طلب بيتسلّم: نقطة عن كل 10 ₪</li><li>عجلة الحظ: مرة كل يوم</li><li>سؤال اليوم: 15 نقطة للجواب الصح</li><li>كرت كشط مع كل طلب</li><li>إحالة صديقة: 200 نقطة</li></ul>
+    <ul class="meta howto"><li>كل طلب بيتسلّم: نقطة عن كل 10 ₪</li><li>عجلة الحظ: مرة كل يوم</li><li>سؤال اليوم: 15 نقطة للجواب الصح</li><li>كرت كشط مع كل طلب</li><li>إحالة صديقة: 200 نقطة</li><li>لعبة الذاكرة: 10 نقاط باليوم</li><li>المنتج المخفي: 20 نقطة</li></ul>
     <h3 class="arch">آخر الحركات</h3>
     <div class="ledger">${L.length ? L.map(c => `<div><span>${WHY[c.reason] || esc(c.reason)}</span><b class="${c.amount < 0 ? "neg" : ""}">${c.amount > 0 ? "+" : ""}${c.amount}</b></div>`).join("") : `<p class="meta">لسا ما في حركات.</p>`}</div>`;
+  memStart();
 }
+// memory: 6 pairs of real product photos; the server pays once a day
+let memOpen = [], memLock = false;
+function memStart() {
+  const el = $("#mem"); if (!el) return;
+  const pics = withImg(ALL).sort(() => Math.random() - .5).slice(0, 6), deck = [...pics, ...pics].sort(() => Math.random() - .5);
+  el.innerHTML = deck.map(p => `<button type="button" class="mc" data-mem="${p.id}" aria-label="كرت"><img src="${esc(p.img)}" alt=""></button>`).join("");
+  memOpen = []; memLock = false;
+}
+function memFlip(t) {
+  if (memLock || t.classList.contains("on")) return;
+  t.classList.add("on"); memOpen.push(t);
+  if (memOpen.length < 2) return;
+  const [a, b] = memOpen; memOpen = [];
+  if (a.dataset.mem === b.dataset.mem) { a.classList.add("ok"); b.classList.add("ok");
+    if (document.querySelectorAll("#mem .mc:not(.ok)").length === 0) db.rpc("memory_done").then(({ error }) => toast(error ? "برافو! 🎉 (نقاط الذاكرة بتنحسب مرة باليوم)" : "برافو! +10 نقاط 🎉")); }
+  else { memLock = true; setTimeout(() => { a.classList.remove("on"); b.classList.remove("on"); memLock = false; }, 800); }
+}
+// surprise me: fill the budget from priced, in-stock products of the chosen section
+let SP = [];
+function surprise() {
+  const budget = +$("#spBudget").value || 0, c = $("#spCat").value;
+  const pool = ALL.filter(p => (!c || p.cat === c) && unit(p) !== null && !soldOut(p) && canBuy(p) && p.img).sort(() => Math.random() - .5);
+  SP = []; let left = budget;
+  pool.forEach(p => { const cost = unit(p) * minQty(p); if (cost <= left) { SP.push(p); left -= cost; } });
+  const total = budget - left;
+  $("#spOut").innerHTML = SP.length ? `<p class="meta">${SP.length} منتجات بمجموع ${money(total)}</p><div class="grid">${SP.map(cardHTML).join("")}</div><button class="btn" type="button" data-spadd style="margin-top:16px">ضيفيهم كلهم للسلة</button>`
+    : `<div class="empty">ما لقينا منتجات بأسعار ضمن هالميزانية. جرّبي ميزانية أعلى أو قسم تاني.</div>`;
+  favView();
+}
+
 async function doSpin() {
   const btn = $("#spinBtn"); btn.disabled = true;
   const { data, error } = await db.rpc("spin");
@@ -600,6 +657,7 @@ async function clubView() {
     ${drops.length ? `<div class="hrow">${drops.map(dropHTML).join("")}</div>` : `<p class="meta">ما في دروب هلأ. تابعينا، الدروب الجاي قريب.</p>`}
     ${boxes.length ? `<h3 class="arch latin">Mystery Box</h3><p class="meta">بتعرفي القسم والقيمة المضمونة، والمحتوى مفاجأة.</p><div class="hrow">${boxes.map(cardHTML).join("")}</div>` : ""}
     ${battles ? `<h3 class="arch latin">Beauty Battle</h3><p class="meta">مين رح يبيع أكتر هالأسبوع؟ توقعي، والنتيجة من المبيعات الحقيقية.</p>${battles}` : ""}
+    <a class="qbanner arc" href="#/surprise"><span><b>فاجئيني 🎁</b><small>حطي ميزانيتك ومنقترحلك سلة كاملة</small></span><span class="go">جرّبي ‹</span></a>
     <a class="qbanner arc" href="#/box"><span><b>كوّني صندوقك 📦</b><small>اختاري من كل قسم وشوفي العدد والمجموع مباشرة</small></span><span class="go">ابدئي ‹</span></a>
     <h3 class="arch">القبو السري 🔒</h3>
     ${VM ? (VA.length ? `<div class="grid">${VA.map(cardHTML).join("")}</div>` : `<p class="meta">إنتِ عضوة بالقبو ✓ القطع الحصرية بتنزل هون قريباً.</p>`)
@@ -725,6 +783,13 @@ document.addEventListener("click", async e => {
   else if (d.redeem) { t.disabled = true; const { error } = await db.rpc("redeem", { p_reward: +d.redeem }); if (error) { toast("ما في نقاط كفاية"); t.disabled = false; return; } toast("انحجزت جائزتك ✓ بتوصلك مع الطلب الجاي"); arcadeView(); }
   else if (d.copyref !== undefined) { const v = t.previousElementSibling.value; try { await navigator.clipboard.writeText(v); toast("انتسخ الرابط ✓"); } catch { t.previousElementSibling.select(); } }
   else if (d.reorder !== undefined) { let n = 0; myOrders[+d.reorder].items.forEach(it => { const p = byId[it.id]; if (p && stockOf(p, it.shade) !== 0) { addToCart(p.id, it.shade, it.qty); n++; } }); toast(n ? "رجعت المنتجات للسلة ✓" : "المنتجات مش متوفرة حالياً"); if (n) location.hash = "#/cart"; }
+  else if (t.id === "notify") { if (!profile) { toast("سجّلي دخول عشان نبلّغك"); return; } const { error } = await db.from("restock_alerts").insert({ user_id: profile.id, product_id: pdState.id, shade: pdState.shade }); toast(error && error.code !== "23505" ? "ما زبط، جرّبي بعد شوي" : "تمام، رح نبلّغك لما يتوفر 🔔"); t.hidden = true; }
+  else if (d.hunt) { if (!profile) { toast("لقيتيها! سجّلي دخول لتاخدي النقاط ✨"); return; } const { error } = await db.rpc("find_hidden", { p_product: +d.hunt }); toast(error ? "لقيتيها اليوم، رجعي بكرا" : "لقيتيها! +20 نقطة ✨"); t.remove(); }
+  else if (t.id === "codeBtn") { const { data, error } = await db.rpc("use_code", { p_code: $("#codeIn").value }); toast(error ? "الكود مش صحيح أو استعملتيه" : `+${data} نقطة 🎉`); if (!error) arcadeView(); }
+  else if (d.mem !== undefined) memFlip(t);
+  else if (d.memnew !== undefined) memStart();
+  else if (t.id === "spGo") surprise();
+  else if (d.spadd !== undefined) { SP.forEach(p => addToCart(p.id, "", minQty(p))); location.hash = "#/cart"; }
   else if (d.vote) { t.disabled = true; const { error } = await db.rpc("vote_battle", { p_battle: +d.vote, p_pick: +d.pick }); toast(error ? "التصويت مسكّر" : "انحفظ توقعك ✓"); clubView(); }
   else if (d.add) { const p = byId[d.add]; if (soldOut(p)) { toast("نفذ من المخزون"); return; } if (!canBuy(p)) { toast("الدروب بيفتح قريباً"); return; } shadesOf(p).length ? openProduct(p.id) : addToCart(p.id, "", minQty(p)); }
   else if (d.shade !== undefined) {

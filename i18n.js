@@ -172,6 +172,25 @@ window.I18N_ROWS = [
   ["صندوقك وصل الحد الأدنى", "Your box reached the minimum", "הקופסה הגיעה למינימום"], ["الحد الأدنى لصندوق الجملة", "Wholesale box minimum:", "מינימום לקופסה סיטונאית:"],
   ["روابط سريعة", "Quick links", "קישורים מהירים"], ["الألعاب", "Games", "משחקים"],
   ["متوفر", "In stock:", "במלאי:"], ["منتجات مشابهة", "Similar products", "מוצרים דומים"],
+  // phase 4
+  ["فاجئيني", "Surprise me", "תפתיעו אותי"], ["حطي ميزانيتك واختاري القسم، ومنقترحلك سلة من المنتجات المتوفرة بأسعارها الحقيقية.", "Set your budget and pick a category, and we'll suggest a cart of in-stock products at their real prices.", "הגדירי תקציב ובחרי קטגוריה, ונציע סל של מוצרים זמינים במחירים האמיתיים."],
+  ["الميزانية", "Budget", "תקציב"], ["القسم", "Category", "קטגוריה"], ["كل الأقسام", "All categories", "כל הקטגוריות"], ["اقترحيلي", "Suggest", "הציעו לי"],
+  ["منتجات بمجموع", "products, total", "מוצרים, סה״כ"], ["ضيفيهم كلهم للسلة", "Add them all to cart", "הוסיפי הכל לסל"],
+  ["ما لقينا منتجات بأسعار ضمن هالميزانية. جرّبي ميزانية أعلى أو قسم تاني.", "No priced products fit this budget. Try a higher budget or another category.", "לא נמצאו מוצרים בתקציב הזה. נסי תקציב גבוה יותר או קטגוריה אחרת."],
+  ["مين إحنا", "Who we are", "מי אנחנו"], ["Tolay Makeup متجر مكياج وعناية وعطور أصلية، كل قطعة مستوردة من أمريكا. بنبيع للزبائن بالمفرق، وللمحلات بأسعار جملة بعد اعتماد حسابهم.", "Tolay Makeup sells original makeup, skincare and fragrance, every piece imported from the USA. We sell retail to shoppers, and wholesale to shops once their account is approved.", "Tolay Makeup מוכרת איפור, טיפוח ובשמים מקוריים, כל פריט מיובא מארה״ב. אנחנו מוכרים לקוחות פרטיים, ולחנויות במחירי סיטונאות אחרי אישור החשבון."],
+  ["الضفة", "West Bank", "הגדה"], ["القدس", "Jerusalem", "ירושלים"], ["الداخل", "Inside (48)", "הפנים (48)"], ["الدفع كاش عند الاستلام", "Cash on delivery", "תשלום במזומן במסירה"],
+  ["تواصلي معنا", "Contact us", "צרי קשר"], ["للطلبات والأسئلة واتساب، ومنرد بأسرع وقت.", "WhatsApp us for orders and questions; we reply fast.", "לשאלות והזמנות בוואטסאפ, אנחנו עונים מהר."], ["راسلينا واتساب", "Message us on WhatsApp", "שלחי הודעה בוואטסאפ"],
+  ["من نحن", "About us", "עלינו"], ["الأكثر مبيعاً", "Best sellers", "רבי מכר"], ["من طلبات آخر 30 يوم", "From the last 30 days of orders", "לפי הזמנות 30 הימים האחרונים"],
+  ["نبّهيني لما يتوفر", "Notify me when available", "עדכנו אותי כשיחזור"], ["سجّلي دخول عشان نبلّغك", "Log in so we can notify you", "התחברי כדי שנעדכן אותך"], ["ما زبط، جرّبي بعد شوي", "That didn't work, try again shortly", "זה לא הצליח, נסי שוב"],
+  ["تمام، رح نبلّغك لما يتوفر", "Done, we'll let you know when it's back", "מעולה, נעדכן כשיחזור"], ["لقيتيها!", "You found it!", "מצאת!"], ["سجّلي دخول لتاخدي النقاط", "Log in to collect the coins", "התחברי כדי לקבל מטבעות"],
+  ["لقيتيها اليوم، رجعي بكرا", "Already found today, come back tomorrow", "כבר מצאת היום, חזרי מחר"], ["الكود مش صحيح أو استعملتيه", "Wrong code, or you already used it", "קוד שגוי או שכבר השתמשת בו"],
+  ["لعبة الذاكرة", "Memory game", "משחק זיכרון"], ["طابقي كل منتجين متشابهين. أول مرة كل يوم = 10 نقاط.", "Match the pairs. First win each day = 10 coins.", "התאימי זוגות. ניצחון ראשון כל יום = 10 מטבעות."], ["لعبة جديدة", "New game", "משחק חדש"],
+  ["المنتج المخفي", "Hidden product", "המוצר המוסתר"], ["في نجمة ✨ صغيرة مخبّاية بصفحة منتج واحد كل يوم. دوّري بين المنتجات، ولما تلاقيها اكبسي عليها وخدي 20 نقطة.", "A small ✨ hides on one product page every day. Browse the products, tap it when you find it and get 20 coins.", "✨ קטן מסתתר בכל יום בעמוד של מוצר אחד. חפשי בין המוצרים, לחצי כשתמצאי וקבלי 20 מטבעות."],
+  ["الكود السري", "Secret code", "קוד סודי"], ["تابعينا عالإنستغرام، وبننزل أكواد سرية بتفتحلك نقاط.", "Follow us on Instagram for secret codes that unlock coins.", "עקבי אחרינו באינסטגרם לקודים סודיים שפותחים מטבעות."], ["فعّلي", "Activate", "הפעילי"],
+  ["كرت", "Card", "קלף"], ["برافو!", "Bravo!", "כל הכבוד!"], ["(نقاط الذاكرة بتنحسب مرة باليوم)", "(memory coins count once a day)", "(מטבעות הזיכרון נספרים פעם ביום)"], ["كود سري", "Secret code", "קוד סודי"],
+  ["لعبة الذاكرة: 10 نقاط باليوم", "Memory game: 10 coins a day", "משחק זיכרון: 10 מטבעות ביום"], ["المنتج المخفي: 20 نقطة", "Hidden product: 20 coins", "המוצר המוסתר: 20 מטבעות"],
+  ["حطي ميزانيتك ومنقترحلك سلة كاملة", "Set a budget and we'll suggest a full cart", "הגדירי תקציב ונציע סל מלא"], ["جرّبي", "Try it", "נסי"], ["نقاط", "coins", "מטבעות"],
+  ["صناديق المفاجآت", "Mystery boxes", "קופסאות הפתעה"],
 ];
 
 (() => {
