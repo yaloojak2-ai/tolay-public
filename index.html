@@ -210,7 +210,7 @@ const IC = {
 document.querySelectorAll("[data-ic]").forEach(e => e.insertAdjacentHTML("afterbegin", IC[e.dataset.ic]));
 
 const enc = encodeURIComponent;
-const SKIP_BRANDS = ["Tolay Select", "—", ""];
+const SKIP_BRANDS = ["Tolay Select", "Tolay Mystery", "—", ""];
 const brandMap = () => { const m = new Map(); ALL.forEach(p => { if (!SKIP_BRANDS.includes(p.b)) (m.get(p.b) || m.set(p.b, []).get(p.b)).push(p); }); return m; };
 const descHTML = p => { const x = ((window.LANG !== "ar" && window["DESC_" + window.LANG]) || window.DESC || {})[p.b + "|" + p.n]; if (!p.d && !x) return ""; if (!x) return `<p class="meta" style="margin:0">${esc(p.d)}</p>`;
   return `<div class="pdesc"><h4>${esc(x.t)}</h4><p>${esc(p.d || x.d)}</p><ul>${x.f.map(f => `<li>${esc(f)}</li>`).join("")}</ul></div>`; };
@@ -577,7 +577,7 @@ async function doSpin() {
 // Tolay Club: drops, mystery boxes, beauty battle, secret vault
 async function clubView() {
   const b = $("#clubBody");
-  const drops = ALL.filter(dropState).sort((x, y) => (x.ds || 0) - (y.ds || 0)), boxes = ALL.filter(p => p.worth);
+  const drops = ALL.filter(dropState).sort((x, y) => (x.ds || 0) - (y.ds || 0)), boxes = ALL.filter(p => p.worth || p.cat === "صناديق المفاجآت");
   const [bt, vt, vp] = await Promise.all([
     db.from("battles").select("*").order("ends_at", { ascending: false }).limit(3),
     profile ? db.from("battle_votes").select("battle_id,pick") : { data: [] },
