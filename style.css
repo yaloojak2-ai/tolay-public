@@ -397,3 +397,6 @@ nav.links a[aria-current]{color:var(--rose)}
 .tier .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--rose),var(--gold))}
 .tier p{margin:10px 0 4px;font-size:14px}
 .tier small{color:var(--muted);font-size:12px}
+.lang{background:transparent;color:var(--ivory);border:1px solid var(--line);border-radius:999px;padding:4px 8px;font-size:12px;min-height:32px;cursor:pointer}
+.lang option{background:var(--ink);color:var(--ivory)}
+html[dir=ltr] .chev{display:inline-block;transform:scaleX(-1)}

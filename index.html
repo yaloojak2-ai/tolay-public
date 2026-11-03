@@ -7,8 +7,9 @@
 <meta name="description" content="Tolay Makeup: منتجات مكياج وعناية وعطور أصلية من أمريكا">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Reem+Kufi:wght@500;600&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&display=swap">
-<link rel="stylesheet" href="style.css?v=1793733577">
+<link rel="stylesheet" href="style.css?v=1793734543">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<script src="i18n.js?v=1793734543"></script>
 </head>
 <body>
 <div class="wholesale-bar" id="wBar" hidden>وضع التاجر: أسعار الجملة ظاهرة لإلك</div>
@@ -18,6 +19,7 @@
   <nav class="links"><a href="#/" data-tab="home">الرئيسية</a><a href="#/brands" data-tab="brands">الماركات</a><a href="#/cats" data-tab="cats">الأقسام</a><a href="#/account" data-tab="account">حسابي</a></nav>
   <a class="ib" href="#/wishlist" aria-label="المفضلة" data-ic="heart"><span class="n favN" hidden>0</span></a>
   <a class="ib cartib" href="#/cart" aria-label="السلة" data-ic="bag"><span class="n cartN" hidden>0</span></a>
+  <select class="lang" id="lang" aria-label="لغة"><option value="ar">ع</option><option value="en">EN</option><option value="he">עב</option></select>
 </div></header>
 
 <main id="top">
@@ -110,6 +112,7 @@
 <script src="config.js"></script>
 <script src="viz.js?v=1793632833"></script>
 <script src="desc.js?v=1793663490"></script>
+<script src="desc-i18n.js?v=1793734543"></script>
 <script src="seed.js?v=1793632833"></script>
 <script>
 const $ = s => document.querySelector(s);
@@ -190,7 +193,7 @@ document.querySelectorAll("[data-ic]").forEach(e => e.insertAdjacentHTML("afterb
 const enc = encodeURIComponent;
 const SKIP_BRANDS = ["Tolay Select", "—", ""];
 const brandMap = () => { const m = new Map(); ALL.forEach(p => { if (!SKIP_BRANDS.includes(p.b)) (m.get(p.b) || m.set(p.b, []).get(p.b)).push(p); }); return m; };
-const descHTML = p => { const x = (window.DESC || {})[p.b + "|" + p.n]; if (!p.d && !x) return ""; if (!x) return `<p class="meta" style="margin:0">${esc(p.d)}</p>`;
+const descHTML = p => { const x = ((window.LANG !== "ar" && window["DESC_" + window.LANG]) || window.DESC || {})[p.b + "|" + p.n]; if (!p.d && !x) return ""; if (!x) return `<p class="meta" style="margin:0">${esc(p.d)}</p>`;
   return `<div class="pdesc"><h4>${esc(x.t)}</h4><p>${esc(p.d || x.d)}</p><ul>${x.f.map(f => `<li>${esc(f)}</li>`).join("")}</ul></div>`; };
 const withImg = l => l.filter(p => p.img);
 
@@ -303,6 +306,8 @@ function route() {
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", route);
+$("#lang").value = window.LANG || "ar";
+$("#lang").addEventListener("change", e => setLang(e.target.value));
 let qLogT;
 const logSearch = () => { const t = q.trim().toLowerCase(); if (t.length < 2) return;
   const n = ALL.filter(p => `${p.b} ${p.n} ${p.cat}`.toLowerCase().includes(t)).length;
