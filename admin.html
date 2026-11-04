@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Tolay Admin</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700&family=Rubik:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1793797600">
+<link rel="stylesheet" href="style.css?v=1793805826">
 <style>
 body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 .adm{padding-block:28px 80px;display:flex;flex-direction:column;gap:20px}
@@ -151,8 +151,8 @@ tr.off td{opacity:.45}
     <div class="panel" id="t-stock" hidden>
       <div class="kpis" id="kpis"></div>
       <div class="bar"><input id="sq" type="search" placeholder="بحث…" style="flex:1 1 200px"><label class="hint"><input type="checkbox" id="sOnly" style="width:auto"> بس اللي إلها كمية</label></div>
-      <p class="hint">اكتب الكمية لكل درجة وبتنحفظ لحالها لما تطلع من الخانة. فاضي = ما بنتابع مخزونها. القيمة بتنحسب من الكميات المعبّاية بس.</p>
-      <div class="tbl"><table><thead><tr><th>المنتج</th><th>الدرجة</th><th>الكمية</th><th>سعرها عليّ</th><th>قيمتها عليّ</th><th>قيمتها مفرق</th><th>قيمتها جملة</th></tr></thead><tbody id="stRows"></tbody></table></div>
+      <p class="hint">اكتب الكمية وسعرها عليك هون مباشرة، وبتنحفظ لحالها لما تطلع من الخانة (بتصير خضرا). أسعار المفرق والجملة (بعد الخصم) بتيجي من صفحة المنتجات. القيمة بتنحسب من الكميات المعبّاية بس.</p>
+      <div class="tbl"><table><thead><tr><th>المنتج</th><th>الدرجة</th><th>الكمية</th><th>سعرها عليّ</th><th>سعر المفرق</th><th>سعر الجملة</th><th>قيمتها عليّ</th><th>قيمتها مفرق</th><th>قيمتها جملة</th></tr></thead><tbody id="stRows"></tbody></table></div>
     </div>
 
     <div class="panel" id="t-traders" hidden>
@@ -317,7 +317,7 @@ function drawO() {
     <td>${o.kind === "wholesale" ? "جملة" : "مفرق"}<small class="hint" style="display:block">${o.payment === "credit" ? "دين/أقساط" : "كاش"}</small></td>
     <td class="nm" style="min-width:220px">${o.items.map(it => `<small>${esc(it.brand)} – ${esc(it.name)}${it.shade ? " · " + esc(it.shade) : ""} × ${it.qty}</small>`).join("")}</td>
     <td>${money(o.total)}<small class="hint">توصيل ${money(o.delivery)}</small>${+o.discount ? `<small class="hint">خصم ${esc(o.tier || "")} −${money(o.discount)}</small>` : ""}</td>
-    <td><select data-oid="${o.id}">${Object.entries(OST).map(([k, v]) => `<option value="${k}" ${k === o.status ? "selected" : ""}>${v}</option>`).join("")}</select></td></tr>`).join("")
+    <td><select data-oid="${o.id}">${Object.entries(OST).map(([k, v]) => `<option value="${k}" ${k === o.status ? "selected" : ""}>${v}</option>`).join("")}</select><a class="sm" href="invoice.html?id=${o.id}" target="_blank" rel="noopener" style="display:block;margin-top:6px">🧾 فاتورة</a></td></tr>`).join("")
     : `<tr><td colspan="7" class="hint">لسا ما في طلبات.</td></tr>`;
 }
 $("#ost").addEventListener("change", drawO);
@@ -380,15 +380,20 @@ function drawStock() {
   $("#kpis").innerHTML = `<div><b>${units}</b><small>قطعة بالمخزون</small></div><div><b>${m(vCost)}</b><small>قيمتها عليّ${noCost ? ` (${noCost} قطعة بدون تكلفة)` : ""}</small></div><div><b>${m(vRet)}</b><small>قيمتها بسعر المفرق</small></div><div><b>${m(vWh)}</b><small>قيمتها بسعر الجملة</small></div><div><b>${m(vProfit)}</b><small>ربح متوقع بالمفرق (للي إله تكلفة وسعر)</small></div>`;
   $("#stRows").innerHTML = rows.slice(0, 600).map(({ p, k, n, cost, ret, wh }) => `<tr><td class="nm">${esc(p.name)}<small>${esc(p.brand)}</small></td><td>${esc(k) || "—"}</td>
     <td><input type="number" min="0" dir="ltr" value="${n ?? ""}" data-sid="${p.id}" data-sk="${esc(k)}" style="width:80px" aria-label="الكمية"></td>
-    <td>${cost != null ? money(cost) : "—"}</td><td>${n && cost != null ? m(n * cost) : "—"}</td><td>${n && ret != null ? m(n * ret) : "—"}</td><td>${n && wh != null ? m(n * wh) : "—"}</td></tr>`).join("") || `<tr><td colspan="7" class="hint">ما في نتائج.</td></tr>`;
+    <td><input type="number" step="0.01" min="0" dir="ltr" value="${cost ?? ""}" data-cid="${p.id}" style="width:80px" aria-label="سعرها عليّ"></td><td>${ret != null ? m(ret) : "—"}</td><td>${wh != null ? m(wh) : "—"}</td><td>${n && cost != null ? m(n * cost) : "—"}</td><td>${n && ret != null ? m(n * ret) : "—"}</td><td>${n && wh != null ? m(n * wh) : "—"}</td></tr>`).join("") || `<tr><td colspan="9" class="hint">ما في نتائج.</td></tr>`;
 }
 $("#sq").addEventListener("input", drawStock);
 $("#sOnly").addEventListener("change", drawStock);
 $("#stRows").addEventListener("change", async e => {
-  const i = e.target, id = +i.dataset.sid; if (!id) return;
+  const i = e.target;
+  if (i.dataset.cid) { const id = +i.dataset.cid, cost = num(i.value);
+    if (fail((await db.from("product_costs").upsert({ product_id: id, cost })).error)) return;
+    CO[id] = cost; drawStock(); drawP(); return; }
+  const id = +i.dataset.sid; if (!id) return;
   const p = P.find(x => x.id === id), stock = { ...(p.stock || {}) }, k = i.dataset.sk;
   if (i.value === "") delete stock[k]; else stock[k] = Math.max(0, +i.value);
-  if (fail((await db.from("products").update({ stock }).eq("id", id)).error)) return;
+  const r = await db.from("products").update({ stock }).eq("id", id).select("id");
+  if (fail(r.error || (!r.data?.length && { message: "سجّل دخول من جديد" }))) return;  // RLS drops the row silently
   p.stock = stock; i.classList.add("saved"); setTimeout(() => i.classList.remove("saved"), 1200); drawStock(); drawP();
 });
 
@@ -478,7 +483,7 @@ $("#pRows").addEventListener("change", async e => {
   const p = P.find(p => p.id === id);
   if (f === "retail") p.retail_price = num(i.value);
   if (f === "rdisc") p.discount = pct(i.value);
-  if (["rdisc", "wdisc", "cost"].includes(f)) drawStock();
+  if (["retail", "rdisc", "wprice", "wdisc", "cost"].includes(f)) drawStock();
   if (f === "active") { p.active = i.checked; i.closest("tr").className = i.checked ? "" : "off"; }
   i.classList.add("saved"); setTimeout(() => i.classList.remove("saved"), 1200);
 });

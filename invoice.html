@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>فاتورة · Tolay Makeup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700&family=Rubik:wght@400;500;700&display=swap">
+<style>
+:root{--pink:#e8197d;--green:#c6f432;--ink:#111;--muted:#666;--line:#e6e6e6}
+*{box-sizing:border-box}
+body{margin:0;background:#f4f4f4;color:var(--ink);font:15px/1.5 Rubik,system-ui,sans-serif}
+.inv{max-width:760px;margin:20px auto;background:#fff;padding:32px 28px;border-radius:16px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:4px solid var(--green);padding-bottom:16px}
+.logo{font:700 34px/1 "Bodoni Moda",serif;letter-spacing:.06em;direction:ltr}
+.logo small{display:block;font:500 10px/1.6 Rubik,sans-serif;letter-spacing:.5em;color:var(--pink)}
+h1{margin:0;font-size:22px;color:var(--pink)}
+.meta{color:var(--muted);font-size:13px}
+.who{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}
+.who div{background:#fafafa;border-radius:10px;padding:10px 12px}
+.who b{display:block;font-size:12px;color:var(--muted);font-weight:500}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{background:var(--ink);color:#fff;font-weight:500;padding:8px;text-align:start}
+td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+td small{display:block;color:var(--muted)}
+.n{text-align:center;white-space:nowrap}
+.sum{margin-top:14px;margin-inline-start:auto;width:min(320px,100%)}
+.sum div{display:flex;justify-content:space-between;padding:5px 0}
+.sum .tot{border-top:2px solid var(--ink);margin-top:6px;padding-top:10px;font-size:19px;font-weight:700}
+.foot{margin-top:24px;text-align:center;color:var(--muted);font-size:12px}
+.bar{max-width:760px;margin:16px auto 0;display:flex;gap:10px;justify-content:center}
+button{font:500 15px Rubik,sans-serif;border:0;border-radius:999px;padding:10px 22px;background:var(--pink);color:#fff;cursor:pointer}
+button.g{background:#fff;color:var(--ink);border:1px solid var(--ink)}
+.msg{text-align:center;padding:60px 16px}
+@media (max-width:520px){.inv{margin:0;border-radius:0;padding:20px 14px}.who{grid-template-columns:1fr}.logo{font-size:26px}th,td{padding:6px 4px;font-size:13px}}
+@media print{body{background:#fff}.bar{display:none}.inv{margin:0;padding:0;max-width:none}th{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>
+<div class="bar"><button type="button" onclick="print()">طباعة / حفظ PDF</button><button class="g" type="button" onclick="history.length > 1 ? history.back() : close()">رجوع</button></div>
+<main class="inv" id="inv"><p class="msg">لحظة…</p></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const money = n => n === null || n === undefined ? "يتأكد" : `${Number(n).toLocaleString("en-US", { maximumFractionDigits: 2 })} ₪`;
+(async () => {
+  const id = +new URLSearchParams(location.search).get("id"), el = document.getElementById("inv");
+  // RLS: a customer reads only their own orders, the admin reads all
+  const { data: o } = id ? await db.from("orders").select("*").eq("id", id).maybeSingle() : { data: null };
+  if (!o) { el.innerHTML = `<p class="msg">ما لقينا الطلب. لازم يكون الدخول بنفس الحساب اللي طلب.</p>`; return; }
+  document.title = `فاتورة #${o.id} · Tolay Makeup`;
+  const lines = o.items || [];
+  el.innerHTML = `
+    <div class="top">
+      <div class="logo">TOLAY<small>MAKEUP · FROM U.S.A</small></div>
+      <div style="text-align:end"><h1>فاتورة ${o.kind === "wholesale" ? "جملة" : "مفرق"}</h1>
+        <div class="meta">رقم <b dir="ltr">#${o.id}</b> · <span dir="ltr">${new Date(o.created_at).toLocaleDateString("en-GB")}</span></div></div>
+    </div>
+    <div class="who">
+      <div><b>الزبون</b>${esc(o.name)}<br><span dir="ltr">${esc(o.phone || "")}</span></div>
+      <div><b>العنوان</b>${esc(o.address || "—")}${o.note ? `<br><small class="meta">ملاحظة: ${esc(o.note)}</small>` : ""}</div>
+    </div>
+    <table>
+      <thead><tr><th class="n">#</th><th>الصنف</th><th class="n">العدد</th><th class="n">السعر</th><th class="n">المجموع</th></tr></thead>
+      <tbody>${lines.map((it, i) => `<tr><td class="n">${i + 1}</td><td>${esc(it.name)}<small>${esc(it.brand)}${it.shade ? " · " + esc(it.shade) : ""}</small></td>
+        <td class="n">${it.qty}</td><td class="n">${money(it.unit)}</td><td class="n">${it.unit == null ? "يتأكد" : money(Math.round(it.unit * it.qty * 100) / 100)}</td></tr>`).join("")}</tbody>
+    </table>
+    <div class="sum">
+      <div><span>مجموع المنتجات (${lines.reduce((a, it) => a + it.qty, 0)} قطعة)</span><b>${money(o.subtotal)}</b></div>
+      ${+o.discount ? `<div><span>خصم مستوى ${esc(o.tier || "")}</span><b>−${money(o.discount)}</b></div>` : ""}
+      <div><span>التوصيل</span><b>${money(o.delivery)}</b></div>
+      <div class="tot"><span>المجموع الكلي</span><span>${money(o.total)}</span></div>
+      <div class="meta"><span>طريقة الدفع</span><span>${o.payment === "credit" ? "دين / أقساط" : "كاش عند الاستلام"}</span></div>
+    </div>
+    <p class="foot">شكراً لاختيارك Tolay Makeup 💗 منتجات أصلية من أمريكا</p>`;
+})();
+</script>
+</body>
+</html>

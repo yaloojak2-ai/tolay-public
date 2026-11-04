@@ -7,9 +7,9 @@
 <meta name="description" content="Tolay Makeup: منتجات مكياج وعناية وعطور أصلية من أمريكا">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Rubik:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1793797600">
+<link rel="stylesheet" href="style.css?v=1793805826">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<script src="i18n.js?v=1793797600"></script>
+<script src="i18n.js?v=1793805826"></script>
 </head>
 <body>
 <div class="wholesale-bar" id="wBar" hidden>وضع التاجر: أسعار الجملة ظاهرة لإلك</div>
@@ -39,11 +39,13 @@
   </div>
   <section class="rowsec wrap" id="newin" hidden>
     <div class="rowhead"><div><div class="eyebrow latin">New In</div><h2>جديدنا</h2></div><a class="more" href="#/shop">عرض الكل ‹</a></div>
-    <div class="hrow" id="newRow"></div>
+    <div class="hrow g3" id="newRow"></div>
+    <button class="btn ghost morebtn" type="button" data-more>عرض المزيد</button>
   </section>
   <section class="rowsec wrap" id="best" hidden>
     <div class="rowhead"><div><div class="eyebrow latin">Best Sellers</div><h2>الأكثر مبيعاً</h2></div><small class="meta">من طلبات آخر 30 يوم</small></div>
-    <div class="hrow" id="bestRow"></div>
+    <div class="hrow g3" id="bestRow"></div>
+    <button class="btn ghost morebtn" type="button" data-more>عرض المزيد</button>
   </section>
   <div id="brandRows"></div>
   <div class="wrap"><a class="qbanner arc" href="#/arcade"><span><b>Beauty Arcade 🎡</b><small>لفّي العجلة كل يوم، اكشطي كرتك، جاوبي سؤال اليوم واجمعي Tolay Coins</small></span><span class="go">العبي ‹</span></a><a class="qbanner arc club" href="#/club"><span><b>Tolay Club 💎</b><small>دروبات محدودة، صناديق مفاجآت، معركة الماركات والقبو السري</small></span><span class="go">ادخلي ‹</span></a></div>
@@ -142,8 +144,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
 <script src="viz.js?v=1793632833"></script>
-<script src="desc.js?v=1793739853"></script>
-<script src="desc-i18n.js?v=1793797600"></script>
+<script src="desc.js?v=1793805826"></script>
+<script src="desc-i18n.js?v=1793805826"></script>
 <script src="seed.js?v=1793632833"></script>
 <script>
 const $ = s => document.querySelector(s);
@@ -296,7 +298,8 @@ function paint() {
   $("#spCat").innerHTML = `<option value="">كل الأقسام</option>` + CATS.map(c => `<option>${esc(c.s)}</option>`).join("");
   $("#waBtn").href = `https://wa.me/${S.whatsapp}`;
   const top = [...bm].filter(([, l]) => withImg(l).length >= 3).sort((a, b) => b[1].length - a[1].length).slice(0, 5);
-  $("#brandRows").innerHTML = top.map(([b, l]) => `<section class="rowsec wrap"><div class="rowhead"><h2 class="latin">${esc(b)}</h2><a class="more" href="#/brand/${enc(b)}">عرض الكل ‹</a></div><div class="hrow">${withImg(l).slice(0, 10).map(cardHTML).join("")}</div></section>`).join("");
+  $("#brandRows").innerHTML = top.map(([b, l]) => `<section class="rowsec wrap"><div class="rowhead"><h2 class="latin">${esc(b)}</h2><a class="more" href="#/brand/${enc(b)}">عرض الكل ‹</a></div><div class="hrow g3">${withImg(l).slice(0, 12).map(cardHTML).join("")}</div><button class="btn ghost morebtn" type="button" data-more>عرض المزيد</button></section>`).join("");
+  document.querySelectorAll("#pg-home .morebtn").forEach(b => { b.previousElementSibling.classList.remove("open"); b.hidden = b.previousElementSibling.children.length <= 6; });
   const perf = CATS.find(c => c.s === "العطور");
   $("#perfume").hidden = !perf;
   if (perf) $("#spotRow").innerHTML = perf.p.slice(0, 5).map(p => `<button type="button" data-open="${p.id}"><div class="niche"><img src="${esc(p.img)}" alt="${esc(p.n)}" loading="lazy"></div><div><b class="latin">${esc(p.b)}</b><small>${esc(p.n)}</small></div></button>`).join("");
@@ -438,10 +441,7 @@ function openProduct(id) {
   pdState = { id, shade: first?.name || "", qty: mq };
   $("#pdBody").innerHTML = `
     <div class="stage" id="stage">
-      <div class="photo"><img src="${esc(p.img)}" alt="${esc(p.n)}"></div>
-      <div class="vzwrap" id="vz"></div>
-      <div class="badge" id="badge" hidden><i></i><span></span></div>${p.id === HID ? `<button class="hunt" type="button" data-hunt="${p.id}" aria-label="لقيتيها!">✨</button>` : ""}
-      <button class="thumb" type="button" id="swap" hidden aria-label="بدّلي بين صورة المنتج والتجربة"><img src="${esc(p.img)}" alt=""></button>
+      <div class="photo"><img id="pdImg" src="${esc(first?.img || p.img)}" alt="${esc(p.n)}"></div>${p.id === HID ? `<button class="hunt" type="button" data-hunt="${p.id}" aria-label="لقيتيها!">✨</button>` : ""}
     </div>
     <div class="body">
       <div class="eyebrow latin">${esc(p.b)}</div>
@@ -449,7 +449,7 @@ function openProduct(id) {
       <div class="meta">${esc(p.cat)}${p.z ? " · " + esc(p.z) : ""}${FIN[p.fin] ? `<span class="fin latin">${FIN[p.fin]}</span>` : ""}</div>
       ${priceHTML(p)}
       ${descHTML(p)}
-      ${sw.length ? `<div><div class="shade-name">الدرجة: <b id="shadeName">${esc(first.name)}</b></div><div class="swatches" style="margin-top:10px">${sw.map((s, i) => `<button class="sw${s.hex ? "" : " txt"}" type="button" style="${s.hex ? `--c:${esc(s.hex)}` : ""}" data-shade="${esc(s.name)}" data-hex="${esc(s.hex || "")}" data-img="${esc(s.img || "")}" data-vid="${esc(s.vid || "")}" aria-pressed="${i === 0}" aria-label="${esc(s.name)}" title="${esc(s.name)}">${s.hex ? "" : esc(s.name)}</button>`).join("")}</div></div>`
+      ${sw.length ? `<div><div class="shade-name">اختاري درجة: <b id="shadeName">${esc(first.name)}</b></div><div class="tiles">${sw.map((s, i) => `<button class="sw tile" type="button" data-shade="${esc(s.name)}" data-img="${esc(s.img || "")}" aria-pressed="${i === 0}" aria-label="${esc(s.name)}"><span class="ti"><img src="${esc(s.img || p.img)}" alt="" loading="lazy">${s.hex ? `<i style="--c:${esc(s.hex)}"></i>` : ""}<em>SOLD OUT</em></span><b class="latin">${esc(s.name)}</b></button>`).join("")}</div></div>`
         : p.s ? `<div class="meta">${esc(p.s)}، اكتبي اللون اللي بدك ياه بالملاحظات.</div>` : ""}
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:auto">
         <div class="qty"><button type="button" data-pq="-1" aria-label="أقل">−</button><span id="pq">${mq}</span><button type="button" data-pq="1" aria-label="أكثر">+</button></div>
@@ -458,10 +458,6 @@ function openProduct(id) {
       </div>
       ${lookHTML(p)}${similarHTML(p)}
     </div>`;
-  // real photos/video when the section has them, drawn SVG stage otherwise
-  setShade = p.media.base || p.media.video || first?.vid ? mountReal($("#vz"), p.media, first) : window.mountViz ? mountViz($("#vz"), p.viz, p.fin, first?.hex) : null;
-  $("#swap").hidden = !setShade;
-  if (setShade && first?.hex) badge(first);
   pdStock();
   $("#pd").showModal();
 }
@@ -720,7 +716,7 @@ async function ordersView() {
   $("#olist").outerHTML = error ? `<div class="empty">ما قدرنا نحمّل الطلبات.</div>` : !myOrders.length ? `<div class="empty">لسا ما في طلبات محفوظة.</div>`
     : `<div class="olist">${myOrders.map((o, i) => `<div class="ord"><div class="oh"><b>#${o.id}</b><span class="os ${o.status}">${OST[o.status]}</span><small>${new Date(o.created_at).toLocaleDateString("en-GB")}</small></div>
       <ul>${o.items.map(it => `<li>${esc(it.brand)} – ${esc(it.name)}${it.shade ? " · " + esc(it.shade) : ""} × ${it.qty}</li>`).join("")}</ul>
-      <div class="of"><span>${o.total !== null ? money(o.total) : "السعر يتأكد"}</span><button class="btn ghost" type="button" data-reorder="${i}">أعيدي الطلب</button></div></div>`).join("")}</div>`;
+      <div class="of"><span>${o.total !== null ? money(o.total) : "السعر يتأكد"}</span><a class="btn ghost" href="invoice.html?id=${o.id}" target="_blank" rel="noopener">🧾 الفاتورة</a><button class="btn ghost" type="button" data-reorder="${i}">أعيدي الطلب</button></div></div>`).join("")}</div>`;
 }
 
 // account page: menu for everyone, trader login/signup and status inside it
@@ -797,6 +793,7 @@ document.addEventListener("click", async e => {
   else if (d.hunt) { if (!profile) { toast("لقيتيها! سجّلي دخول لتاخدي النقاط ✨"); return; } const { error } = await db.rpc("find_hidden", { p_product: +d.hunt }); toast(error ? "لقيتيها اليوم، رجعي بكرا" : "لقيتيها! +20 نقطة ✨"); t.remove(); }
   else if (t.id === "codeBtn") { const { data, error } = await db.rpc("use_code", { p_code: $("#codeIn").value }); toast(error ? "الكود مش صحيح أو استعملتيه" : `+${data} نقطة 🎉`); if (!error) arcadeView(); }
   else if (d.mem !== undefined) memFlip(t);
+  else if (d.more !== undefined) { t.previousElementSibling.classList.add("open"); t.hidden = true; }
   else if (d.memnew !== undefined) memStart();
   else if (t.id === "spGo") surprise();
   else if (t.id === "sndBtn") { const v = $("#heroVid"); v.muted = !v.muted; if (!v.muted) v.play(); t.textContent = v.muted ? "🔇" : "🔊"; }
@@ -806,7 +803,7 @@ document.addEventListener("click", async e => {
   else if (d.shade !== undefined) {
     pdState.shade = d.shade; $("#shadeName").textContent = d.shade; pdStock();
     t.parentElement.querySelectorAll(".sw").forEach(b => b.setAttribute("aria-pressed", b === t));
-    if (setShade && d.hex) { $("#stage").classList.remove("show-photo"); setShade(d.hex, d.img, d.vid); badge({ name: d.shade, hex: d.hex }); }
+    $("#pdImg").src = d.img || byId[pdState.id].img;
   }
   else if (d.quiz !== undefined || d.qreset !== undefined) { qa = {}; qi = 0; quizView(); if (!$("#quiz").open) $("#quiz").showModal(); }
   else if (d.share) {
@@ -816,7 +813,6 @@ document.addEventListener("click", async e => {
   }
   else if (d.qa) { qa[d.qa] = d.v; qi++; quizView(); }
   else if (d.qopen) { $("#quiz").close(); openProduct(+d.qopen); [...document.querySelectorAll("#pdBody .sw")].find(b => b.dataset.shade === d.qshade)?.click(); }
-  else if (t.id === "swap") $("#stage").classList.toggle("show-photo");
   else if (d.pq) { pdState.qty = Math.max(minQty(byId[pdState.id]), pdState.qty + +d.pq); $("#pq").textContent = pdState.qty; }
   else if (t.id === "pdAdd") { addToCart(pdState.id, pdState.shade, pdState.qty); $("#pd").close(); }
   else if (d.rm !== undefined) { cart.splice(+d.rm, 1); save(); drawCart(); }
