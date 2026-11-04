@@ -7,9 +7,9 @@
 <meta name="description" content="Tolay Makeup: منتجات مكياج وعناية وعطور أصلية من أمريكا">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Rubik:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1793739853">
+<link rel="stylesheet" href="style.css?v=1793797600">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<script src="i18n.js?v=1793739853"></script>
+<script src="i18n.js?v=1793797600"></script>
 </head>
 <body>
 <div class="wholesale-bar" id="wBar" hidden>وضع التاجر: أسعار الجملة ظاهرة لإلك</div>
@@ -25,9 +25,15 @@
 <main id="top">
 <section class="page" id="pg-home">
   <div class="wrap">
-    <div class="slider" id="slider"><div class="slides" id="slides"></div><div class="sdots" id="sdots"></div></div>
-    <div class="intro"><h2 class="latin">Your Beauty Business Starts Here.</h2>
-      <div class="cta"><a class="btn" href="#/club">ENTER THE CLUB</a><a class="btn ghost" href="#/account" data-wsale>EXPLORE WHOLESALE</a></div></div>
+    <div class="hero2">
+      <div class="h-girl"><img src="img/hero-girl.jpg" alt="Tolay Makeup"><span class="h-tag latin">FROM U.S.A ♡</span></div>
+      <div class="h-txt"><div class="eyebrow latin">Tolay Makeup</div><h1 class="latin">Your Beauty Business Starts Here.</h1>
+        <p>مكياج وعناية وعطور أصلية 100% من أمريكا، بالمفرق وبالجملة.</p>
+        <div class="cta"><a class="btn" href="#/club">ENTER THE CLUB</a><a class="btn ghost" href="#/account">EXPLORE WHOLESALE</a></div></div>
+      <div class="h-vid"><video id="heroVid" src="media/unbox.mp4" poster="media/unbox.jpg" autoplay muted loop playsinline preload="metadata"></video>
+        <button class="snd" type="button" id="sndBtn" aria-label="الصوت">🔇</button><span class="h-cap latin">UNBOX TOLAY ✦</span></div>
+    </div>
+    <div class="slider" id="slider" hidden><div class="slides" id="slides"></div><div class="sdots" id="sdots"></div></div>
     <div class="ticker" aria-label="روابط سريعة"><div class="track"><a href="#/new">New Arrivals</a><a href="#/club">Weekly Drops</a><a href="#/club">Exclusive Deals</a><a href="#/club">Mystery Box</a><a href="#/arcade">Beauty Games</a><a href="#/box">Build Your Box</a><a href="#/surprise">Surprise Me</a><a tabindex="-1" aria-hidden="true" href="#/new">New Arrivals</a><a tabindex="-1" aria-hidden="true" href="#/club">Weekly Drops</a><a tabindex="-1" aria-hidden="true" href="#/club">Exclusive Deals</a><a tabindex="-1" aria-hidden="true" href="#/club">Mystery Box</a><a tabindex="-1" aria-hidden="true" href="#/arcade">Beauty Games</a><a tabindex="-1" aria-hidden="true" href="#/box">Build Your Box</a></div></div>
     <div class="circles" id="circles"></div>
   </div>
@@ -137,7 +143,7 @@
 <script src="config.js"></script>
 <script src="viz.js?v=1793632833"></script>
 <script src="desc.js?v=1793739853"></script>
-<script src="desc-i18n.js?v=1793739853"></script>
+<script src="desc-i18n.js?v=1793797600"></script>
 <script src="seed.js?v=1793632833"></script>
 <script>
 const $ = s => document.querySelector(s);
@@ -147,7 +153,8 @@ const isTrader = () => profile && profile.status === "approved";
 const money = n => `${Number(n).toLocaleString("en-US")} ${S.currency || ""}`.trim();
 const has = n => n !== null && n !== undefined && n !== "";
 // the price this visitor pays: wholesale for approved traders when set, otherwise retail
-const unit = p => isTrader() && has(p.w?.price) ? Number(p.w.price) : has(p.pr) ? Number(p.pr) : null;
+const off = (v, d) => Math.round(Number(v) * (100 - (+d || 0))) / 100;  // price after a % discount
+const unit = p => isTrader() && has(p.w?.price) ? off(p.w.price, p.w.discount) : has(p.pr) ? off(p.pr, p.disc) : null;
 // stock: absent key = not tracked (always available)
 const stockOf = (p, sh = "") => p.st && sh in p.st ? Math.max(0, +p.st[sh] || 0) : null;
 const soldOut = p => { const v = Object.values(p.st || {}); return v.length > 0 && v.every(n => !(+n > 0)); };
@@ -165,8 +172,9 @@ const swatchesOf = p => p.sw.length ? p.sw : p.s && !p.s.includes("ألوان م
 const FIN = { matte: "Matte", satin: "Satin", gloss: "Gloss", shimmer: "Shimmer" };
 const dotsHTML = p => { const s = p.sw.filter(x => x.hex); return s.length ? `<div class="dots">${s.slice(0, 6).map(x => `<i style="--c:${esc(x.hex)}" title="${esc(x.name)}"></i>`).join("")}${s.length > 6 ? `<small>+${s.length - 6}</small>` : ""}</div>` : ""; };
 function priceHTML(p) {
-  if (isTrader() && has(p.w?.price)) return `<span class="price wprice">${money(p.w.price)}<small>جملة · أقل كمية ${minQty(p)}</small>${has(p.pr) ? `<s>${money(p.pr)}</s>` : ""}</span>`;
-  return has(p.pr) ? `<span class="price">${money(p.pr)}</span>` : `<span class="price soon">السعر قريباً</span>`;
+  if (isTrader() && has(p.w?.price)) { const d = +p.w.discount || 0; return `<span class="price wprice">${d ? `<b class="dpct">خصم ${d}%</b>` : ""}${money(unit(p))}<small>جملة · أقل كمية ${minQty(p)}</small>${d ? `<s>${money(p.w.price)}</s>` : has(p.pr) ? `<s>${money(p.pr)}</s>` : ""}</span>`; }
+  if (!has(p.pr)) return `<span class="price soon">السعر قريباً</span>`;
+  return p.disc ? `<span class="price">${money(unit(p))} <s>${money(p.pr)}</s><b class="dpct">خصم ${p.disc}%</b></span>` : `<span class="price">${money(p.pr)}</span>`;
 }
 
 async function load() {
@@ -183,7 +191,7 @@ async function load() {
   const SD = window.SEED || {}, catMedia = Object.fromEntries((cats || []).map(c => [c.id, Object.keys(c.media || {}).length ? c.media : SD.media?.[c.name] || {}]));
   const NEW = new Set((SD.add || []).map(a => a.name));
   const swOf = p => ((p.swatches || []).length ? p.swatches : SD.swatches?.[p.name] || []).map(s => ({ ...s, img: s.img || SD.img?.[p.name]?.[s.name] || "", vid: s.vid || SD.vid?.[p.name]?.[s.name] || "" }));
-  toP = p => ({ id: p.id, ds: p.drop_start ? Date.parse(p.drop_start) : null, de: p.drop_end ? Date.parse(p.drop_end) : null, worth: +p.worth || 0, st: p.stock || {}, b: p.brand, n: p.name, s: p.shades, z: p.size, d: p.description, pr: p.retail_price, img: p.image_url ? p.image_url + (p.image_url.includes("?") ? "&" : "?") + "v=1793640000" : p.image_url, featured: p.featured, cat: catName[p.category_id] || "", sw: swOf(p), fin: p.finish || SD.finish?.[p.name] || "", viz: catViz[p.category_id] || "photo", isNew: (p.arrived_at && Date.now() - Date.parse(p.arrived_at) < 30 * 864e5) || NEW.has(p.name), media: SD.pvid?.[p.name] ? { ...catMedia[p.category_id], video: SD.pvid[p.name] } : catMedia[p.category_id] || {} });
+  toP = p => ({ id: p.id, disc: +p.discount || 0, ds: p.drop_start ? Date.parse(p.drop_start) : null, de: p.drop_end ? Date.parse(p.drop_end) : null, worth: +p.worth || 0, st: p.stock || {}, b: p.brand, n: p.name, s: p.shades, z: p.size, d: p.description, pr: p.retail_price, img: p.image_url ? p.image_url + (p.image_url.includes("?") ? "&" : "?") + "v=1793640000" : p.image_url, featured: p.featured, cat: catName[p.category_id] || "", sw: swOf(p), fin: p.finish || SD.finish?.[p.name] || "", viz: catViz[p.category_id] || "photo", isNew: (p.arrived_at && Date.now() - Date.parse(p.arrived_at) < 30 * 864e5) || NEW.has(p.name), media: SD.pvid?.[p.name] ? { ...catMedia[p.category_id], video: SD.pvid[p.name] } : catMedia[p.category_id] || {} });
   // vault products load on the Club page only; finished drops leave the store
   ALL = prods.filter(p => !p.vault && !(p.drop_end && Date.parse(p.drop_end) < Date.now())).map(toP);
   byId = Object.fromEntries(ALL.map(p => [p.id, p]));
@@ -759,7 +767,9 @@ function acctView(mode) {
     if (signup) {
       const { data, error } = await db.auth.signUp({ email, password, options: { emailRedirectTo: location.href.split("#")[0], data: { ref: (() => { try { return localStorage.getItem("tolay-ref") || ""; } catch { return ""; } })(), account: cust ? "customer" : "merchant", full_name: $("#aName").value, shop_name: cust ? "" : $("#aShop").value, phone: $("#aPhone").value, city: $("#aCity").value } } });
       if (error) { m.textContent = error.message; return; }
-      if (!data.session) { m.textContent = cust ? "انبعتلك إيميل تأكيد. أكّديه وبعدين ادخلي." : "انبعتلك إيميل تأكيد. أكّديه وبعدين ادخلي، وطلبك رح يتراجع ويتفعّل."; return; }
+      // accounts are confirmed on the server at signup, so log straight in
+      if (!data.session && (await db.auth.signInWithPassword({ email, password })).error) { m.textContent = cust ? "انبعتلك إيميل تأكيد. أكّديه وبعدين ادخلي." : "انبعتلك إيميل تأكيد. أكّديه وبعدين ادخلي، وطلبك رح يتراجع ويتفعّل."; return; }
+      if (!cust) toast("انعمل حسابك ✓ أسعار الجملة بتفتح بعد موافقة الإدارة");
     } else {
       const { error } = await db.auth.signInWithPassword({ email, password });
       if (error) { m.textContent = "الإيميل أو كلمة السر غلط، أو الإيميل لسا مش مأكّد."; return; }
@@ -789,6 +799,7 @@ document.addEventListener("click", async e => {
   else if (d.mem !== undefined) memFlip(t);
   else if (d.memnew !== undefined) memStart();
   else if (t.id === "spGo") surprise();
+  else if (t.id === "sndBtn") { const v = $("#heroVid"); v.muted = !v.muted; if (!v.muted) v.play(); t.textContent = v.muted ? "🔇" : "🔊"; }
   else if (d.spadd !== undefined) { SP.forEach(p => addToCart(p.id, "", minQty(p))); location.hash = "#/cart"; }
   else if (d.vote) { t.disabled = true; const { error } = await db.rpc("vote_battle", { p_battle: +d.vote, p_pick: +d.pick }); toast(error ? "التصويت مسكّر" : "انحفظ توقعك ✓"); clubView(); }
   else if (d.add) { const p = byId[d.add]; if (soldOut(p)) { toast("نفذ من المخزون"); return; } if (!canBuy(p)) { toast("الدروب بيفتح قريباً"); return; } shadesOf(p).length ? openProduct(p.id) : addToCart(p.id, "", minQty(p)); }
