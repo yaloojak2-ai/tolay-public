@@ -61,8 +61,8 @@ async function receipt(id) {
   const { data: o } = p.order_id ? await db.from("orders").select("*").eq("id", p.order_id).maybeSingle() : { data: null };
   document.title = `سند قبض ${p.id} · Tolay Makeup`;
   const lines = o?.items || [];
-  el.innerHTML = `${hdr("سند قبض" + (p.void ? " (ملغي)" : ""), "R-" + p.id, p.at)}
-    <div class="who"><div><b>استلمنا من</b>${esc(p.name)}<br><span dir="ltr">${esc(p.phone || "")}</span></div>
+  el.innerHTML = `${hdr((p.refund ? "سند صرف (استرجاع)" : "سند قبض") + (p.void ? " (ملغي)" : ""), "R-" + p.id, p.at)}
+    <div class="who"><div><b>${p.refund ? "رجّعنا لـ" : "استلمنا من"}</b>${esc(p.name)}<br><span dir="ltr">${esc(p.phone || "")}</span></div>
       <div><b>المبلغ</b><span class="big">${money(p.amount)}</span><br><small class="meta">${METHOD[p.method] || p.method}${p.note ? " · " + esc(p.note) : ""}</small></div></div>
     ${o ? `<p class="meta">عن الطلب <b dir="ltr">#${o.id}</b> بتاريخ <span dir="ltr">${day(o.created_at)}</span></p>
     <table><thead><tr><th class="n">#</th><th>الصنف</th><th class="n">العدد</th><th class="n">السعر</th><th class="n">المجموع</th></tr></thead>
@@ -83,7 +83,7 @@ async function statement(key) {
   if (!os.length && !ps.length) { el.innerHTML = `<p class="msg">ما في حركات لهالزبون، أو الحساب ما إله صلاحية.</p>`; return; }
   const who = os.at(-1) || ps.at(-1), live = o => !["cancelled", "returned", "refused"].includes(o.status) && o.total != null;
   const rows = [...os.map(o => ({ at: o.created_at, t: `طلب #${o.id} · ${OST[o.status] || o.status}`, dr: live(o) ? +o.total : 0, cr: 0, off: !live(o) })),
-    ...ps.map(p => ({ at: p.at, t: `سند قبض R-${p.id} · ${METHOD[p.method] || p.method}`, dr: 0, cr: p.void ? 0 : +p.amount, off: p.void }))].sort((a, b) => a.at < b.at ? -1 : 1);
+    ...ps.map(p => ({ at: p.at, t: `${p.refund ? "استرجاع" : "سند قبض"} R-${p.id} · ${METHOD[p.method] || p.method}`, dr: p.refund && !p.void ? +p.amount : 0, cr: p.void || p.refund ? 0 : +p.amount, off: p.void }))].sort((a, b) => a.at < b.at ? -1 : 1);
   let bal = 0; const dr = rows.reduce((a, r) => a + r.dr, 0), cr = rows.reduce((a, r) => a + r.cr, 0);
   document.title = `كشف حساب ${who.name} · Tolay Makeup`;
   el.innerHTML = `${hdr("كشف حساب", "", new Date())}
@@ -94,7 +94,35 @@ async function statement(key) {
     <p class="foot">Tolay Makeup 💗 الطلبات الملغية والدفعات الملغية مشطوبة ومش محسوبة</p>`;
 }
 
-q.get("statement") ? statement(q.get("statement")) : q.get("id") ? receipt(+q.get("id")) : el.innerHTML = `<p class="msg">رابط ناقص.</p>`;
+async function po(id) {
+  const { data: o } = await db.from("purchase_orders").select("*").eq("id", id).maybeSingle();
+  if (!o) { el.innerHTML = `<p class="msg">ما لقينا أمر الشراء (للإدارة المالية بس).</p>`; return; }
+  const [{ data: s }, { data: pr }, { data: pays }] = await Promise.all([db.from("suppliers").select("*").eq("id", o.supplier_id).maybeSingle(), db.from("products").select("id,brand,name"), db.from("supplier_payments").select("*").eq("po_id", id)]);
+  const nm = Object.fromEntries((pr || []).map(p => [p.id, p])), cur = o.currency, f = n => `${Number(n || 0).toLocaleString("en-US", { maximumFractionDigits: 2 })} ${cur}`;
+  const goods = o.items.reduce((a, it) => a + it.qty * it.unit_cost, 0), extras = +o.shipping + +o.customs + +o.fees + +o.extra, paid = (pays || []).filter(p => !p.void).reduce((a, p) => a + +p.amount, 0), totIls = (goods + extras) * o.fx_rate;
+  document.title = `أمر شراء #${o.id} · Tolay Makeup`;
+  el.innerHTML = `${hdr("أمر شراء", "PO-" + o.id, o.created_at)}
+    <div class="who"><div><b>المورد</b>${esc(s?.name || "—")}<br><small class="meta">${esc([s?.country, s?.contact].filter(Boolean).join(" · "))}</small></div>
+      <div><b>الحالة</b>${{ draft: "مسودة", ordered: "انطلب", received: "وصل", cancelled: "ملغي" }[o.status]}<br><small class="meta">العملة ${cur} · الصرف ${o.fx_rate} ₪${o.expected_at ? " · متوقع " + o.expected_at : ""}</small></div></div>
+    <table><thead><tr><th class="n">#</th><th>الصنف</th><th class="n">العدد</th><th class="n">سعر القطعة</th><th class="n">المجموع</th><th class="n">التكلفة الحقيقية ₪</th></tr></thead>
+      <tbody>${o.items.map((it, i) => `<tr><td class="n">${i + 1}</td><td>${esc(nm[it.product_id]?.name || "#" + it.product_id)}<small>${esc(nm[it.product_id]?.brand || "")}${it.shade ? " · " + esc(it.shade) : ""}</small></td><td class="n">${it.qty}</td><td class="n">${f(it.unit_cost)}</td><td class="n">${f(it.qty * it.unit_cost)}</td><td class="n">${money(it.landed ?? Math.round((it.unit_cost + (goods ? it.unit_cost / goods * extras : 0)) * o.fx_rate * 100) / 100)}</td></tr>`).join("")}</tbody></table>
+    <div class="sum"><div><span>البضاعة</span><b>${f(goods)}</b></div><div><span>شحن</span><b>${f(o.shipping)}</b></div><div><span>جمارك وضرائب</span><b>${f(o.customs)}</b></div><div><span>رسوم تحويل</span><b>${f(o.fees)}</b></div><div><span>إضافي</span><b>${f(o.extra)}</b></div>
+      <div class="tot"><span>المجموع</span><span>${money(totIls)}</span></div><div><span>دفعنا</span><b>${money(paid)}</b></div><div><span>الباقي</span><b>${money(totIls - paid)}</b></div></div>
+    ${o.note ? `<p class="meta">ملاحظة: ${esc(o.note)}</p>` : ""}<p class="foot">Tolay Makeup · أمر شراء داخلي</p>`;
+}
+async function supplier(id) {
+  const [{ data: s }, { data: P }, { data: Y }] = await Promise.all([db.from("suppliers").select("*").eq("id", id).maybeSingle(), db.from("purchase_orders").select("*").eq("supplier_id", id).neq("status", "cancelled").order("created_at"), db.from("supplier_payments").select("*").eq("supplier_id", id).order("at")]);
+  if (!s) { el.innerHTML = `<p class="msg">ما لقينا المورد (للإدارة المالية بس).</p>`; return; }
+  const tot = o => (o.items.reduce((a, it) => a + it.qty * it.unit_cost, 0) + +o.shipping + +o.customs + +o.fees + +o.extra) * o.fx_rate;
+  const rows = [...(P || []).map(o => ({ at: o.created_at, t: `أمر شراء PO-${o.id}`, dr: tot(o), cr: 0 })), ...(Y || []).map(p => ({ at: p.at, t: `دفعة · ${METHOD[p.method] || p.method}`, dr: 0, cr: p.void ? 0 : +p.amount, off: p.void }))].sort((a, b) => a.at < b.at ? -1 : 1);
+  let bal = 0; const dr = rows.reduce((a, r) => a + r.dr, 0), cr = rows.reduce((a, r) => a + r.cr, 0);
+  document.title = `كشف حساب مورد ${s.name}`;
+  el.innerHTML = `${hdr("كشف حساب مورد", "", new Date())}<div class="who"><div><b>المورد</b>${esc(s.name)}<br><small class="meta">${esc([s.country, s.contact, s.payment_terms].filter(Boolean).join(" · "))}</small></div><div><b>علينا إله</b><span class="big">${money(dr - cr)}</span></div></div>
+    <table><thead><tr><th>التاريخ</th><th>البيان</th><th class="n">مشتريات</th><th class="n">دفعنا</th><th class="n">الرصيد</th></tr></thead>
+    <tbody>${rows.map(r => { bal += r.dr - r.cr; return `<tr class="${r.off ? "void" : ""}"><td dir="ltr">${day(r.at)}</td><td>${r.t}</td><td class="n">${r.dr ? money(r.dr) : ""}</td><td class="n">${r.cr ? money(r.cr) : ""}</td><td class="n">${money(bal)}</td></tr>`; }).join("")}</tbody></table>
+    <div class="sum"><div><span>المشتريات</span><b>${money(dr)}</b></div><div><span>الدفعات</span><b>${money(cr)}</b></div><div class="tot"><span>الباقي</span><span>${money(dr - cr)}</span></div></div>`;
+}
+q.get("po") ? po(+q.get("po")) : q.get("supplier") ? supplier(+q.get("supplier")) : q.get("statement") ? statement(q.get("statement")) : q.get("id") ? receipt(+q.get("id")) : el.innerHTML = `<p class="msg">رابط ناقص.</p>`;
 </script>
 </body>
 </html>

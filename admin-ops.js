@@ -1,7 +1,7 @@
 // admin-ops.js: staff permissions, the order desk, delivery companies + shipments, customer accounts + receipts, audit log.
 // Runs after the main admin script and uses its globals ($, db, esc, money, toast, fail, P, O, OST, PERMS, ME, STAFF).
 
-const TABPERM = { orders: "orders", alerts: "orders", products: "products", cats: "products", stock: "stock", inv: "stock", traders: "traders", coins: "marketing", battles: "marketing", searches: "marketing", mkt: "marketing", reviews: "marketing", delivery: "delivery", money: "finance", settings: "settings", audit: "audit", staff: "owner" };
+const TABPERM = { orders: "orders", alerts: "orders", products: "products", cats: "products", stock: "stock", inv: "stock", sup: "finance", rep: "finance", traders: "traders", coins: "marketing", battles: "marketing", searches: "marketing", mkt: "marketing", reviews: "marketing", delivery: "delivery", money: "finance", settings: "settings", audit: "audit", staff: "owner" };
 const PERM_LABEL = { orders: "الطلبات وطلبات التنبيه", products: "المنتجات والأقسام", stock: "المخزون", traders: "التجار", marketing: "التسويق والنقاط والتقييمات", delivery: "التوصيل والشحن", finance: "المالية (التكلفة، الأرباح، الدفعات)", settings: "الإعدادات", audit: "سجل العمليات" };
 const can = p => PERMS.includes("all") || PERMS.includes(p);
 const staffName = id => { const s = STAFF.find(x => x.id === id); return s ? s.full_name || s.email : "—"; };
@@ -27,6 +27,7 @@ async function loadOps() {
   if (can("owner")) drawStaff();
   if (can("audit")) loadAudit();
   if (can("stock") && window.loadInv) loadInv();
+  if (can("finance") && window.loadFin) loadFin();
 }
 
 // ===== order desk =====
@@ -88,7 +89,7 @@ function drawOD() {
       <input id="shDrv" placeholder="اسم المندوب" style="width:130px"><input id="shNo" placeholder="رقم الشحنة" dir="ltr" style="width:120px">
       <label class="hint">يحصّل ₪<input id="shCod" type="number" step="0.01" min="0" value="${t.total == null ? "" : r2(t.total - (+o.paid || 0))}" dir="ltr" style="width:90px"></label><button class="sm ok" type="button" id="shMake">🚚 إنشاء شحنة</button></div>`}` : ""}
   ${can("finance") ? `<h3>تسجيل دفعة</h3><div class="bar"><input id="pyAmt" type="number" step="0.01" min="0.01" placeholder="المبلغ" dir="ltr" style="width:110px" value="${t.total == null ? "" : Math.max(0, r2(t.total - (+o.paid || 0))) || ""}">
-      <select id="pyM">${Object.entries(PAYM).map(([k, v]) => `<option value="${k}">${v}</option>`).join("")}</select><input id="pyNote" placeholder="ملاحظة" style="flex:1 1 140px"><button class="sm ok" type="button" id="pyAdd">💵 سجّل واطبع سند قبض</button></div>` : ""}
+      <select id="pyM">${Object.entries(PAYM).map(([k, v]) => `<option value="${k}">${v}</option>`).join("")}</select><input id="pyNote" placeholder="ملاحظة" style="flex:1 1 140px"><label class="hint"><input type="checkbox" id="pyRf" style="width:auto"> استرجاع للزبون</label><button class="sm ok" type="button" id="pyAdd">💵 سجّل واطبع سند قبض</button></div>` : ""}
   <h3>ملاحظات الفريق</h3>
   <ul class="notes">${(o.notes || []).map(n => `<li><small>${fmt(n.at)}${n.by ? " · " + esc(n.by) : ""}</small>${esc(n.text)}</li>`).join("") || `<li class="hint">ما في ملاحظات.</li>`}</ul>
   <div class="bar"><input id="odNote" placeholder="اكتب ملاحظة للفريق…" style="flex:1"><button class="sm" type="button" id="odNoteAdd">إضافة</button></div>
@@ -155,7 +156,7 @@ $("#od").addEventListener("click", async e => {
   }
   else if (t.id === "pyAdd") {
     const amount = +$("#pyAmt").value; if (!(amount > 0)) { toast("اكتب المبلغ"); return; }
-    const { data, error } = await db.from("payments").insert({ order_id: OD.id, user_id: OD.user_id, name: OD.name, phone: OD.phone, amount, method: $("#pyM").value, note: $("#pyNote").value.trim() || null }).select("id").single();
+    const { data, error } = await db.from("payments").insert({ order_id: OD.id, user_id: OD.user_id, name: OD.name, phone: OD.phone, amount, method: $("#pyM").value, note: $("#pyNote").value.trim() || null, ...($("#pyRf").checked ? { refund: true } : {}) }).select("id").single();
     if (!fail(error)) { window.open(`receipt.html?id=${data.id}`, "_blank", "noopener"); toast("انسجلت الدفعة ✓"); loadMoney(); refreshOrder(OD.id); }
   }
 });

@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Tolay Admin</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700&family=Rubik:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1793884041">
+<link rel="stylesheet" href="style.css?v=1793884500">
 <style>
 body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 .adm{padding-block:28px 80px;display:flex;flex-direction:column;gap:20px}
@@ -51,6 +51,10 @@ dialog.wide{width:min(980px,96vw);max-height:92vh}
 .odh{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline}.odh h2{margin:0}
 .odg{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
 [data-mv][hidden]{display:none}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:10px}.rgrid h3{margin:0 0 6px;font-size:15px}
+.bars i{display:block;height:6px;border-radius:3px;background:var(--gold);margin-top:3px}
+.pos{color:#2e8b57}.neg{color:var(--danger)}
+@media print{.tabbar,.noprint,header,.adm>.bar{display:none!important}.panel{display:none!important}#t-rep{display:flex!important}.tbl{max-height:none!important;overflow:visible}body{background:#fff}}
 .odg label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
 .odc b,.odc>span{display:block}.odc>span{text-align:right}
 .odsum .btn{white-space:nowrap;border-radius:999px;padding:10px 18px}
@@ -102,6 +106,8 @@ tr.late td{background:#fff1f1}
       <button class="chip" type="button" data-tab="money">الحسابات والدفعات</button>
       <button class="chip" type="button" data-tab="staff">الموظفين والصلاحيات</button>
       <button class="chip" type="button" data-tab="inv">المخازن والحركات <span id="invN"></span></button>
+      <button class="chip" type="button" data-tab="sup">الموردين والمشتريات</button>
+      <button class="chip" type="button" data-tab="rep">التقارير والأرباح</button>
       <button class="chip" type="button" data-tab="audit">سجل العمليات</button>
       <button class="chip" type="button" data-tab="settings">نصوص وإعدادات</button>
     </div>
@@ -284,6 +290,58 @@ tr.late td{background:#fff1f1}
       <h3 style="margin:8px 0 0">سجل الحركات</h3>
       <div class="bar"><select id="mlT"><option value="">كل الأنواع</option></select><input id="mlQ" type="search" placeholder="ابحث باسم المنتج أو رقم الطلب" style="flex:1"></div>
       <div class="tbl" style="max-height:420px"><table><thead><tr><th>الوقت</th><th>النوع</th><th>المنتج</th><th>العدد</th><th>المخزن</th><th>مين</th><th>ملاحظة</th></tr></thead><tbody id="mlRows"></tbody></table></div>
+    </div>
+
+    <div class="panel" id="t-sup" hidden>
+      <div class="kpis" id="supK"></div>
+      <h3 style="margin:0">أمر شراء جديد</h3>
+      <div class="odg">
+        <label>المورد<select id="poS"></select></label>
+        <label>العملة<select id="poC"><option>USD</option><option>EUR</option><option>GBP</option><option>AED</option><option>JOD</option><option value="ILS">₪ ILS</option></select></label>
+        <label>سعر الصرف (1 = كم ₪)<input id="poFx" type="number" step="0.0001" min="0" value="3.7" dir="ltr"></label>
+        <label>تاريخ الوصول المتوقع<input id="poExp" type="date" dir="ltr"></label>
+      </div>
+      <div class="tbl"><table><thead><tr><th>المنتج</th><th>الدرجة</th><th>العدد</th><th>سعر القطعة (بعملة المورد)</th><th>التكلفة الحقيقية للقطعة ₪</th><th></th></tr></thead><tbody id="poL"></tbody></table></div>
+      <div class="bar"><input id="poP" list="mvPL" placeholder="+ ضيف منتج (اكتب اسمه)" style="flex:1 1 240px"><button class="sm" type="button" id="poAdd">إضافة سطر</button></div>
+      <div class="odsum">
+        <label>الشحن<input id="poSh" type="number" step="0.01" min="0" value="0" dir="ltr"></label>
+        <label>جمارك وضرائب<input id="poCu" type="number" step="0.01" min="0" value="0" dir="ltr"></label>
+        <label>رسوم تحويل<input id="poFe" type="number" step="0.01" min="0" value="0" dir="ltr"></label>
+        <label>مصاريف إضافية<input id="poEx" type="number" step="0.01" min="0" value="0" dir="ltr"></label>
+        <div><small class="hint">المجموع بالشيكل</small><b id="poTot">0 ₪</b></div>
+        <label class="full" style="grid-column:1/-1">ملاحظة<input id="poN"></label>
+        <div class="bar" style="grid-column:1/-1"><button class="btn" type="button" id="poSave" data-st="ordered">حفظ وطلب</button><button class="sm" type="button" id="poDraft">حفظ كمسودة</button></div>
+      </div>
+      <h3 style="margin:8px 0 0">أوامر الشراء</h3>
+      <div class="bar"><select id="poF"><option value="">الكل</option><option value="draft">مسودة</option><option value="ordered">انطلب</option><option value="received">وصل</option><option value="cancelled">ملغي</option></select></div>
+      <div class="tbl"><table><thead><tr><th>#</th><th>المورد</th><th>الحالة</th><th>التاريخ</th><th>قطع</th><th>المجموع ₪</th><th>دفعنا</th><th>علينا</th><th></th></tr></thead><tbody id="poRows"></tbody></table></div>
+      <div class="two">
+        <div><h3>الموردين</h3>
+          <div class="odg">
+            <label>الاسم<input id="suName"></label><label>البلد<input id="suCo"></label><label>التواصل (اسم/هاتف/إيميل)<input id="suCt"></label>
+            <label>شروط الدفع<input id="suTerms" placeholder="مثلاً: مقدم 50%"></label><label>خصم %<input id="suDisc" type="number" min="0" max="100" dir="ltr"></label>
+            <label>تكلفة الشحن المعتادة<input id="suShip" type="number" min="0" dir="ltr"></label><label>العملة<input id="suCur" value="USD" dir="ltr"></label>
+            <label>أقل طلبية<input id="suMin" type="number" min="0" dir="ltr"></label><label style="justify-content:end"><button class="btn" type="button" id="suAdd">+ مورد</button></label>
+          </div>
+          <div class="tbl"><table><thead><tr><th>المورد</th><th>الشروط</th><th>اشترينا</th><th>علينا</th><th></th></tr></thead><tbody id="suRows"></tbody></table></div></div>
+        <div><h3>دفعات للموردين</h3>
+          <div class="tbl"><table><thead><tr><th>التاريخ</th><th>المورد</th><th>المبلغ</th><th>الطريقة</th><th></th></tr></thead><tbody id="spRows"></tbody></table></div></div>
+      </div>
+    </div>
+
+    <div class="panel" id="t-rep" hidden>
+      <div class="bar noprint"><span class="hint">الفترة:</span>
+        <button class="sm" type="button" data-per="week">هالأسبوع (آخر 7 أيام)</button><button class="sm" type="button" data-per="lastweek">الأسبوع اللي قبله</button>
+        <button class="sm" type="button" data-per="month">هالشهر</button><button class="sm" type="button" data-per="lastmonth">الشهر الماضي</button><button class="sm" type="button" data-per="year">هالسنة</button>
+        <input id="rFrom" type="date" dir="ltr"><input id="rTo" type="date" dir="ltr">
+        <button class="sm ok" type="button" id="rPrint">🖨️ طباعة / PDF</button><button class="sm ok" type="button" id="rCsv">⬇️ Excel</button></div>
+      <h2 id="rTitle" style="margin:0"></h2>
+      <div class="kpis" id="rK"></div>
+      <div id="rBody"></div>
+      <div class="two noprint">
+        <div><h3>تسجيل مصروف</h3><div class="bar"><input id="exD" type="date" dir="ltr"><select id="exC"></select><input id="exA" type="number" min="0" step="0.01" placeholder="المبلغ ₪" dir="ltr" style="width:110px"><input id="exN" placeholder="ملاحظة" style="flex:1"><button class="sm ok" type="button" id="exAdd">+ مصروف</button></div></div>
+        <div><h3>رأس المال</h3><div class="bar"><select id="caK"><option value="in">⬆️ حطيت مصاري</option><option value="out">⬇️ سحبت مصاري</option></select><input id="caA" type="number" min="0" step="0.01" placeholder="المبلغ ₪" dir="ltr" style="width:110px"><input id="caN" placeholder="ملاحظة" style="flex:1"><button class="sm ok" type="button" id="caAdd">حفظ</button></div></div>
+      </div>
     </div>
 
     <div class="panel" id="t-audit" hidden>
@@ -839,7 +897,8 @@ document.addEventListener("click", async e => {
 });
 window.addEventListener("load", boot);  // after admin-ops.js is in
 </script>
-<script src="admin-ops.js?v=1793884041"></script>
-<script src="admin-inv.js?v=1793884041"></script>
+<script src="admin-ops.js?v=1793884500"></script>
+<script src="admin-fin.js?v=1793884500"></script>
+<script src="admin-inv.js?v=1793884500"></script>
 </body>
 </html>
