@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Tolay Admin</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700&family=Rubik:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1793881875">
+<link rel="stylesheet" href="style.css?v=1793884041">
 <style>
 body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 .adm{padding-block:28px 80px;display:flex;flex-direction:column;gap:20px}
@@ -50,6 +50,7 @@ dialog.wide{width:min(980px,96vw);max-height:92vh}
 .odb{padding:24px;display:flex;flex-direction:column;gap:14px}
 .odh{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline}.odh h2{margin:0}
 .odg{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+[data-mv][hidden]{display:none}
 .odg label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
 .odc b,.odc>span{display:block}.odc>span{text-align:right}
 .odsum .btn{white-space:nowrap;border-radius:999px;padding:10px 18px}
@@ -100,6 +101,7 @@ tr.late td{background:#fff1f1}
       <button class="chip" type="button" data-tab="delivery">التوصيل والشحن</button>
       <button class="chip" type="button" data-tab="money">الحسابات والدفعات</button>
       <button class="chip" type="button" data-tab="staff">الموظفين والصلاحيات</button>
+      <button class="chip" type="button" data-tab="inv">المخازن والحركات <span id="invN"></span></button>
       <button class="chip" type="button" data-tab="audit">سجل العمليات</button>
       <button class="chip" type="button" data-tab="settings">نصوص وإعدادات</button>
     </div>
@@ -242,6 +244,46 @@ tr.late td{background:#fff1f1}
       <div class="bar"><input id="stEmail" type="email" dir="ltr" placeholder="إيميل الموظف" style="flex:1 1 220px"><button class="btn" type="button" id="stAdd">+ إضافة موظف</button></div>
       <div class="bar" id="stPerms"></div>
       <div class="tbl"><table><thead><tr><th>الموظف</th><th>الصلاحيات</th><th></th></tr></thead><tbody id="sfRows"></tbody></table></div>
+    </div>
+
+    <div class="panel" id="t-inv" hidden>
+      <div class="kpis" id="iKpis"></div>
+      <div class="bar"><h3 style="margin:0;flex:1">تنبيهات المخزون</h3><label class="hint">حد "قليل"<input id="iLow" type="number" min="1" dir="ltr" style="width:70px"></label>
+        <select id="iAlF"><option value="">كل التنبيهات</option><option value="out">نفد</option><option value="low">قليل</option><option value="stale">راكد 90 يوم</option><option value="exp">صلاحية</option></select>
+        <a class="sm" href="labels.html" target="_blank" rel="noopener">🏷️ طباعة ملصقات باركود</a></div>
+      <div class="tbl" style="max-height:340px"><table><thead><tr><th>التنبيه</th><th>المنتج</th><th>الدرجة</th><th>الكمية</th><th>محجوز</th><th></th></tr></thead><tbody id="iAlRows"></tbody></table></div>
+
+      <h3 style="margin:8px 0 0">حركة مخزون</h3>
+      <div class="odg" id="mvF">
+        <label>نوع الحركة<select id="mvT"><option value="receive">📦 استلام بضاعة (دفعة جديدة)</option><option value="add">➕ إضافة</option><option value="return">↩️ مرتجع من زبون</option><option value="damage">💔 تالف</option><option value="loss">❓ مفقود</option><option value="manual">✏️ تعديل يدوي (+/−)</option><option value="transfer">🔁 تحويل بين مخزنين</option></select></label>
+        <label>المنتج<input id="mvP" list="mvPL" placeholder="اكتب اسم المنتج أو الماركة"><datalist id="mvPL"></datalist></label>
+        <label>الدرجة<select id="mvS"><option value="">—</option></select></label>
+        <label><span id="mvWl">المخزن</span><select id="mvW"></select></label>
+        <label data-mv="transfer">لمخزن<select id="mvW2"></select></label>
+        <label>العدد<input id="mvQ" type="number" dir="ltr" min="1" value="1"></label>
+        <label data-mv="receive">رقم الدفعة (Batch)<input id="mvB" dir="ltr"></label>
+        <label data-mv="receive">تاريخ الإنتاج<input id="mvM" type="date" dir="ltr"></label>
+        <label data-mv="receive">تاريخ الانتهاء<input id="mvE" type="date" dir="ltr"></label>
+        <label data-mv="receive">PAO (شهور بعد الفتح)<input id="mvO" type="number" min="1" max="60" dir="ltr" placeholder="12"></label>
+        <label>ملاحظة<input id="mvN"></label>
+        <label style="justify-content:end"><button class="btn" type="button" id="mvGo">تنفيذ</button></label>
+      </div>
+
+      <div class="two">
+        <div><h3>المخازن</h3>
+          <div class="bar"><input id="whName" placeholder="اسم المخزن" style="flex:1 1 140px"><input id="whLoc" placeholder="الموقع" style="flex:1 1 120px"><button class="sm ok" type="button" id="whAdd">+ مخزن</button></div>
+          <div class="tbl"><table><thead><tr><th>المخزن</th><th>قطع</th><th>رئيسي</th><th>شغّال</th></tr></thead><tbody id="whRows"></tbody></table></div></div>
+        <div><h3>جرد</h3><p class="hint">اختار المخزن، عِد اللي عالرف واكتبه، واحفظ. الفرق بينسجل كحركة "جرد".</p>
+          <div class="bar"><select id="tkW" style="flex:1"></select><input id="tkQ" type="search" placeholder="فلترة…" style="flex:1"><button class="sm ok" type="button" id="tkGo">احفظ الجرد</button></div>
+          <div class="tbl" style="max-height:320px"><table><thead><tr><th>المنتج</th><th>بالنظام</th><th>المعدود</th></tr></thead><tbody id="tkRows"></tbody></table></div></div>
+      </div>
+
+      <h3 style="margin:8px 0 0">الدفعات وتواريخ الصلاحية</h3>
+      <div class="tbl" style="max-height:340px"><table><thead><tr><th>المنتج</th><th>الدفعة</th><th>إنتاج</th><th>انتهاء</th><th>PAO</th><th>العدد</th><th>المخزن</th><th>الحالة</th><th>خلصت؟</th></tr></thead><tbody id="btRows"></tbody></table></div>
+
+      <h3 style="margin:8px 0 0">سجل الحركات</h3>
+      <div class="bar"><select id="mlT"><option value="">كل الأنواع</option></select><input id="mlQ" type="search" placeholder="ابحث باسم المنتج أو رقم الطلب" style="flex:1"></div>
+      <div class="tbl" style="max-height:420px"><table><thead><tr><th>الوقت</th><th>النوع</th><th>المنتج</th><th>العدد</th><th>المخزن</th><th>مين</th><th>ملاحظة</th></tr></thead><tbody id="mlRows"></tbody></table></div>
     </div>
 
     <div class="panel" id="t-audit" hidden>
@@ -797,6 +839,7 @@ document.addEventListener("click", async e => {
 });
 window.addEventListener("load", boot);  // after admin-ops.js is in
 </script>
-<script src="admin-ops.js?v=1793881875"></script>
+<script src="admin-ops.js?v=1793884041"></script>
+<script src="admin-inv.js?v=1793884041"></script>
 </body>
 </html>

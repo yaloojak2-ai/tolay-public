@@ -41,7 +41,7 @@ window.TS = (() => {
   function build(products, desc) {
     IDX = products.map(p => {
       const x = desc?.[p.b + "|" + p.n] || {}, sh = (p.sw || []).map(s => `${s.name} ${s.barcode || ""} ${family(s.hex)}`).join(" ");
-      const codes = [p.sku, p.bc, ...(p.sw || []).map(s => s.barcode)].filter(Boolean).map(c => String(c).toLowerCase());
+      const codes = [p.sku, p.bc, "tly" + p.id, ...(p.sw || []).flatMap((s, i) => [s.barcode, `tly${p.id}-${i + 1}`])].filter(Boolean).map(c => String(c).toLowerCase());  // TLY… = our printed labels
       return { p, b: norm(p.b), n: norm(p.n), codes, hay: " " + norm(`${p.b} ${p.n} ${p.cat} ${p.s || ""} ${sh} ${p.sku || ""} ${p.bc || ""} ${p.fin || ""} ${x.t || ""}`) + " " };
     });
     VOCAB = [...new Set(IDX.flatMap(e => e.hay.split(" ")).filter(w => w.length > 2))];

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ملصقات باركود · Tolay Makeup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap">
+<style>
+:root{--pink:#e8197d;--green:#c6f432;--ink:#111;--muted:#666;--line:#e6e6e6}
+*{box-sizing:border-box}
+body{margin:0;background:#f4f4f4;color:var(--ink);font:15px/1.5 Rubik,system-ui,sans-serif}
+.pick{max-width:900px;margin:20px auto;background:#fff;border-radius:16px;padding:20px}
+h1{margin:0 0 4px;font-size:22px;color:var(--pink)}
+.hint{color:var(--muted);font-size:13px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0}
+input,select{font:inherit;border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-width:0}
+button{font:500 15px Rubik,sans-serif;border:0;border-radius:999px;padding:10px 22px;background:var(--pink);color:#fff;cursor:pointer}
+.list{max-height:50vh;overflow:auto;border:1px solid var(--line);border-radius:12px}
+.row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line)}
+.row small{display:block;color:var(--muted)}
+.row input{width:70px}
+.sheet{display:grid;grid-template-columns:repeat(auto-fill,50mm);gap:2mm;justify-content:center;padding:6mm}
+.lb{width:50mm;height:30mm;border:1px dashed #bbb;border-radius:2mm;padding:1.5mm 2mm;display:flex;flex-direction:column;overflow:hidden;background:#fff}
+.lb .t{direction:ltr;text-align:left;font-size:7.5pt;line-height:1.15;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb .s{font-size:6.5pt;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb svg{width:100%;height:13mm;margin-top:auto}
+.lb .p{display:flex;justify-content:space-between;font-size:7pt;font-weight:700;direction:ltr}
+.lb .p b{color:var(--pink)}
+@media print{body{background:#fff}.pick{display:none}.sheet{padding:0}.lb{border-color:transparent;break-inside:avoid}@page{margin:6mm}}
+</style>
+</head>
+<body>
+<section class="pick">
+  <h1>🏷️ ملصقات باركود</h1>
+  <p class="hint">اختار المنتجات وعدد الملصقات لكل درجة، واطبع على ورق ملصقات 50×30 ملم. اللي إله باركود أصلي بينطبع نفسه، والباقي بياخد رمز TLY خاص فينا، والكاميرا بالبحث بتعرفه.</p>
+  <div class="bar"><input id="q" type="search" placeholder="ابحث باسم المنتج أو الماركة…" style="flex:1 1 220px">
+    <label class="hint"><input type="checkbox" id="price" checked style="width:auto"> السعر</label>
+    <label class="hint"><input type="checkbox" id="stock" style="width:auto"> عدد = الكمية بالمخزون</label>
+    <button type="button" id="go">طباعة</button></div>
+  <div class="list" id="list"><p class="hint" style="padding:12px">لحظة…</p></div>
+</section>
+<main class="sheet" id="sheet"></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="lib/JsBarcode.all.min.js"></script>
+<script src="config.js"></script>
+<script>
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const $ = s => document.querySelector(s);
+let ROWS = [], N = {};
+// one row per product + shade; the code is the real barcode if we have it, else our own TLY code
+const codeOf = (p, sw, i) => (sw && sw.barcode) || (!sw && (p.barcode || p.sku)) || (sw ? `TLY${p.id}-${i + 1}` : `TLY${p.id}`);
+const priceOf = p => p.retail_price == null ? null : Math.round(p.retail_price * (100 - (+p.discount || 0))) / 100;
+(async () => {
+  const { data, error } = await db.from("products").select("*").eq("active", true).order("sort");
+  if (error) { $("#list").innerHTML = `<p class="hint" style="padding:12px">ما قدرنا نحمّل المنتجات.</p>`; return; }
+  data.forEach(p => { const sw = p.swatches || [];
+    (sw.length ? sw : [null]).forEach((s, i) => ROWS.push({ key: p.id + "|" + i, p, shade: s?.name || "", code: codeOf(p, s, i), stock: +(p.stock || {})[s?.name || ""] || 0 })); });
+  draw();
+})();
+function draw() {
+  const q = $("#q").value.trim().toLowerCase();
+  $("#list").innerHTML = ROWS.filter(r => !q || `${r.p.brand} ${r.p.name} ${r.shade} ${r.code}`.toLowerCase().includes(q)).slice(0, 300).map(r =>
+    `<div class="row"><div>${esc(r.p.brand)} – ${esc(r.p.name)}<small>${esc(r.shade) || "—"} · <span dir="ltr">${esc(r.code)}</span></small></div><small>${r.stock ? r.stock + " بالمخزون" : ""}</small>
+     <input type="number" min="0" dir="ltr" value="${N[r.key] || ""}" data-k="${r.key}" aria-label="عدد الملصقات"></div>`).join("") || `<p class="hint" style="padding:12px">ما في نتائج.</p>`;
+}
+$("#q").addEventListener("input", draw);
+$("#list").addEventListener("input", e => { const k = e.target.dataset.k; if (k) N[k] = +e.target.value || 0; });
+$("#stock").addEventListener("change", e => { ROWS.forEach(r => { if (e.target.checked) N[r.key] = r.stock; else delete N[r.key]; }); draw(); });
+$("#go").addEventListener("click", () => {
+  const show = $("#price").checked, out = [];
+  ROWS.forEach(r => { for (let i = 0; i < (N[r.key] || 0) && out.length < 2000; i++) out.push(r); });
+  if (!out.length) { alert("اكتب عدد الملصقات جنب المنتجات اللي بدك ياها."); return; }
+  $("#sheet").innerHTML = out.map((r, i) => { const pr = priceOf(r.p);
+    return `<div class="lb"><div class="t">${esc(r.p.brand)} · ${esc(r.p.name)}</div><div class="s">${esc(r.shade)}</div><svg id="b${i}"></svg>
+      <div class="p"><span>TOLAY MAKEUP</span>${show && pr != null ? `<b>${pr} ₪</b>` : ""}</div></div>`; }).join("");
+  out.forEach((r, i) => { try { JsBarcode("#b" + i, r.code, { format: "CODE128", height: 40, width: 1.3, fontSize: 11, margin: 0 }); } catch { } });
+  setTimeout(print, 300);
+});
+</script>
+</body>
+</html>

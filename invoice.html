@@ -68,7 +68,7 @@ const money = n => n === null || n === undefined ? "يتأكد" : `${Number(n).t
       <div class="cod">${cod === null ? "المبلغ يتأكد" : cod ? `يحصّل عند التسليم: ${money(cod)}` : "مدفوع ✓"}</div>
       <p class="meta" style="margin:8px 0 0">افحص قبل الدفع · لا يمكن الإرجاع بعد الاستلام</p>`;
     const sc = document.createElement("script");
-    sc.src = "https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js";
+    sc.src = "lib/JsBarcode.all.min.js";
     sc.onload = () => JsBarcode("#bc", "TOLAY-" + o.id, { height: 50, displayValue: true, fontSize: 14, margin: 0 });
     document.head.appendChild(sc);
     return;
