@@ -131,7 +131,7 @@ function drawAccounts() {
 }
 $("#acQ").addEventListener("input", drawAccounts);
 async function adminUsers(body) {
-  const { data, error } = await db.functions.invoke("admin-users", { body });
+  const { data, error } = await db.functions.invoke("dynamic-action", { body });
   if (!error) return data;
   let msg = error.message; try { msg = (await error.context.json()).error || msg; } catch { }
   toast(/Failed to send|not found|404/i.test(msg) ? "لازم تنشر دالة admin-users على Supabase أول (التعليمات بالمحادثة)" : msg === "2fa" ? "ادخل برمز التحقق بخطوتين أول" : "ما زبط: " + msg);
