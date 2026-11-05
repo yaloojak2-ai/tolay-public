@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>سند قبض · Tolay Makeup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700&family=Rubik:wght@400;500;700&display=swap">
+<style>
+:root{--pink:#e8197d;--green:#c6f432;--ink:#111;--muted:#666;--line:#e6e6e6}
+*{box-sizing:border-box}
+body{margin:0;background:#f4f4f4;color:var(--ink);font:15px/1.5 Rubik,system-ui,sans-serif}
+.inv{max-width:760px;margin:20px auto;background:#fff;padding:32px 28px;border-radius:16px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:4px solid var(--green);padding-bottom:16px}
+.logo{font:700 34px/1 "Bodoni Moda",serif;letter-spacing:.06em;direction:ltr}
+.logo small{display:block;font:500 10px/1.6 Rubik,sans-serif;letter-spacing:.5em;color:var(--pink)}
+h1{margin:0;font-size:22px;color:var(--pink)}
+.meta{color:var(--muted);font-size:13px}
+.who{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}
+.who div{background:#fafafa;border-radius:10px;padding:10px 12px}
+.who b{display:block;font-size:12px;color:var(--muted);font-weight:500}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{background:var(--ink);color:#fff;font-weight:500;padding:8px;text-align:start}
+td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+td small{display:block;color:var(--muted)}
+.n{text-align:center;white-space:nowrap}
+.sum{margin-top:14px;margin-inline-start:auto;width:min(320px,100%)}
+.sum div{display:flex;justify-content:space-between;padding:5px 0}
+.sum .tot{border-top:2px solid var(--ink);margin-top:6px;padding-top:10px;font-size:19px;font-weight:700}
+.foot{margin-top:24px;text-align:center;color:var(--muted);font-size:12px}
+.bar{max-width:760px;margin:16px auto 0;display:flex;gap:10px;justify-content:center}
+button{font:500 15px Rubik,sans-serif;border:0;border-radius:999px;padding:10px 22px;background:var(--pink);color:#fff;cursor:pointer}
+button.g{background:#fff;color:var(--ink);border:1px solid var(--ink)}
+.msg{text-align:center;padding:60px 16px}
+@media (max-width:520px){.inv{margin:0;border-radius:0;padding:20px 14px}.who{grid-template-columns:1fr}.logo{font-size:26px}th,td{padding:6px 4px;font-size:13px}}
+@media print{body{background:#fff}.bar{display:none}.inv{margin:0;padding:0;max-width:none}th{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+.big{font-size:30px;font-weight:700;color:var(--pink);direction:ltr;display:inline-block}
+.sig{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:40px}.sig div{border-top:1px dashed var(--muted);padding-top:6px;text-align:center;color:var(--muted);font-size:12px}
+tr.void td{text-decoration:line-through;opacity:.5}
+</style>
+</head>
+<body>
+<div class="bar"><button type="button" onclick="print()">طباعة / حفظ PDF</button><button class="g" type="button" onclick="history.length > 1 ? history.back() : close()">رجوع</button></div>
+<main class="inv" id="inv"><p class="msg">لحظة…</p></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const money = n => n === null || n === undefined ? "—" : `${Number(n).toLocaleString("en-US", { maximumFractionDigits: 2 })} ₪`;
+const day = v => new Date(v).toLocaleDateString("en-GB");
+const METHOD = { cash: "كاش", transfer: "تحويل بنكي", check: "شيك", courier: "تحصيل شركة التوصيل", card: "بطاقة" };
+const OST = { new: "جديد", pending: "بانتظار التأكيد", confirmed: "مؤكد", preparing: "قيد التجهيز", packed: "تم التغليف", ready: "جاهز للشحن", shipped: "بالطريق", delivered: "تم التسليم", cancelled: "ملغي", returned: "مرتجع", refused: "مرفوض" };
+const hdr = (title, no, date) => `<div class="top"><div class="logo">TOLAY<small>MAKEUP · FROM U.S.A</small></div>
+  <div style="text-align:end"><h1>${title}</h1><div class="meta">${no ? `رقم <b dir="ltr">${no}</b> · ` : ""}<span dir="ltr">${day(date)}</span></div></div></div>`;
+const el = document.getElementById("inv"), q = new URLSearchParams(location.search);
+const digits = s => String(s || "").replace(/\D/g, "");
+
+async function receipt(id) {
+  // RLS: finance staff read every payment, a customer only their own
+  const { data: p } = await db.from("payments").select("*").eq("id", id).maybeSingle();
+  if (!p) { el.innerHTML = `<p class="msg">ما لقينا السند. لازم تكون داخل بحساب الإدارة أو صاحب الدفعة.</p>`; return; }
+  const { data: o } = p.order_id ? await db.from("orders").select("*").eq("id", p.order_id).maybeSingle() : { data: null };
+  document.title = `سند قبض ${p.id} · Tolay Makeup`;
+  const lines = o?.items || [];
+  el.innerHTML = `${hdr("سند قبض" + (p.void ? " (ملغي)" : ""), "R-" + p.id, p.at)}
+    <div class="who"><div><b>استلمنا من</b>${esc(p.name)}<br><span dir="ltr">${esc(p.phone || "")}</span></div>
+      <div><b>المبلغ</b><span class="big">${money(p.amount)}</span><br><small class="meta">${METHOD[p.method] || p.method}${p.note ? " · " + esc(p.note) : ""}</small></div></div>
+    ${o ? `<p class="meta">عن الطلب <b dir="ltr">#${o.id}</b> بتاريخ <span dir="ltr">${day(o.created_at)}</span></p>
+    <table><thead><tr><th class="n">#</th><th>الصنف</th><th class="n">العدد</th><th class="n">السعر</th><th class="n">المجموع</th></tr></thead>
+      <tbody>${lines.map((it, i) => `<tr><td class="n">${i + 1}</td><td>${esc(it.name)}<small>${esc(it.brand)}${it.shade ? " · " + esc(it.shade) : ""}</small></td><td class="n">${it.qty}</td><td class="n">${money(it.unit)}</td><td class="n">${it.unit == null ? "—" : money(Math.round(it.unit * it.qty * 100) / 100)}</td></tr>`).join("")}</tbody></table>
+    <div class="sum"><div><span>قيمة الطلب</span><b>${money(o.total)}</b></div><div><span>المدفوع لهلأ</span><b>${money(o.paid)}</b></div>
+      <div class="tot"><span>الباقي</span><span>${o.total == null ? "—" : money(Math.max(0, o.total - (+o.paid || 0)))}</span></div></div>` : ""}
+    <div class="sig"><div>توقيع المستلم · Tolay Makeup</div><div>توقيع الدافع</div></div>
+    <p class="foot">Tolay Makeup 💗 منتجات أصلية من أمريكا</p>`;
+}
+
+async function statement(key) {
+  const isUid = /^[0-9a-f-]{36}$/.test(key);
+  let oq = db.from("orders").select("id,created_at,total,paid,status,name,phone,user_id").order("created_at"), pq = db.from("payments").select("*").order("at");
+  if (isUid) { oq = oq.eq("user_id", key); pq = pq.eq("user_id", key); }
+  const [{ data: O }, { data: P }] = await Promise.all([oq.limit(1000), pq.limit(1000)]);
+  // phone-only customers: match on digits, the same key customer_balances() uses
+  const os = (O || []).filter(o => isUid || (!o.user_id && digits(o.phone) === key)), ps = (P || []).filter(p => isUid || (!p.user_id && digits(p.phone) === key));
+  if (!os.length && !ps.length) { el.innerHTML = `<p class="msg">ما في حركات لهالزبون، أو الحساب ما إله صلاحية.</p>`; return; }
+  const who = os.at(-1) || ps.at(-1), live = o => !["cancelled", "returned", "refused"].includes(o.status) && o.total != null;
+  const rows = [...os.map(o => ({ at: o.created_at, t: `طلب #${o.id} · ${OST[o.status] || o.status}`, dr: live(o) ? +o.total : 0, cr: 0, off: !live(o) })),
+    ...ps.map(p => ({ at: p.at, t: `سند قبض R-${p.id} · ${METHOD[p.method] || p.method}`, dr: 0, cr: p.void ? 0 : +p.amount, off: p.void }))].sort((a, b) => a.at < b.at ? -1 : 1);
+  let bal = 0; const dr = rows.reduce((a, r) => a + r.dr, 0), cr = rows.reduce((a, r) => a + r.cr, 0);
+  document.title = `كشف حساب ${who.name} · Tolay Makeup`;
+  el.innerHTML = `${hdr("كشف حساب", "", new Date())}
+    <div class="who"><div><b>الزبون</b>${esc(who.name)}<br><span dir="ltr">${esc(who.phone || "")}</span></div><div><b>الرصيد المستحق</b><span class="big">${money(dr - cr)}</span></div></div>
+    <table><thead><tr><th>التاريخ</th><th>البيان</th><th class="n">عليه</th><th class="n">دفع</th><th class="n">الرصيد</th></tr></thead>
+      <tbody>${rows.map(r => { bal += r.dr - r.cr; return `<tr class="${r.off ? "void" : ""}"><td dir="ltr">${day(r.at)}</td><td>${r.t}</td><td class="n">${r.dr ? money(r.dr) : ""}</td><td class="n">${r.cr ? money(r.cr) : ""}</td><td class="n">${money(bal)}</td></tr>`; }).join("")}</tbody></table>
+    <div class="sum"><div><span>مجموع الطلبات</span><b>${money(dr)}</b></div><div><span>مجموع الدفعات</span><b>${money(cr)}</b></div><div class="tot"><span>الباقي</span><span>${money(dr - cr)}</span></div></div>
+    <p class="foot">Tolay Makeup 💗 الطلبات الملغية والدفعات الملغية مشطوبة ومش محسوبة</p>`;
+}
+
+q.get("statement") ? statement(q.get("statement")) : q.get("id") ? receipt(+q.get("id")) : el.innerHTML = `<p class="msg">رابط ناقص.</p>`;
+</script>
+</body>
+</html>

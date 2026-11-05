@@ -16,15 +16,15 @@
 <meta name="twitter:image" content="https://yaloojak2-ai.github.io/tolay-public/img/og.jpg?v=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Rubik:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1793854871">
+<link rel="stylesheet" href="style.css?v=1793881875">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<script src="i18n.js?v=1793854871"></script>
+<script src="i18n.js?v=1793881875"></script>
 </head>
 <body>
 <div class="wholesale-bar" id="wBar" hidden>وضع التاجر: أسعار الجملة ظاهرة لإلك</div>
 <header class="top"><div class="wrap">
   <a class="logo" href="#/" aria-label="Tolay Makeup"><b>TOLAY</b><small>MAKEUP</small></a>
-  <label class="srch"><span data-ic="search"></span><input id="q" type="search" placeholder="ابحثي عن منتج أو براند…" aria-label="بحث" autocomplete="off"></label>
+  <label class="srch"><span data-ic="search"></span><input id="q" type="search" placeholder="ابحثي عن منتج أو براند…" aria-label="بحث" autocomplete="off"><button type="button" class="mic" data-mic="q" aria-label="ابحثي بالصوت" hidden>🎙️</button></label>
   <div class="qopts" id="qopts" hidden></div>
   <nav class="links"><a href="#/" data-tab="home">الرئيسية</a><a href="#/new" data-tab="new">جديدنا</a><a href="#/brands" data-tab="brands">الماركات</a><a href="#/cats" data-tab="cats">الأقسام</a><a href="#/arcade" data-tab="arcade">الألعاب</a><a href="#/club" data-tab="club" class="latin">Tolay Club</a><a href="#/account" data-tab="account">حسابي</a></nav>
   <a class="ib" href="#/wishlist" aria-label="المفضلة" data-ic="heart"><span class="n favN" hidden>0</span></a>
@@ -90,9 +90,11 @@
 <section class="page" id="pg-shop" hidden><div class="wrap">
   <div class="pghead"><h2 id="shopTitle">كل المنتجات</h2><small id="resultN"></small></div>
   <div class="tools"><select id="brand" aria-label="البراند"><option value="">كل البراندات</option></select>
-    <select id="sort" aria-label="الترتيب"><option value="">الترتيب: المقترح</option><option value="new">الأحدث</option><option value="low">السعر: من الأقل</option><option value="high">السعر: من الأعلى</option><option value="disc">أكبر خصم</option></select>
+    <select id="sort" aria-label="الترتيب"><option value="">الترتيب: المقترح</option><option value="new">الأحدث</option><option value="low">السعر: من الأقل</option><option value="high">السعر: من الأعلى</option><option value="disc">أكبر خصم</option><option value="best">الأكثر مبيعاً</option></select>
+    <span class="prng"><input id="pMin" type="number" min="0" dir="ltr" placeholder="من ₪" aria-label="أقل سعر"><input id="pMax" type="number" min="0" dir="ltr" placeholder="لـ ₪" aria-label="أعلى سعر"></span>
     <label class="fchk"><input type="checkbox" id="fDisc"> عليها خصم</label><label class="fchk"><input type="checkbox" id="fStock"> المتوفر بس</label></div>
   <div class="chips" id="chips" role="toolbar" aria-label="الأقسام"></div>
+  <p class="didyou" id="didyou"></p>
   <div class="grid" id="grid"><div class="loading">عم نحمّل المنتجات…</div></div>
 </div></section>
 
@@ -171,13 +173,14 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
 <script src="viz.js?v=1793632833"></script>
-<script src="desc.js?v=1793854871"></script>
-<script src="desc-i18n.js?v=1793854871"></script>
+<script src="desc.js?v=1793881875"></script>
+<script src="desc-i18n.js?v=1793881875"></script>
+<script src="search.js?v=1793881875"></script>
 <script src="seed.js?v=1793632833"></script>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-let S = {}, CATS = [], ALL = [], byId = {}, profile = null, WS = {}, DISC = { pct: 0 }, VM = false, toP, HID = null, BEST = [], RATE = {}, REELS = [];
+let S = {}, CATS = [], ALL = [], byId = {}, profile = null, WS = {}, DISC = { pct: 0 }, VM = false, toP, HID = null, BEST = [], RATE = {}, REELS = [], TOPQ = [];
 const isTrader = () => profile && profile.status === "approved";
 const money = n => `${Number(n).toLocaleString("en-US")} ${S.currency || ""}`.trim();
 const has = n => n !== null && n !== undefined && n !== "";
@@ -220,12 +223,14 @@ async function load() {
   const SD = window.SEED || {}, catMedia = Object.fromEntries((cats || []).map(c => [c.id, Object.keys(c.media || {}).length ? c.media : SD.media?.[c.name] || {}]));
   const NEW = new Set((SD.add || []).map(a => a.name));
   const swOf = p => ((p.swatches || []).length ? p.swatches : SD.swatches?.[p.name] || []).map(s => ({ ...s, img: s.img || SD.img?.[p.name]?.[s.name] || "", vid: s.vid || SD.vid?.[p.name]?.[s.name] || "" }));
-  toP = p => ({ id: p.id, disc: +p.discount || 0, ds: p.drop_start ? Date.parse(p.drop_start) : null, de: p.drop_end ? Date.parse(p.drop_end) : null, worth: +p.worth || 0, st: p.stock || {}, b: p.brand, n: p.name, s: p.shades, z: p.size, d: p.description, pr: p.retail_price, img: p.image_url ? p.image_url + (p.image_url.includes("?") ? "&" : "?") + "v=1793640000" : p.image_url, featured: p.featured, cat: catName[p.category_id] || "", sw: swOf(p), fin: p.finish || SD.finish?.[p.name] || "", viz: catViz[p.category_id] || "photo", isNew: (p.arrived_at && Date.now() - Date.parse(p.arrived_at) < 30 * 864e5) || NEW.has(p.name), media: SD.pvid?.[p.name] ? { ...catMedia[p.category_id], video: SD.pvid[p.name] } : catMedia[p.category_id] || {} });
+  toP = p => ({ id: p.id, sku: p.sku || "", bc: p.barcode || "", disc: +p.discount || 0, ds: p.drop_start ? Date.parse(p.drop_start) : null, de: p.drop_end ? Date.parse(p.drop_end) : null, worth: +p.worth || 0, st: p.stock || {}, b: p.brand, n: p.name, s: p.shades, z: p.size, d: p.description, pr: p.retail_price, img: p.image_url ? p.image_url + (p.image_url.includes("?") ? "&" : "?") + "v=1793640000" : p.image_url, featured: p.featured, cat: catName[p.category_id] || "", sw: swOf(p), fin: p.finish || SD.finish?.[p.name] || "", viz: catViz[p.category_id] || "photo", isNew: (p.arrived_at && Date.now() - Date.parse(p.arrived_at) < 30 * 864e5) || NEW.has(p.name), media: SD.pvid?.[p.name] ? { ...catMedia[p.category_id], video: SD.pvid[p.name] } : catMedia[p.category_id] || {} });
   // vault products load on the Club page only; finished drops leave the store
   ALL = prods.filter(p => !p.vault && !(p.drop_end && Date.parse(p.drop_end) < Date.now())).map(toP);
   byId = Object.fromEntries(ALL.map(p => [p.id, p]));
   CATS = (cats || []).map(c => ({ s: c.name, p: ALL.filter(p => p.cat === c.name) })).filter(c => c.p.length);
-  const [h, bs, rt, rl] = await Promise.all([db.rpc("hidden_today"), db.rpc("best_sellers"), db.rpc("product_ratings"), db.from("reels").select("*").order("sort").order("id", { ascending: false })]);  // empty until the SQL runs
+  TS.build(ALL, window.DESC);
+  const [h, bs, rt, rl, tq] = await Promise.all([db.rpc("hidden_today"), db.rpc("best_sellers"), db.rpc("product_ratings"), db.from("reels").select("*").order("sort").order("id", { ascending: false }), db.rpc("top_searches")]);  // empty until the SQL runs
+  TOPQ = (tq.data || []).map(r => r.term);
   RATE = Object.fromEntries((rt.data || []).map(r => [r.product_id, r])); REELS = rl.data || [];
   try { if (!sessionStorage.getItem("tolay-v")) { sessionStorage.setItem("tolay-v", "1"); db.rpc("track_visit").then(() => {}, () => {}); } } catch {}
   HID = h.data || null; BEST = (bs.data || []).map(r => byId[r.product_id]).filter(p => p?.img);
@@ -381,12 +386,44 @@ function showPick(k) {
   $("#pickRow").nextElementSibling.hidden = l.length <= 6;
 }
 const GROUPS = { "وجه": ["البرايمر", "البشرة والبودرة", "الخدود"], "عيون": ["الماسكارا", "ظلال العيون", "الحواجب"] };
+let lastCode = "";
+// voice: speak instead of typing (browser speech-to-text, free). Fills the search box or any text field by id.
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+document.querySelectorAll("[data-mic]").forEach(b => b.hidden = !SR);
+function listen(id) {
+  if (!SR) { toast("المتصفح ما بيدعم الصوت، جرّبي كروم"); return; }
+  const r = new SR(); r.lang = { ar: "ar-JO", en: "en-US", he: "he-IL" }[window.LANG] || "ar-JO"; r.interimResults = false;
+  toast("🎙️ احكي هلأ…");
+  r.onresult = e => { const el = $("#" + id), txt = e.results[0][0].transcript; el.value = el.tagName === "TEXTAREA" && el.value ? el.value + " " + txt : txt; el.dispatchEvent(new Event("input")); if (id === "q") el.focus(); };
+  r.onerror = () => toast("ما سمعنا منيح، جرّبي مرة ثانية");
+  r.start();
+}
+// barcode from the phone camera (Chrome on Android; iPhone Safari doesn't support it yet)
+async function scanBarcode() {
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); } catch { toast("لازم تسمحي للكاميرا"); return; }
+  const det = new BarcodeDetector(), v = document.createElement("video"); v.srcObject = stream; v.playsInline = true; v.muted = true; await v.play();
+  $("#reelBody").innerHTML = ""; $("#reelBody").append(v); $("#reelBody").insertAdjacentHTML("beforeend", `<div class="rinfo"><b>وجّهي الكاميرا على الباركود</b></div>`); $("#reel").showModal();
+  const stop = () => stream.getTracks().forEach(x => x.stop());
+  $("#reel").addEventListener("close", stop, { once: true });
+  const tick = async () => {
+    if (!$("#reel").open) return;
+    const c = (await det.detect(v).catch(() => []))[0];
+    if (c) { $("#reel").close(); $("#q").value = c.rawValue; $("#q").dispatchEvent(new Event("input")); return; }
+    requestAnimationFrame(tick);
+  };
+  tick();
+}
 let cat = "", q = "", brand = "", onlyNew = false, onlyDisc = false, grp = "";
 function render() {
-  const t = q.trim().toLowerCase();
   const fd = onlyDisc || $("#fDisc").checked, fs = $("#fStock").checked, so = $("#sort").value, pv = p => has(p.pr) ? unit(p) : Infinity;
-  const list = ALL.filter(p => (!onlyNew || p.isNew) && (!cat || p.cat === cat) && (!grp || GROUPS[grp].includes(p.cat)) && (!brand || p.b === brand) && (!fd || +p.disc > 0) && (!fs || !soldOut(p)) && (!t || `${p.b} ${p.n} ${p.cat}`.toLowerCase().includes(t)));
-  if (so === "low") list.sort((a, b) => pv(a) - pv(b)); else if (so === "high") list.sort((a, b) => (has(b.pr) ? unit(b) : -1) - (has(a.pr) ? unit(a) : -1)); else if (so === "new") list.sort((a, b) => b.isNew - a.isNew || b.id - a.id); else if (so === "disc") list.sort((a, b) => (+b.disc || 0) - (+a.disc || 0));
+  const pmin = +$("#pMin").value || 0, pmax = +$("#pMax").value || 0;
+  const r = TS.search(q, p => has(p.pr) ? unit(p) : NaN), rank = new Map(BEST.map((p, i) => [p.id, i + 1]));
+  $("#didyou").innerHTML = r.fixed ? `قصدك: <b class="latin">${esc(r.fixed)}</b>؟ هاي النتائج إلها` : "";
+  if (r.code && q !== lastCode) { lastCode = q; openProduct(r.code.id); }
+  const list = r.list.filter(p => (!onlyNew || p.isNew) && (!cat || p.cat === cat) && (!grp || GROUPS[grp].includes(p.cat)) && (!brand || p.b === brand) && (!fd || +p.disc > 0) && (!fs || !soldOut(p)) && (!pmin || pv(p) >= pmin) && (!pmax || pv(p) <= pmax));
+  if (so === "best") list.sort((a, b) => (rank.get(a.id) || 999) - (rank.get(b.id) || 999));
+  else if (so === "low") list.sort((a, b) => pv(a) - pv(b)); else if (so === "high") list.sort((a, b) => (has(b.pr) ? unit(b) : -1) - (has(a.pr) ? unit(a) : -1)); else if (so === "new") list.sort((a, b) => b.isNew - a.isNew || b.id - a.id); else if (so === "disc") list.sort((a, b) => (+b.disc || 0) - (+a.disc || 0));
   $("#resultN").textContent = `${list.length} منتج`;
   $("#shopTitle").textContent = brand || cat || grp || (onlyDisc ? "العروض 🔥" : onlyNew ? "وصل حديثاً" : "كل المنتجات");
   $("#brand").value = brand;
@@ -445,23 +482,37 @@ $("#lang").value = window.LANG || "ar";
 $("#lang").addEventListener("change", e => setLang(e.target.value));
 let qLogT;
 const recentQ = () => { try { return JSON.parse(localStorage.getItem("tolay-recent") || "[]"); } catch { return []; } };
+// search panel: stays open while the box is focused. Empty: quick options, trending searches, recent.
+// Typing: Google-style completions + matching products with photo and price.
 function qoptsShow(on) {
   if (on) {
-    const bs = [...brandMap()].filter(([b]) => !SKIP_BRANDS.includes(b)).sort((a, b) => b[1].length - a[1].length).slice(0, 12), rec = recentQ();
-    $("#qopts").innerHTML = `<div><b>اقتراحات</b><a href="#/offers">🔥 العروض</a><a href="#/new">✨ وصل حديثاً</a><a href="#/brands">كل الماركات</a><a href="#/surprise">🎁 فاجئيني</a></div>
-      ${rec.length ? `<div><b>بحثتي عنها مؤخراً</b>${rec.map(r => `<button type="button" data-qr="${esc(r)}">${esc(r)}</button>`).join("")}</div>` : ""}
-      <div><b>الأقسام</b>${CATS.map(c => `<a href="#/shop/${enc(c.s)}">${esc(c.s)}</a>`).join("")}</div>
-      <div><b>ماركات</b>${bs.map(([b]) => `<a class="latin" href="#/brand/${enc(b)}">${esc(b)}</a>`).join("")}</div>`;
+    const t = q.trim(), nt = TS.norm(t), rec = recentQ();
+    const bs = [...brandMap()].filter(([b]) => !SKIP_BRANDS.includes(b)).sort((a, b) => b[1].length - a[1].length);
+    const chips = `<div><b>خيارات البحث</b><a href="#/offers">🔥 العروض</a><a href="#/new">✨ وصل حديثاً</a><button type="button" data-qsort="best">⭐ الأكثر مبيعاً</button><button type="button" data-qstock>✅ المتوفر بس</button><a href="#/brands">كل الماركات</a><a href="#/surprise">🎁 فاجئيني</a>${"BarcodeDetector" in window ? `<button type="button" data-scan>📷 امسحي باركود</button>` : ""}</div>`;
+    let top = "";
+    if (t) {
+      const comp = [...new Set([...TOPQ, ...rec, ...bs.map(([b]) => b), ...ALL.map(p => `${p.b} ${p.n}`)].filter(x => TS.norm(x).startsWith(nt) && TS.norm(x) !== nt))].slice(0, 5);
+      const r = TS.search(t, p => has(p.pr) ? unit(p) : NaN), ps = r.list.slice(0, 5);
+      top = `${r.fixed ? `<div><b>قصدك</b><button type="button" data-qr="${esc(r.fixed)}">${esc(r.fixed)}</button></div>` : ""}
+        ${comp.length ? `<ul class="qcomp">${comp.map(c => `<li><button type="button" data-qr="${esc(c)}"><span>🔍</span>${esc(c)}</button></li>`).join("")}</ul>` : ""}
+        ${ps.length ? `<div class="qprods">${ps.map(p => `<button type="button" data-open="${p.id}"><img src="${esc(p.img || "")}" alt=""><span><small class="latin">${esc(p.b)}</small>${esc(p.n)}</span><em>${has(p.pr) ? money(unit(p)) : ""}</em></button>`).join("")}${r.list.length > 5 ? `<a href="#/shop">كل النتائج (${r.list.length}) ‹</a>` : ""}</div>` : `<p class="meta">ما لقينا اشي بهالاسم. جرّبي اسم الماركة أو نوع المنتج.</p>`}`;
+    } else {
+      top = `${TOPQ.length ? `<div><b>الأكثر بحثاً 🔥</b>${TOPQ.slice(0, 8).map(r => `<button type="button" data-qr="${esc(r)}">${esc(r)}</button>`).join("")}</div>` : ""}
+        ${rec.length ? `<div><b>بحثتي عنها مؤخراً</b>${rec.map(r => `<button type="button" data-qr="${esc(r)}">${esc(r)}</button>`).join("")}</div>` : ""}
+        <div><b>الأقسام</b>${CATS.map(c => `<a href="#/shop/${enc(c.s)}">${esc(c.s)}</a>`).join("")}</div>
+        <div><b>ماركات</b>${bs.slice(0, 12).map(([b]) => `<a class="latin" href="#/brand/${enc(b)}">${esc(b)}</a>`).join("")}</div>`;
+    }
+    $("#qopts").innerHTML = top + chips;
   }
   $("#qopts").hidden = !on;
 }
-$("#q").addEventListener("focus", () => qoptsShow(!q.trim()));
+$("#q").addEventListener("focus", () => qoptsShow(true));
 $("#q").addEventListener("blur", () => setTimeout(() => qoptsShow(false), 250));
 const logSearch = () => { const t = q.trim().toLowerCase(); if (t.length < 2) return;
   try { localStorage.setItem("tolay-recent", JSON.stringify([t, ...recentQ().filter(x => x !== t)].slice(0, 6))); } catch {}
-  const n = ALL.filter(p => `${p.b} ${p.n} ${p.cat}`.toLowerCase().includes(t)).length;
+  const n = TS.search(t, p => has(p.pr) ? unit(p) : NaN).list.length;
   db.rpc("log_search", { p_term: t, p_results: n }).then(() => {}, () => {}); };
-$("#q").addEventListener("input", e => { qoptsShow(!e.target.value.trim()); clearTimeout(qLogT); qLogT = setTimeout(logSearch, 1500); q = e.target.value; if (/^#\/(shop|brand)/.test(location.hash)) render(); else location.hash = "#/shop"; });
+$("#q").addEventListener("input", e => { q = e.target.value; qoptsShow(document.activeElement === e.target); clearTimeout(qLogT); qLogT = setTimeout(logSearch, 1500); if (/^#\/(shop|brand)/.test(location.hash)) render(); else location.hash = "#/shop"; });
 $("#bq").addEventListener("input", brandsView);
 $("#trkForm").addEventListener("submit", async e => {
   e.preventDefault();
@@ -470,7 +521,7 @@ $("#trkForm").addEventListener("submit", async e => {
   $("#tOut").innerHTML = error || !o ? `<div class="empty">ما لقينا طلب بهالرقم وهالهاتف. تأكدي منهم أو احكينا عالواتساب.</div>`
     : `<div class="ord"><div class="oh"><b>#${o.id}</b><span class="os ${o.status}">${OST[o.status]}</span><small>${new Date(o.created_at).toLocaleDateString("en-GB")}</small></div>${trackHTML(o)}${o.total != null ? `<div class="of"><span>${money(o.total)}</span></div>` : ""}</div>`;
 });
-["sort", "fDisc", "fStock"].forEach(id => $("#" + id).addEventListener("change", render));
+["sort", "fDisc", "fStock", "pMin", "pMax"].forEach(id => $("#" + id).addEventListener("change", render));
 $("#brand").addEventListener("change", e => { location.hash = e.target.value ? "#/brand/" + enc(e.target.value) : "#/shop"; });
 let sx = null;
 $("#slider").addEventListener("touchstart", e => { sx = e.touches[0].clientX; }, { passive: true });
@@ -848,13 +899,15 @@ async function tierCard() {
     <small>المستوى بينحسب من الطلبات اللي تم تسليمها بالشهر اللي قبله.</small>`;
 }
 
-const OST = { new: "جديد", confirmed: "مؤكد", shipped: "بالطريق 🚚", delivered: "تم التسليم", cancelled: "ملغي" };
+const OST = { new: "جديد", pending: "بانتظار التأكيد", confirmed: "مؤكد", preparing: "قيد التجهيز", packed: "تم التغليف", ready: "جاهز للشحن", shipped: "بالطريق 🚚", delivered: "تم التسليم", cancelled: "ملغي", returned: "مرتجع", refused: "مرفوض بالتسليم" };
+// the 11 admin statuses folded into the 4 steps a customer sees
+const STEP_OF = { new: "new", pending: "new", confirmed: "confirmed", preparing: "confirmed", packed: "confirmed", ready: "confirmed", shipped: "shipped", delivered: "delivered" };
 // order tracking steps with the time each one happened
 const STEPS = [["new", "استلمنا طلبك"], ["confirmed", "تأكد وتجهّز"], ["shipped", "طلع مع الشوفير"], ["delivered", "وصلك ✓"]];
 function trackHTML(o) {
-  if (o.status === "cancelled") return `<div class="trk off">الطلب ملغي</div>`;
-  const at = { new: o.created_at }; (o.status_log || []).forEach(x => at[x.s] = x.at);
-  const cur = STEPS.findIndex(([k]) => k === o.status), t = v => v ? new Date(v).toLocaleString("en-GB", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
+  if (!STEP_OF[o.status]) return `<div class="trk off">${OST[o.status] || o.status}</div>`;
+  const at = { new: o.created_at }; (o.status_log || []).forEach(x => { const k = STEP_OF[x.s]; if (k && !at[k]) at[k] = x.at; });
+  const cur = STEPS.findIndex(([k]) => k === STEP_OF[o.status]), t = v => v ? new Date(v).toLocaleString("en-GB", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
   return `<ol class="trk">${STEPS.map(([k, l], i) => `<li class="${i <= cur ? "done" : ""}"><i></i><b>${l}</b><small dir="ltr">${i <= cur ? t(at[k]) : ""}</small></li>`).join("")}</ol>`;
 }
 let myOrders = [];
@@ -867,6 +920,11 @@ async function ordersView() {
     : `<div class="olist">${myOrders.map((o, i) => `<div class="ord"><div class="oh"><b>#${o.id}</b><span class="os ${o.status}">${OST[o.status]}</span><small>${new Date(o.created_at).toLocaleDateString("en-GB")}</small></div>
       ${trackHTML(o)}<ul>${o.items.map(it => `<li>${esc(it.brand)} – ${esc(it.name)}${it.shade ? " · " + esc(it.shade) : ""} × ${it.qty}</li>`).join("")}</ul>
       <div class="of"><span>${o.total !== null ? money(o.total) : "السعر يتأكد"}</span><a class="btn ghost" href="invoice.html?id=${o.id}" target="_blank" rel="noopener">🧾 الفاتورة</a><button class="btn ghost" type="button" data-reorder="${i}">أعيدي الطلب</button></div></div>`).join("")}</div>`;
+  // restock requests with the shop's reply and expected date
+  const { data: al } = await db.from("restock_alerts").select("*").order("created_at", { ascending: false });
+  if (al?.length) $("#acctBody").insertAdjacentHTML("beforeend", `<h2 style="margin-top:18px">🔔 طلبات التوفير</h2><div class="olist">${al.map(a => { const p = byId[a.product_id];
+    return `<div class="ord"><div class="oh"><b>${esc(p ? p.b + " – " + p.n : "#" + a.product_id)}</b>${a.shade ? `<small>${esc(a.shade)}</small>` : ""}</div>
+      <p class="hint" style="margin:6px 0 0">${a.reply ? `💬 ${esc(a.reply)}` : "استلمنا طلبك، رح نردّ عليكي قريب."}${a.eta ? ` · متوقع يتوفر <b dir="ltr">${new Date(a.eta).toLocaleDateString("en-GB")}</b>` : ""}</p></div>`; }).join("")}</div>`);
 }
 
 // PR program: creators apply, the admin approves from the dashboard
@@ -1052,7 +1110,11 @@ document.addEventListener("click", async e => {
   else if (d.reel) openReel(+d.reel);
   else if (d.pr !== undefined) prView();
   else if (d.copy) { navigator.clipboard?.writeText(d.copy).catch(() => {}); toast("انسخ الكود ✓ استعمليه بالسلة"); }
-  else if (d.qr) { $("#q").value = d.qr; $("#q").dispatchEvent(new Event("input")); }
+  else if (d.qr) { $("#q").value = d.qr; $("#q").dispatchEvent(new Event("input")); $("#q").focus(); }
+  else if (d.qsort) { $("#sort").value = d.qsort; location.hash = "#/shop"; render(); }
+  else if (d.qstock !== undefined) { $("#fStock").checked = true; location.hash = "#/shop"; render(); }
+  else if (d.scan !== undefined) scanBarcode();
+  else if (d.mic !== undefined) listen(t.dataset.mic || "q");
   else if (t.id === "pdAdd") { addToCart(pdState.id, pdState.shade, pdState.qty); $("#pd").close(); }
   else if (d.rm !== undefined) { cart.splice(+d.rm, 1); save(); drawCart(); }
   else if (d.q !== undefined) { const l = cart[+d.q]; l.qty += +d.d; if (l.qty < minQty(byId[l.id])) cart.splice(+d.q, 1); save(); drawCart(); }

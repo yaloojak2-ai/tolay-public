@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Tolay Admin</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700&family=Rubik:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1793854871">
+<link rel="stylesheet" href="style.css?v=1793881875">
 <style>
 body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 .adm{padding-block:28px 80px;display:flex;flex-direction:column;gap:20px}
@@ -45,6 +45,24 @@ tr.off td{opacity:.45}
 .swl div{display:flex;gap:8px;align-items:center}
 .swl input[type=color]{width:44px;height:38px;padding:2px;border-radius:10px;flex:none}
 .swl input[type=text]{flex:1}
+.nofin .fin{display:none!important}
+dialog.wide{width:min(980px,96vw);max-height:92vh}
+.odb{padding:24px;display:flex;flex-direction:column;gap:14px}
+.odh{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline}.odh h2{margin:0}
+.odg{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.odg label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.odc b,.odc>span{display:block}.odc>span{text-align:right}
+.odsum .btn{white-space:nowrap;border-radius:999px;padding:10px 18px}
+.odg select,.odg input,.odsum input,.odb textarea{background:var(--ink-2);border:1px solid var(--line);color:var(--ivory);border-radius:10px;padding:8px 12px;font:inherit;font-size:14px}
+.odc{display:block;line-height:1.7;background:var(--ink-2);border-radius:12px;padding:10px 12px;font-size:14px}
+.odsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;align-items:end}
+.odsum label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+.odsum b{display:block;font-size:20px;color:var(--ivory)}
+.odsum #odSave{grid-column:1/-1;justify-self:start}
+.odact{border-top:1px solid var(--line);padding-top:12px}
+.notes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.notes li{background:var(--ink-2);border-radius:10px;padding:8px 12px}.notes small{display:block;color:var(--muted);font-size:11px}
+tr.late td{background:#fff1f1}
 </style>
 </head>
 <body>
@@ -79,12 +97,18 @@ tr.off td{opacity:.45}
       <button class="chip" type="button" data-tab="searches">شو بيدوّروا</button>
       <button class="chip" type="button" data-tab="mkt">التسويق والزوار</button>
       <button class="chip" type="button" data-tab="reviews">التقييمات <span id="rvN"></span></button>
+      <button class="chip" type="button" data-tab="delivery">التوصيل والشحن</button>
+      <button class="chip" type="button" data-tab="money">الحسابات والدفعات</button>
+      <button class="chip" type="button" data-tab="staff">الموظفين والصلاحيات</button>
+      <button class="chip" type="button" data-tab="audit">سجل العمليات</button>
       <button class="chip" type="button" data-tab="settings">نصوص وإعدادات</button>
     </div>
 
     <div class="panel" id="t-orders">
       <div class="bar">
-        <select id="ost"><option value="">كل الطلبات</option><option value="new">جديد</option><option value="confirmed">مؤكد</option><option value="shipped">بالطريق</option><option value="delivered">تم التسليم</option><option value="cancelled">ملغي</option></select>
+        <select id="ost"><option value="">كل الطلبات</option></select>
+        <input id="oq" type="search" placeholder="ابحث برقم الطلب، الاسم أو الهاتف" style="flex:1 1 220px">
+        <select id="oas"><option value="">كل الموظفين</option><option value="me">طلباتي أنا</option><option value="none">بدون مسؤول</option></select>
         <span class="hint" id="oSum"></span>
       </div>
       <p class="hint">لما تحوّل الطلب لـ"مؤكد" بتنخصم الكميات من المخزون لحالها، ولو لغيته بترجع. الزبونة بتشوف كل مرحلة (مؤكد، بالطريق، تم التسليم) مع وقتها بـ"طلباتي" وبصفحة "تتبعي طلبك".</p>
@@ -125,8 +149,8 @@ tr.off td{opacity:.45}
     </div>
 
     <div class="panel" id="t-alerts" hidden>
-      <p class="hint">زبائن طلبوا تنبيه لما المنتج يتوفر. لما ترجّع الكمية، راسلهم واتساب من الزر وبعدين امسح الطلب.</p>
-      <div class="tbl"><table><thead><tr><th>المنتج</th><th>الزبونة</th><th>متوفر هلأ؟</th><th></th></tr></thead><tbody id="alRows"></tbody></table></div>
+      <p class="hint">زبائن طلبوا منتج مش متوفر. اكتب رد وموعد متوقع واحفظ (الزبونة بتشوفه بحسابها)، أو راسلها واتساب والرد بينبعت معه.</p>
+      <div class="tbl"><table><thead><tr><th>المنتج</th><th>الزبونة</th><th>متوفر هلأ؟</th><th>الرد وموعد التوفر</th><th></th></tr></thead><tbody id="alRows"></tbody></table></div>
     </div>
 
     <div class="panel" id="t-searches" hidden>
@@ -145,7 +169,7 @@ tr.off td{opacity:.45}
       </div>
       <p class="hint">عدّل السعر مباشرة بالجدول وبينحفظ لحاله لما تطلع من الخانة. سعر الجملة والحد الأدنى بيشوفهم التجار المعتمدين بس.</p>
       <div class="tbl"><table>
-        <thead><tr><th></th><th>المنتج</th><th>سعره عليّ</th><th>سعر المفرق</th><th>خصم مفرق %</th><th>سعر الجملة</th><th>خصم جملة %</th><th>أقل كمية جملة</th><th>المخزون</th><th>ظاهر</th><th></th></tr></thead>
+        <thead><tr><th></th><th>المنتج</th><th class="fin">سعره عليّ</th><th>سعر المفرق</th><th>خصم مفرق %</th><th>سعر الجملة</th><th>خصم جملة %</th><th>أقل كمية جملة</th><th>المخزون</th><th>ظاهر</th><th></th></tr></thead>
         <tbody id="pRows"></tbody>
       </table></div>
     </div>
@@ -154,7 +178,7 @@ tr.off td{opacity:.45}
       <div class="kpis" id="kpis"></div>
       <div class="bar"><input id="sq" type="search" placeholder="بحث…" style="flex:1 1 200px"><label class="hint"><input type="checkbox" id="sOnly" style="width:auto"> بس اللي إلها كمية</label></div>
       <p class="hint">اكتب الكمية وسعرها عليك هون مباشرة، وبتنحفظ لحالها لما تطلع من الخانة (بتصير خضرا). أسعار المفرق والجملة (بعد الخصم) بتيجي من صفحة المنتجات. القيمة بتنحسب من الكميات المعبّاية بس.</p>
-      <div class="tbl"><table><thead><tr><th>المنتج</th><th>الدرجة</th><th>الكمية</th><th>سعرها عليّ</th><th>سعر المفرق</th><th>سعر الجملة</th><th>قيمتها عليّ</th><th>قيمتها مفرق</th><th>قيمتها جملة</th></tr></thead><tbody id="stRows"></tbody></table></div>
+      <div class="tbl"><table><thead><tr><th>المنتج</th><th>الدرجة</th><th>الكمية</th><th class="fin">سعرها عليّ</th><th>سعر المفرق</th><th>سعر الجملة</th><th class="fin">قيمتها عليّ</th><th>قيمتها مفرق</th><th>قيمتها جملة</th></tr></thead><tbody id="stRows"></tbody></table></div>
     </div>
 
     <div class="panel" id="t-traders" hidden>
@@ -193,6 +217,39 @@ tr.off td{opacity:.45}
       <div class="tbl"><table><thead><tr><th>التاريخ</th><th>المنتج</th><th>الزبونة</th><th>التقييم</th><th>الصورة</th><th></th></tr></thead><tbody id="rvRows"></tbody></table></div>
     </div>
 
+    <div class="panel" id="t-delivery" hidden>
+      <div class="kpis" id="dKpis"></div>
+      <h3>شركات التوصيل</h3>
+      <div class="bar"><input id="cuName" placeholder="اسم الشركة" style="flex:1 1 150px"><input id="cuPhone" placeholder="رقم التواصل" dir="ltr" style="width:130px"><input id="cuZones" placeholder="المناطق (مثلاً: الضفة، القدس)" style="flex:1 1 170px">
+        <input id="cuW" type="number" min="0" placeholder="سعر الضفة" dir="ltr" style="width:95px"><input id="cuJ" type="number" min="0" placeholder="القدس" dir="ltr" style="width:80px"><input id="cuI" type="number" min="0" placeholder="الداخل" dir="ltr" style="width:80px"><input id="cuD" type="number" min="1" placeholder="مدة (أيام)" dir="ltr" style="width:95px"><button class="btn" type="button" id="cuAdd">+ شركة</button></div>
+      <div class="tbl"><table><thead><tr><th>الشركة</th><th>التواصل</th><th>المناطق</th><th>الأسعار (ضفة/قدس/داخل)</th><th>المدة</th><th>شحنات</th><th>حصّلت</th><th>إلها</th><th>مستحق إلنا</th><th>شغّالة</th></tr></thead><tbody id="cuRows"></tbody></table></div>
+      <h3>الشحنات</h3>
+      <div class="bar"><select id="shF"><option value="">كل الشحنات</option><option value="sent">بالطريق</option><option value="late">متأخرة</option><option value="delivered">تم التسليم</option><option value="refused">رفض الاستلام</option><option value="returned">مرتجعة</option><option value="unsettled">لسا ما حاسبت</option></select><span class="hint">بتعمل شحنة من "تفاصيل" الطلب.</span></div>
+      <div class="tbl"><table><thead><tr><th>الطلب</th><th>الشركة والمندوب</th><th>المنطقة</th><th>أُرسلت</th><th>الحالة</th><th>المبلغ المحصّل</th><th>رسوم التوصيل</th><th>حاسبتنا؟</th></tr></thead><tbody id="shRows"></tbody></table></div>
+    </div>
+
+    <div class="panel" id="t-money" hidden>
+      <div class="kpis" id="mKpis"></div>
+      <div class="bar"><input id="mq" type="search" placeholder="ابحث باسم الزبون أو الهاتف" style="flex:1 1 220px"><label class="hint"><input type="checkbox" id="mDue" style="width:auto" checked> بس اللي عليهم</label></div>
+      <h3>حساب كل زبون</h3>
+      <div class="tbl"><table><thead><tr><th>الزبون</th><th>الطلبات</th><th>المطلوب</th><th>دفع</th><th>ضل عليه</th><th>آخر طلب</th><th></th></tr></thead><tbody id="balRows"></tbody></table></div>
+      <h3>الدفعات وسندات القبض</h3>
+      <div class="tbl"><table><thead><tr><th>#</th><th>التاريخ</th><th>الزبون</th><th>الطلب</th><th>المبلغ</th><th>الطريقة</th><th></th></tr></thead><tbody id="payRows"></tbody></table></div>
+    </div>
+
+    <div class="panel" id="t-staff" hidden>
+      <p class="hint">الموظف بيعمل حساب عادي من الموقع (حسابي ← حساب جديد)، وبعدين بتضيفه هون بإيميله وبتختار شو بيقدر يفتح. اللي ما إله "المالية" ما بيشوف التكلفة ولا الأرباح ولا الدفعات.</p>
+      <div class="bar"><input id="stEmail" type="email" dir="ltr" placeholder="إيميل الموظف" style="flex:1 1 220px"><button class="btn" type="button" id="stAdd">+ إضافة موظف</button></div>
+      <div class="bar" id="stPerms"></div>
+      <div class="tbl"><table><thead><tr><th>الموظف</th><th>الصلاحيات</th><th></th></tr></thead><tbody id="sfRows"></tbody></table></div>
+    </div>
+
+    <div class="panel" id="t-audit" hidden>
+      <p class="hint">كل تعديل على الطلبات، الأسعار، المنتجات، الدفعات، الشحنات والموظفين بينسجل هون مع مين عمله وإيمتى. ما حدا بيقدر يمسح منه.</p>
+      <div class="bar"><select id="auT"><option value="">الكل</option><option value="orders">الطلبات</option><option value="payments">الدفعات</option><option value="products">المنتجات</option><option value="product_costs">التكلفة</option><option value="wholesale_prices">أسعار الجملة</option><option value="shipments">الشحنات</option><option value="profiles">الحسابات</option><option value="settings">الإعدادات</option></select><input id="auQ" type="search" placeholder="رقم أو اسم" style="flex:1 1 160px"></div>
+      <div class="tbl"><table><thead><tr><th>الوقت</th><th>مين</th><th>وين</th><th>شو صار</th></tr></thead><tbody id="auRows"></tbody></table></div>
+    </div>
+
     <div class="panel" id="t-settings" hidden>
       <form id="sForm" class="f" style="padding:0">
         <label>رقم الواتساب (بدون + أو أصفار بالبداية)<input name="whatsapp" dir="ltr"></label>
@@ -216,6 +273,7 @@ tr.off td{opacity:.45}
   </section>
 </main>
 
+<dialog id="od" class="wide"><button class="x" type="button" data-close aria-label="إغلاق">✕</button><div id="odBody" class="odb"></div></dialog>
 <dialog id="edit"><button class="x" type="button" data-close aria-label="إغلاق">✕</button>
   <form id="eForm" class="f">
     <h3 class="full" id="eTitle" style="font-family:var(--f-body)">منتج</h3>
@@ -224,6 +282,8 @@ tr.off td{opacity:.45}
     <label>اسم المنتج<input name="name" required></label>
     <label>القسم<select name="category_id" id="eCat"></select></label>
     <label>الحجم<input name="size"></label>
+    <label>SKU (رمز داخلي)<input name="sku" dir="ltr"></label>
+    <label>الباركود<input name="barcode" dir="ltr" inputmode="numeric"></label>
     <div class="full"><div class="hint" style="margin-bottom:6px">الدرجات وألوانها (بتطلع بالتجربة المتحركة بصفحة المنتج)</div><div id="swList" class="swl"></div><button class="sm" type="button" id="addSw">+ درجة</button><div class="hint">خانة الكمية جنب كل درجة: اتركها فاضية إذا ما بدك تتابع مخزونها، و0 يعني نفذت.</div></div>
     <label>الكمية المتوفرة (لمنتج بدون درجات)<input name="stock0" type="number" min="0" dir="ltr" placeholder="فاضي = ما بنتابع"></label>
     <label>تاريخ الوصول (بيطلع "وصل حديثاً" 30 يوم)<input name="arrived_at" type="date" dir="ltr"></label>
@@ -234,7 +294,7 @@ tr.off td{opacity:.45}
     <label>الملمس<select name="finish"><option value="">عادي</option><option value="matte">Matte مات</option><option value="satin">Satin ستان</option><option value="gloss">Gloss لامع</option><option value="shimmer">Shimmer براق</option></select></label>
     <label>ملاحظة ألوان (اختياري)<input name="shades" placeholder="مثلاً: ألوان متعددة"></label>
     <label class="full">وصف<textarea name="description" rows="2"></textarea></label>
-    <label>سعره عليّ (التكلفة، ما حدا بيشوفه غيرك)<input name="cost" type="number" step="0.01" min="0" dir="ltr"></label>
+    <label class="fin">سعره عليّ (التكلفة، ما حدا بيشوفه غيرك)<input name="cost" type="number" step="0.01" min="0" dir="ltr"></label>
     <label>سعر المفرق<input name="retail_price" type="number" step="0.01" min="0" dir="ltr"></label>
     <label>خصم المفرق %<input name="rdisc" type="number" min="0" max="99" dir="ltr" placeholder="0"></label>
     <label>خصم الجملة %<input name="wdisc" type="number" min="0" max="99" dir="ltr" placeholder="0"></label>
@@ -260,21 +320,22 @@ const num = v => v === "" || v == null ? null : Number(v);
 const pct = v => Math.min(99, Math.max(0, +v || 0));
 // total units of a product; null when no shade is tracked
 const stockSum = p => { const v = Object.values(p.stock || {}); return v.length ? v.reduce((a, n) => a + (+n || 0), 0) : null; };
-let P = [], C = [], W = {}, T = [], CO = {};
+let P = [], C = [], W = {}, T = [], CO = {}, PERMS = [], ME = null, STAFF = [];
 const VIZ = { photo: "صورة المنتج", lips: "شفاه", skin: "سواتش بشرة", cheek: "خدود", eyes: "عيون", brow: "حواجب", scent: "عطر" };
 let tt; function toast(m) { const el = $("#toast"); el.textContent = m; el.classList.add("on"); clearTimeout(tt); tt = setTimeout(() => el.classList.remove("on"), 2000); }
 const fail = error => { if (error) { toast("ما انحفظ: " + error.message); return true; } };
 
 async function boot() {
   const { data: { session } } = await db.auth.getSession();
-  let admin = false;
+  ME = session?.user.id || null;
+  let admin = false, role = "";
   if (session) {
     const { data } = await db.from("profiles").select("role").eq("id", session.user.id).single();
-    admin = data?.role === "admin";
+    role = data?.role || ""; admin = ["admin", "staff"].includes(role);
     if (!admin) $("#lMsg").textContent = "هاد الحساب مش حساب أدمن.";
   }
   $("#login").hidden = admin; $("#app").hidden = !admin; $("#logout").hidden = !session;
-  if (admin) await loadAll();
+  if (admin) { PERMS = (await db.rpc("my_perms")).data || (role === "admin" ? ["all"] : []); gateTabs(); await loadAll(); }
 }
 $("#loginForm").addEventListener("submit", async e => {
   e.preventDefault(); $("#lMsg").textContent = "لحظة…";
@@ -309,7 +370,7 @@ async function loadAll() {
   const opts = C.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
   $("#pcat").innerHTML = `<option value="">كل الأقسام</option>` + opts;
   $("#eCat").innerHTML = opts;
-  drawP(); drawStock(); drawT(); drawC(); loadOrders(); loadSearches(); loadCoins(); loadBattles(); loadExtras(); loadMkt(); loadReviews();
+  drawP(); drawStock(); drawT(); drawC(); loadOrders(); loadSearches(); loadCoins(); loadBattles(); loadExtras(); loadMkt(); loadReviews(); loadOps();
   $("#rlProd").innerHTML = `<option value="">بدون منتج</option>` + P.map(p => `<option value="${p.id}">${esc(p.brand)} – ${esc(p.name)}</option>`).join("");
   (s.data || []).forEach(r => { const i = $("#cForm").elements[r.key]; if (i) i.value = r.value; });
   const have = new Set(P.map(p => (p.brand + "|" + p.name).toLowerCase()));
@@ -323,7 +384,7 @@ function lastMonthSpend(uid) {
   return O.filter(o => o.user_id === uid && o.status === "delivered" && new Date(o.created_at) >= a && new Date(o.created_at) < b).reduce((s, o) => s + (+o.subtotal || 0), 0);
 }
 // orders
-const OST = { new: "جديد", confirmed: "مؤكد", shipped: "بالطريق 🚚", delivered: "تم التسليم", cancelled: "ملغي" };
+const OST = { new: "طلب جديد", pending: "بانتظار التأكيد", confirmed: "تم التأكيد", preparing: "قيد التجهيز", packed: "تم التغليف", ready: "جاهز للشحن", shipped: "خرج للتوصيل", delivered: "تم التسليم", cancelled: "تم الإلغاء", returned: "مرتجع", refused: "رفض الاستلام" };
 let O = [];
 const money = n => n === null || n === undefined ? "—" : `${Number(n).toLocaleString("en-US")} ₪`;
 async function loadOrders() {
@@ -339,7 +400,8 @@ async function loadOrders() {
   $("#idle").innerHTML = idle.length ? idle.map(t => `<li>${esc(t.shop_name || t.full_name)} · <span dir="ltr">${esc(t.phone || "")}</span> · آخر طلب ${new Date(last[t.id]).toLocaleDateString("en-GB")}</li>`).join("") : "<li>ما في حدا.</li>";
 }
 function drawO() {
-  const f = $("#ost").value, list = O.filter(o => !f || o.status === f), nNew = O.filter(o => o.status === "new").length;
+  const f = $("#ost").value, oq = $("#oq").value.trim().toLowerCase().replace(/^tolay-/, ""), oas = $("#oas").value;
+  const list = O.filter(o => (!f || o.status === f) && (!oq || `${o.id} ${o.name} ${o.phone}`.toLowerCase().includes(oq)) && (!oas || (oas === "none" ? !o.assigned_to : oas === "me" ? o.assigned_to === ME : o.assigned_to === oas))), nNew = O.filter(o => o.status === "new").length;
   $("#newN").textContent = nNew ? `(${nNew})` : "";
   $("#oSum").textContent = `${list.length} طلب`;
   $("#oRows").innerHTML = list.length ? list.map(o => `
@@ -348,10 +410,12 @@ function drawO() {
     <td>${o.kind === "wholesale" ? "جملة" : "مفرق"}<small class="hint" style="display:block">${o.payment === "credit" ? "دين/أقساط" : "كاش"}</small></td>
     <td class="nm" style="min-width:220px">${o.items.map(it => `<small>${esc(it.brand)} – ${esc(it.name)}${it.shade ? " · " + esc(it.shade) : ""} × ${it.qty}</small>`).join("")}</td>
     <td>${money(o.total)}<small class="hint">توصيل ${money(o.delivery)}</small>${+o.discount ? `<small class="hint">خصم ${esc(o.tier || "")} −${money(o.discount)}</small>` : ""}</td>
-    <td><select data-oid="${o.id}">${Object.entries(OST).map(([k, v]) => `<option value="${k}" ${k === o.status ? "selected" : ""}>${v}</option>`).join("")}</select><a class="sm" href="invoice.html?id=${o.id}" target="_blank" rel="noopener" style="display:block;margin-top:6px">🧾 فاتورة</a></td></tr>`).join("")
+    <td><select data-oid="${o.id}">${Object.entries(OST).map(([k, v]) => `<option value="${k}" ${k === o.status ? "selected" : ""}>${v}</option>`).join("")}</select>
+      ${o.assigned_to ? `<small class="hint" style="display:block">👤 ${esc(staffName(o.assigned_to))}</small>` : ""}${+o.paid ? `<small class="hint" style="display:block">💵 مدفوع ${money(o.paid)}</small>` : ""}
+      <button class="sm" type="button" data-od="${o.id}" style="margin-top:6px">تفاصيل وتعديل</button></td></tr>`).join("")
     : `<tr><td colspan="7" class="hint">لسا ما في طلبات.</td></tr>`;
 }
-$("#ost").addEventListener("change", drawO);
+$("#ost").addEventListener("change", drawO); $("#oq").addEventListener("input", drawO); $("#oas").addEventListener("change", drawO);
 $("#oRows").addEventListener("change", async e => {
   const id = +e.target.dataset.oid; if (!id) return;
   const { error } = await db.from("orders").update({ status: e.target.value }).eq("id", id);
@@ -408,10 +472,10 @@ function drawStock() {
     });
   });
   const m = v => money(Math.round(v * 100) / 100);
-  $("#kpis").innerHTML = `<div><b>${units}</b><small>قطعة بالمخزون</small></div><div><b>${m(vCost)}</b><small>قيمتها عليّ${noCost ? ` (${noCost} قطعة بدون تكلفة)` : ""}</small></div><div><b>${m(vRet)}</b><small>قيمتها بسعر المفرق</small></div><div><b>${m(vWh)}</b><small>قيمتها بسعر الجملة</small></div><div><b>${m(vProfit)}</b><small>ربح متوقع بالمفرق (للي إله تكلفة وسعر)</small></div>`;
+  $("#kpis").innerHTML = `<div><b>${units}</b><small>قطعة بالمخزون</small></div><div class="fin"><b>${m(vCost)}</b><small>قيمتها عليّ${noCost ? ` (${noCost} قطعة بدون تكلفة)` : ""}</small></div><div><b>${m(vRet)}</b><small>قيمتها بسعر المفرق</small></div><div><b>${m(vWh)}</b><small>قيمتها بسعر الجملة</small></div><div class="fin"><b>${m(vProfit)}</b><small>ربح متوقع بالمفرق (للي إله تكلفة وسعر)</small></div>`;
   $("#stRows").innerHTML = rows.slice(0, 600).map(({ p, k, n, cost, ret, wh }) => `<tr><td class="nm">${esc(p.name)}<small>${esc(p.brand)}</small></td><td>${esc(k) || "—"}</td>
     <td><input type="number" min="0" dir="ltr" value="${n ?? ""}" data-sid="${p.id}" data-sk="${esc(k)}" style="width:80px" aria-label="الكمية"></td>
-    <td><input type="number" step="0.01" min="0" dir="ltr" value="${cost ?? ""}" data-cid="${p.id}" style="width:80px" aria-label="سعرها عليّ"></td><td>${ret != null ? m(ret) : "—"}</td><td>${wh != null ? m(wh) : "—"}</td><td>${n && cost != null ? m(n * cost) : "—"}</td><td>${n && ret != null ? m(n * ret) : "—"}</td><td>${n && wh != null ? m(n * wh) : "—"}</td></tr>`).join("") || `<tr><td colspan="9" class="hint">ما في نتائج.</td></tr>`;
+    <td class="fin"><input type="number" step="0.01" min="0" dir="ltr" value="${cost ?? ""}" data-cid="${p.id}" style="width:80px" aria-label="سعرها عليّ"></td><td>${ret != null ? m(ret) : "—"}</td><td>${wh != null ? m(wh) : "—"}</td><td class="fin">${n && cost != null ? m(n * cost) : "—"}</td><td>${n && ret != null ? m(n * ret) : "—"}</td><td>${n && wh != null ? m(n * wh) : "—"}</td></tr>`).join("") || `<tr><td colspan="9" class="hint">ما في نتائج.</td></tr>`;
 }
 $("#sq").addEventListener("input", drawStock);
 $("#sOnly").addEventListener("change", drawStock);
@@ -497,8 +561,10 @@ async function loadExtras() {
   $("#alN").textContent = A.length ? `(${A.length})` : "";
   $("#alRows").innerHTML = A.length ? A.map(a => { const p = P.find(x => x.id === a.product_id), u = who[a.user_id] || {}, ok = avail(p, a.shade), ph = (u.phone || "").replace(/\D/g, "");
     return `<tr><td class="nm">${esc(p?.brand || "")} – ${esc(p?.name || "#" + a.product_id)}${a.shade ? `<small>${esc(a.shade)}</small>` : ""}</td><td class="nm">${esc(u.shop_name || u.full_name || "")}<small dir="ltr">${esc(u.phone || "")}</small></td><td>${ok ? "✓ متوفر" : "لسا لا"}</td>
-    <td>${ph ? `<a class="sm" target="_blank" rel="noopener" href="https://wa.me/${ph}?text=${encodeURIComponent(`مرحبا ${u.full_name || ""}، ${p?.name || "المنتج"} رجع توفر عند Tolay Makeup 💗`)}">واتساب</a> ` : ""}<button class="sm no" type="button" data-alu="${a.user_id}" data-alp="${a.product_id}" data-als="${esc(a.shade)}">مسح</button></td></tr>`; }).join("")
-    : `<tr><td colspan="4" class="hint">ما في طلبات تنبيه.</td></tr>`;
+    <td class="nm"><input data-alr placeholder="مثلاً: بيوصل الشحنة الجاي" value="${esc(a.reply || "")}" style="min-width:160px"><input data-ale type="date" dir="ltr" value="${a.eta || ""}" style="width:auto">
+      <button class="sm" type="button" data-alsave data-alu="${a.user_id}" data-alp="${a.product_id}" data-als="${esc(a.shade)}">حفظ</button>${a.replied_at ? `<small>انرد ${new Date(a.replied_at).toLocaleDateString("en-GB")}</small>` : ""}</td>
+    <td>${ph ? `<a class="sm" target="_blank" rel="noopener" href="https://wa.me/${ph}?text=${encodeURIComponent(ok ? `مرحبا ${u.full_name || ""}، ${p?.name || "المنتج"} رجع توفر عند Tolay Makeup 💗` : `مرحبا ${u.full_name || ""}، بخصوص ${p?.name || "المنتج"}: ${a.reply || "رح يتوفر قريب"}${a.eta ? ` (متوقع ${a.eta})` : ""} 💗 Tolay Makeup`)}">واتساب</a> ` : ""}<button class="sm no" type="button" data-alu="${a.user_id}" data-alp="${a.product_id}" data-als="${esc(a.shade)}">مسح</button></td></tr>`; }).join("")
+    : `<tr><td colspan="5" class="hint">ما في طلبات تنبيه.</td></tr>`;
 }
 $("#scAdd").addEventListener("click", async () => {
   const code = $("#scCode").value.trim().toUpperCase(), reward = +$("#scRw").value, max = +$("#scMax").value || null;
@@ -543,7 +609,7 @@ function drawP() {
     <tr class="${p.active ? "" : "off"}">
       <td><img src="${esc(p.image_url)}" alt="" loading="lazy"></td>
       <td class="nm">${esc(p.name)}<small>${esc(p.brand)} · ${esc(catName[p.category_id] || "")}</small></td>
-      <td><input type="number" step="0.01" min="0" dir="ltr" value="${CO[p.id] ?? ""}" data-id="${p.id}" data-f="cost" aria-label="سعره عليّ" style="width:80px"></td>
+      <td class="fin"><input type="number" step="0.01" min="0" dir="ltr" value="${CO[p.id] ?? ""}" data-id="${p.id}" data-f="cost" aria-label="سعره عليّ" style="width:80px"></td>
       <td><input type="number" step="0.01" min="0" dir="ltr" value="${p.retail_price ?? ""}" data-id="${p.id}" data-f="retail" aria-label="سعر المفرق"></td>
       <td><input type="number" step="1" min="0" max="99" dir="ltr" value="${+p.discount || ""}" data-id="${p.id}" data-f="rdisc" aria-label="خصم مفرق" style="width:64px">${+p.discount && p.retail_price ? `<small class="hint">${money(p.retail_price * (100 - p.discount) / 100)}</small>` : ""}</td>
       <td><input type="number" step="0.01" min="0" dir="ltr" value="${W[p.id]?.price ?? ""}" data-id="${p.id}" data-f="wprice" aria-label="سعر الجملة"></td>
@@ -586,7 +652,7 @@ function openEdit(id) {
   editing = id ? P.find(p => p.id === id) : null; pickedFile = null; $("#eFile").value = "";
   const p = editing || { brand: "", name: "", category_id: C[0]?.id, size: "", shades: "", description: "", retail_price: "", sort: (P.at(-1)?.sort || 0) + 1, active: true, featured: false, image_url: "" };
   const f = $("#eForm").elements;
-  ["brand", "name", "category_id", "size", "shades", "description", "sort", "finish"].forEach(k => f[k].value = p[k] ?? "");
+  ["brand", "name", "category_id", "size", "shades", "description", "sort", "finish", "sku", "barcode"].forEach(k => f[k].value = p[k] ?? "");
   const st = p.stock || {};
   $("#swList").innerHTML = ""; (p.swatches || []).forEach(s => addSwRow({ ...s, qty: st[s.name] }));
   f.stock0.value = st[""] ?? ""; f.arrived_at.value = p.arrived_at ? p.arrived_at.slice(0, 10) : "";
@@ -608,6 +674,9 @@ $("#eForm").addEventListener("submit", async e => {
   const swatches = rows.map(({ name, hex }) => ({ name, hex }));
   const stock = {}; rows.forEach(r => { if (r.qty !== "") stock[r.name] = Math.max(0, +r.qty); }); if (f.stock0.value !== "") stock[""] = Math.max(0, +f.stock0.value);
   const row = { swatches, stock, arrived_at: f.arrived_at.value || null, drop_start: iso(f.drop_start.value), drop_end: iso(f.drop_end.value), worth: num(f.worth.value), vault: f.vault.checked, finish: f.finish.value, brand: f.brand.value.trim(), name: f.name.value.trim(), category_id: +f.category_id.value || null, size: f.size.value.trim(), shades: f.shades.value.trim(), description: f.description.value.trim(), retail_price: num(f.retail_price.value), sort: +f.sort.value || 0, discount: pct(f.rdisc.value), active: f.active.checked, featured: f.featured.checked };
+  // only send sku/barcode when used, so saving still works before phase7.sql adds the columns
+  if (f.sku.value.trim() || editing?.sku) row.sku = f.sku.value.trim() || null;
+  if (f.barcode.value.trim() || editing?.barcode) row.barcode = f.barcode.value.trim() || null;
   if (pickedFile) {
     const path = `${Date.now()}-${pickedFile.name.replace(/[^\w.]+/g, "_")}`;
     const up = await db.storage.from("products").upload(path, pickedFile, { contentType: pickedFile.type });
@@ -710,9 +779,10 @@ document.addEventListener("click", async e => {
   const d = t.dataset;
   if (d.tab) {
     document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-pressed", b === t));
-    ["orders", "products", "stock", "traders", "cats", "coins", "battles", "alerts", "searches", "mkt", "reviews", "settings"].forEach(k => $("#t-" + k).hidden = k !== d.tab);
+    document.querySelectorAll("#app > .panel").forEach(p => p.hidden = p.id !== "t-" + d.tab);
   }
   else if (d.edit) openEdit(+d.edit);
+  else if (d.alsave !== undefined) { const tr = e.target.closest("tr"); if (!fail((await db.from("restock_alerts").update({ reply: tr.querySelector("[data-alr]").value.trim() || null, eta: tr.querySelector("[data-ale]").value || null, replied_at: new Date().toISOString() }).eq("user_id", d.alu).eq("product_id", +d.alp).eq("shade", d.als)).error)) { toast("انحفظ الرد ✓"); loadExtras(); } }
   else if (d.alu) { if (!fail((await db.from("restock_alerts").delete().eq("user_id", d.alu).eq("product_id", +d.alp).eq("shade", d.als)).error)) loadExtras(); }
   else if (d.resolve) { t.disabled = true; const { error } = await db.rpc("resolve_battle", { p_battle: +d.resolve }); if (!fail(error)) { toast("انعلنت النتيجة ✓"); loadBattles(); } else t.disabled = false; }
   else if (d.close !== undefined) t.closest("dialog").close();
@@ -725,7 +795,8 @@ document.addEventListener("click", async e => {
     if (!fail((await db.from("categories").delete().eq("id", +d.delcat)).error)) loadAll();
   }
 });
-boot();
+window.addEventListener("load", boot);  // after admin-ops.js is in
 </script>
+<script src="admin-ops.js?v=1793881875"></script>
 </body>
 </html>

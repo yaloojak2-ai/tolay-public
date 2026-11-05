@@ -31,6 +31,11 @@ td small{display:block;color:var(--muted)}
 button{font:500 15px Rubik,sans-serif;border:0;border-radius:999px;padding:10px 22px;background:var(--pink);color:#fff;cursor:pointer}
 button.g{background:#fff;color:var(--ink);border:1px solid var(--ink)}
 .msg{text-align:center;padding:60px 16px}
+.lbl{max-width:420px;border:3px solid var(--ink);border-radius:12px;padding:18px}
+.lbl .to{font-size:26px;font-weight:700;line-height:1.25;margin:10px 0 4px}.lbl .ph{font-size:22px;direction:ltr;display:block}
+.lbl .ad{font-size:18px;margin:8px 0;border-top:1px solid var(--line);padding-top:8px}
+.lbl .cod{background:var(--green);border-radius:10px;padding:10px;text-align:center;font-size:22px;font-weight:700;margin-top:10px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.lbl svg{width:100%;height:70px}
 @media (max-width:520px){.inv{margin:0;border-radius:0;padding:20px 14px}.who{grid-template-columns:1fr}.logo{font-size:26px}th,td{padding:6px 4px;font-size:13px}}
 @media print{body{background:#fff}.bar{display:none}.inv{margin:0;padding:0;max-width:none}th{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
@@ -50,6 +55,24 @@ const money = n => n === null || n === undefined ? "يتأكد" : `${Number(n).t
   if (!o) { el.innerHTML = `<p class="msg">ما لقينا الطلب. لازم يكون الدخول بنفس الحساب اللي طلب.</p>`; return; }
   document.title = `فاتورة #${o.id} · Tolay Makeup`;
   const lines = o.items || [];
+  if (new URLSearchParams(location.search).get("t") === "label") {
+    // shipping label: what the driver needs, big enough to read on a parcel
+    const cod = o.total == null ? null : Math.max(0, Math.round((o.total - (+o.paid || 0)) * 100) / 100);
+    document.title = `ملصق شحن #${o.id}`;
+    el.className = "inv lbl";
+    el.innerHTML = `<div class="logo" style="font-size:22px">TOLAY<small>MAKEUP</small></div>
+      <div class="meta">طلب <b dir="ltr">#${o.id}</b> · ${lines.reduce((a, it) => a + it.qty, 0)} قطعة · <span dir="ltr">${new Date(o.created_at).toLocaleDateString("en-GB")}</span></div>
+      <div class="to">${esc(o.name)}</div><span class="ph">${esc(o.phone || "")}</span>
+      <div class="ad">${esc(o.address || "—")}${o.note ? `<br><small class="meta">${esc(o.note)}</small>` : ""}</div>
+      <svg id="bc"></svg>
+      <div class="cod">${cod === null ? "المبلغ يتأكد" : cod ? `يحصّل عند التسليم: ${money(cod)}` : "مدفوع ✓"}</div>
+      <p class="meta" style="margin:8px 0 0">افحص قبل الدفع · لا يمكن الإرجاع بعد الاستلام</p>`;
+    const sc = document.createElement("script");
+    sc.src = "https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js";
+    sc.onload = () => JsBarcode("#bc", "TOLAY-" + o.id, { height: 50, displayValue: true, fontSize: 14, margin: 0 });
+    document.head.appendChild(sc);
+    return;
+  }
   el.innerHTML = `
     <div class="top">
       <div class="logo">TOLAY<small>MAKEUP · FROM U.S.A</small></div>
