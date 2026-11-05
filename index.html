@@ -535,9 +535,9 @@ $("#send").addEventListener("click", async e => {
   const btn = e.currentTarget; if (btn.dataset.busy) return; btn.dataset.busy = 1;
   const win = window.open("", "_blank");  // opened now so the popup isn't blocked after the save finishes
   const { data, error } = await db.rpc("place_order", { p_items: cart.map(l => ({ id: l.id, shade: l.shade, qty: l.qty })), p_name: $("#cName").value.trim(),
-    p_phone: $("#cPhone").value.trim(), p_address: $("#cAddr").value.trim(), p_note: $("#cNote").value.trim(), p_delivery: zoneFee(), p_payment: isTrader() ? $("#cPay").value : "cash", p_coupon: CP.code || null });
+    p_phone: $("#cPhone").value.trim(), p_address: $("#cAddr").value.trim(), p_note: $("#cNote").value.trim(), p_delivery: zoneFee(), p_payment: isTrader() ? $("#cPay").value : "cash", ...(CP.code ? { p_coupon: CP.code } : {}) });
   delete btn.dataset.busy;
-  if (error && /coupon/.test(error.message)) { win?.close(); CP = {}; drawCart(); toast("كود الخصم مش فعّال، شلناه. جرّبي ترسلي مرة ثانية"); return; }
+  if (error && CP.code && /bad coupon/.test(error.message)) { win?.close(); CP = {}; drawCart(); toast("كود الخصم مش فعّال، شلناه. جرّبي ترسلي مرة ثانية"); return; }
   const no = !error && data?.[0]?.order_id;
   const url = waLink(no);  // even if saving failed, the order still reaches WhatsApp
   if (win) win.location.href = url; else location.href = url;
