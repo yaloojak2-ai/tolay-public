@@ -16,7 +16,7 @@
 <meta name="twitter:image" content="https://yaloojak2-ai.github.io/tolay-public/img/og.jpg?v=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Rubik:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1793895580">
+<link rel="stylesheet" href="style.css?v=1793896933">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <script src="i18n.js?v=1793894897"></script>
 </head>
@@ -26,7 +26,7 @@
 <div class="wholesale-bar" id="wBar" hidden>وضع التاجر: أسعار الجملة ظاهرة لإلك</div>
 <header class="top"><div class="wrap">
   <a class="logo" href="#/" aria-label="Tolay Makeup"><b>TOLAY</b><small>MAKEUP</small></a>
-  <label class="srch"><span data-ic="search"></span><input id="q" type="search" placeholder="ابحثي عن منتج أو براند…" aria-label="بحث" autocomplete="off"><button type="button" class="mic" data-mic="q" aria-label="ابحثي بالصوت" hidden>🎙️</button></label>
+  <label class="srch"><span data-ic="search"></span><input id="q" type="search" placeholder="ابحثي عن منتج أو براند…" aria-label="بحث" autocomplete="off"><button type="button" class="mic" data-mic="q" aria-label="ابحثي بالصوت" hidden>🎙️</button><button type="button" class="mic" data-imgsearch aria-label="ابحثي بصورة" title="ابحثي بصورة">📷</button><input type="file" id="imgPick" accept="image/*" hidden></label>
   <div class="qopts" id="qopts" hidden></div>
   <nav class="links"><a href="#/" data-tab="home">الرئيسية</a><a href="#/new" data-tab="new">جديدنا</a><a href="#/brands" data-tab="brands">الماركات</a><a href="#/cats" data-tab="cats">الأقسام</a><a href="#/arcade" data-tab="arcade">الألعاب</a><a href="#/club" data-tab="club" class="latin">Tolay Club</a><a href="#/account" data-tab="account">حسابي</a></nav>
   <a class="ib" href="#/wishlist" aria-label="المفضلة" data-ic="heart"><span class="n favN" hidden>0</span></a>
@@ -174,6 +174,7 @@
   <a href="#/account" data-tab="account"><i data-ic="user"></i><span>حسابي</span></a>
 </nav>
 
+<dialog id="imgS" class="full"><button class="back" type="button" data-close aria-label="رجوع">→ رجوع</button><div class="wrap" id="imgSBody"></div></dialog>
 <dialog id="splash" class="small splash"><button class="x" type="button" data-close aria-label="إغلاق">✕</button><div id="splashBody"></div></dialog>
 <dialog id="reel" class="reelpl"><button class="x" type="button" data-close aria-label="إغلاق">✕</button><div id="reelBody"></div></dialog>
 <dialog id="pd" class="full"><button class="back" type="button" data-pdback aria-label="رجوع">→ رجوع</button><div class="pd" id="pdBody"></div></dialog>
@@ -532,7 +533,7 @@ function qoptsShow(on) {
   if (on) {
     const t = q.trim(), nt = TS.norm(t), rec = recentQ();
     const bs = [...brandMap()].filter(([b]) => !SKIP_BRANDS.includes(b)).sort((a, b) => b[1].length - a[1].length);
-    const chips = `<div><b>خيارات البحث</b><a href="#/offers">🔥 العروض</a><a href="#/new">✨ وصل حديثاً</a><button type="button" data-qsort="best">⭐ الأكثر مبيعاً</button><button type="button" data-qstock>✅ المتوفر بس</button><a href="#/brands">كل الماركات</a><a href="#/surprise">🎁 فاجئيني</a>${"BarcodeDetector" in window ? `<button type="button" data-scan>📷 امسحي باركود</button>` : ""}</div>`;
+    const chips = `<div><b>خيارات البحث</b><a href="#/offers">🔥 العروض</a><a href="#/new">✨ وصل حديثاً</a><button type="button" data-qsort="best">⭐ الأكثر مبيعاً</button><button type="button" data-qstock>✅ المتوفر بس</button><a href="#/brands">كل الماركات</a><a href="#/surprise">🎁 فاجئيني</a>${"BarcodeDetector" in window ? `<button type="button" data-scan>📷 امسحي باركود</button>` : ""}<button type="button" data-imgsearch>🖼️ ابحثي بصورة</button></div>`;
     let top = "";
     if (t) {
       const comp = [...new Set([...TOPQ, ...rec, ...bs.map(([b]) => b), ...ALL.map(p => `${p.b} ${p.n}`)].filter(x => TS.norm(x).startsWith(nt) && TS.norm(x) !== nt))].slice(0, 5);
@@ -1237,5 +1238,6 @@ document.querySelectorAll("dialog").forEach(dl => dl.addEventListener("click", e
 let tt; function toast(m) { const el = $("#toast"); el.textContent = m; el.classList.add("on"); clearTimeout(tt); tt = setTimeout(() => el.classList.remove("on"), 1800); }
 load();
 </script>
+<script src="imgsearch.js?v=1793896933"></script>
 </body>
 </html>
