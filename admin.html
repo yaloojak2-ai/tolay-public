@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Tolay Admin</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700&family=Rubik:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1793854450">
+<link rel="stylesheet" href="style.css?v=1793854871">
 <style>
 body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 .adm{padding-block:28px 80px;display:flex;flex-direction:column;gap:20px}
@@ -77,15 +77,17 @@ tr.off td{opacity:.45}
       <button class="chip" type="button" data-tab="battles">معركة الماركات</button>
       <button class="chip" type="button" data-tab="alerts">نبّهوني <span id="alN"></span></button>
       <button class="chip" type="button" data-tab="searches">شو بيدوّروا</button>
+      <button class="chip" type="button" data-tab="mkt">التسويق والزوار</button>
+      <button class="chip" type="button" data-tab="reviews">التقييمات <span id="rvN"></span></button>
       <button class="chip" type="button" data-tab="settings">نصوص وإعدادات</button>
     </div>
 
     <div class="panel" id="t-orders">
       <div class="bar">
-        <select id="ost"><option value="">كل الطلبات</option><option value="new">جديد</option><option value="confirmed">مؤكد</option><option value="delivered">تم التسليم</option><option value="cancelled">ملغي</option></select>
+        <select id="ost"><option value="">كل الطلبات</option><option value="new">جديد</option><option value="confirmed">مؤكد</option><option value="shipped">بالطريق</option><option value="delivered">تم التسليم</option><option value="cancelled">ملغي</option></select>
         <span class="hint" id="oSum"></span>
       </div>
-      <p class="hint">لما تحوّل الطلب لـ"مؤكد" بتنخصم الكميات من المخزون لحالها، ولو لغيته بترجع.</p>
+      <p class="hint">لما تحوّل الطلب لـ"مؤكد" بتنخصم الكميات من المخزون لحالها، ولو لغيته بترجع. الزبونة بتشوف كل مرحلة (مؤكد، بالطريق، تم التسليم) مع وقتها بـ"طلباتي" وبصفحة "تتبعي طلبك".</p>
       <div class="tbl"><table>
         <thead><tr><th>#</th><th>التاريخ</th><th>الزبون</th><th>النوع</th><th>المنتجات</th><th>المجموع</th><th>الحالة</th></tr></thead>
         <tbody id="oRows"></tbody>
@@ -168,6 +170,27 @@ tr.off td{opacity:.45}
         <thead><tr><th>الترتيب</th><th>الاسم</th><th>شكل التجربة المتحركة</th><th>المنتجات</th><th></th></tr></thead>
         <tbody id="cRows"></tbody>
       </table></div>
+    </div>
+
+    <div class="panel" id="t-mkt" hidden>
+      <h3>زوار الموقع</h3>
+      <div class="kpis" id="vKpis"></div>
+      <p class="hint">كل زيارة = مرة فتح فيها حدا الموقع (نفس الشخص لو رجع بيوم ثاني بتنحسب زيارة جديدة).</p>
+      <h3 style="margin-top:26px">كوبونات الخصم</h3>
+      <div class="bar"><input id="cpCode" placeholder="مثلاً LAUNCH10" dir="ltr" style="flex:1 1 150px;text-transform:uppercase"><input id="cpPct" type="number" min="1" max="90" placeholder="خصم %" dir="ltr" style="width:90px"><input id="cpMax" type="number" min="1" placeholder="أقصى استعمال (اختياري)" dir="ltr" style="width:170px"><label class="hint">لغاية<input id="cpEnd" type="date" dir="ltr" style="width:auto"></label><label class="hint"><input type="checkbox" id="cpFirst" style="width:auto"> لأول طلب بس</label><button class="btn" type="button" id="cpAdd">+ كوبون</button></div>
+      <p class="hint">الزبونة بتكتب الكود بالسلة. كل شخص بيستعمله مرة وحدة (بنعرفه من حسابه أو رقم هاتفه). الخصم بينحسب على سعر المنتجات بدون التوصيل.</p>
+      <div class="tbl"><table><thead><tr><th>الكود</th><th>الخصم</th><th>استُعمل</th><th>لغاية</th><th>شغّال</th></tr></thead><tbody id="cpRows"></tbody></table></div>
+      <h3 style="margin-top:26px">ريلز (أنبوكسينغ واستعمال المنتج)</h3>
+      <div class="bar"><input id="rlTitle" placeholder="العنوان" style="flex:1 1 160px"><input id="rlFile" type="file" accept="video/mp4,video/quicktime,video/webm" style="flex:1 1 200px"><select id="rlProd" style="flex:1 1 180px"><option value="">بدون منتج</option></select><button class="btn" type="button" id="rlAdd">+ رفع ريل</button></div>
+      <p class="hint">الفيديو لحد 50MB، عمودي أفضل. المشاهدات حقيقية: بتزيد كل ما حدا يفتح الريل.</p>
+      <div class="tbl"><table><thead><tr><th>العنوان</th><th>المنتج</th><th>المشاهدات</th><th>الترتيب</th><th>ظاهر</th><th></th></tr></thead><tbody id="rlRows"></tbody></table></div>
+      <h3 style="margin-top:26px">برنامج PR (طلبات المؤثرات)</h3>
+      <div class="tbl"><table><thead><tr><th>الحساب</th><th>المتابعين</th><th>الاسم والهاتف</th><th>ملاحظة</th><th>الحالة</th></tr></thead><tbody id="prRows"></tbody></table></div>
+    </div>
+
+    <div class="panel" id="t-reviews" hidden>
+      <p class="hint">التقييمات ما بتظهر بالموقع إلا لما توافق عليها. "اشترت المنتج" يعني عندها طلب تم تسليمه فيه هالمنتج.</p>
+      <div class="tbl"><table><thead><tr><th>التاريخ</th><th>المنتج</th><th>الزبونة</th><th>التقييم</th><th>الصورة</th><th></th></tr></thead><tbody id="rvRows"></tbody></table></div>
     </div>
 
     <div class="panel" id="t-settings" hidden>
@@ -286,7 +309,8 @@ async function loadAll() {
   const opts = C.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
   $("#pcat").innerHTML = `<option value="">كل الأقسام</option>` + opts;
   $("#eCat").innerHTML = opts;
-  drawP(); drawStock(); drawT(); drawC(); loadOrders(); loadSearches(); loadCoins(); loadBattles(); loadExtras();
+  drawP(); drawStock(); drawT(); drawC(); loadOrders(); loadSearches(); loadCoins(); loadBattles(); loadExtras(); loadMkt(); loadReviews();
+  $("#rlProd").innerHTML = `<option value="">بدون منتج</option>` + P.map(p => `<option value="${p.id}">${esc(p.brand)} – ${esc(p.name)}</option>`).join("");
   (s.data || []).forEach(r => { const i = $("#cForm").elements[r.key]; if (i) i.value = r.value; });
   const have = new Set(P.map(p => (p.brand + "|" + p.name).toLowerCase()));
   $("#addN").textContent = SEED.add.filter(a => !have.has((a.brand + "|" + a.name).toLowerCase())).length;
@@ -299,7 +323,7 @@ function lastMonthSpend(uid) {
   return O.filter(o => o.user_id === uid && o.status === "delivered" && new Date(o.created_at) >= a && new Date(o.created_at) < b).reduce((s, o) => s + (+o.subtotal || 0), 0);
 }
 // orders
-const OST = { new: "جديد", confirmed: "مؤكد", delivered: "تم التسليم", cancelled: "ملغي" };
+const OST = { new: "جديد", confirmed: "مؤكد", shipped: "بالطريق 🚚", delivered: "تم التسليم", cancelled: "ملغي" };
 let O = [];
 const money = n => n === null || n === undefined ? "—" : `${Number(n).toLocaleString("en-US")} ₪`;
 async function loadOrders() {
@@ -402,6 +426,65 @@ $("#stRows").addEventListener("change", async e => {
   const r = await db.from("products").update({ stock }).eq("id", id).select("id");
   if (fail(r.error || (!r.data?.length && { message: "سجّل دخول من جديد" }))) return;  // RLS drops the row silently
   p.stock = stock; i.classList.add("saved"); setTimeout(() => i.classList.remove("saved"), 1200); drawStock(); drawP();
+});
+
+// marketing: visitors, coupons, reels, PR applications
+async function loadMkt() {
+  const since = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
+  const [v, cp, rl, pr] = await Promise.all([db.from("visits").select("*").gte("day", since).order("day", { ascending: false }), db.from("coupons").select("*").order("created_at", { ascending: false }), db.from("reels").select("*").order("sort").order("id", { ascending: false }), db.from("pr_applications").select("*").order("created_at", { ascending: false })]);
+  if (v.error) { $("#vKpis").innerHTML = `<p class="hint">شغّل ملف phase6.sql أول.</p>`; return; }
+  const V = v.data || [], today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jerusalem" }), d7 = new Date(Date.now() - 6 * 864e5).toLocaleDateString("en-CA", { timeZone: "Asia/Jerusalem" });
+  const sum = f => V.filter(f).reduce((a, r) => a + r.n, 0);
+  $("#vKpis").innerHTML = `<div><b>${sum(r => r.day === today)}</b><small>زيارة اليوم</small></div><div><b>${sum(r => r.day >= d7)}</b><small>آخر 7 أيام</small></div><div><b>${sum(() => true)}</b><small>آخر 30 يوم</small></div>`;
+  $("#cpRows").innerHTML = (cp.data || []).map(c => `<tr class="${c.active ? "" : "off"}"><td dir="ltr"><b>${esc(c.code)}</b>${c.first_order ? `<small class="hint">لأول طلب</small>` : ""}</td><td>${c.pct}%</td><td>${c.uses}${c.max_uses ? " / " + c.max_uses : ""}</td><td dir="ltr">${c.ends_at ? new Date(c.ends_at).toLocaleDateString("en-GB") : "—"}</td><td><input type="checkbox" ${c.active ? "checked" : ""} data-cp="${esc(c.code)}" style="width:auto"></td></tr>`).join("") || `<tr><td colspan="5" class="hint">لسا ما في كوبونات.</td></tr>`;
+  const pn = id => { const p = P.find(x => x.id === id); return p ? `${esc(p.brand)} – ${esc(p.name)}` : "—"; };
+  $("#rlRows").innerHTML = (rl.data || []).map(r => `<tr class="${r.active ? "" : "off"}"><td>${esc(r.title)}</td><td>${pn(r.product_id)}</td><td>${r.views}</td><td><input type="number" value="${r.sort}" data-rls="${r.id}" style="width:70px" dir="ltr"></td><td><input type="checkbox" ${r.active ? "checked" : ""} data-rla="${r.id}" style="width:auto"></td><td><button class="sm no" type="button" data-rld="${r.id}">حذف</button></td></tr>`).join("") || `<tr><td colspan="6" class="hint">لسا ما في ريلز.</td></tr>`;
+  const ids = (pr.data || []).map(a => a.user_id), who = {};
+  if (ids.length) (await db.from("profiles").select("id,full_name,phone").in("id", ids)).data?.forEach(u => who[u.id] = u);
+  const PRS = { pending: "قيد المراجعة", approved: "مقبولة", rejected: "مرفوضة" };
+  $("#prRows").innerHTML = (pr.data || []).map(a => { const u = who[a.user_id] || {}, ph = (u.phone || "").replace(/\D/g, ""); return `<tr><td dir="ltr"><b>@${esc(a.handle)}</b><small class="hint">${esc(a.platform)}</small></td><td>${a.followers ?? "—"}</td><td class="nm">${esc(u.full_name || "")}<small dir="ltr">${ph ? `<a href="https://wa.me/${ph}" target="_blank" rel="noopener">${esc(u.phone)}</a>` : ""}</small></td><td>${esc(a.note || "")}</td>
+    <td><select data-pru="${a.user_id}">${Object.entries(PRS).map(([k, v]) => `<option value="${k}" ${k === a.status ? "selected" : ""}>${v}</option>`).join("")}</select></td></tr>`; }).join("") || `<tr><td colspan="5" class="hint">لسا ما في طلبات.</td></tr>`;
+}
+$("#cpAdd").addEventListener("click", async () => {
+  const code = $("#cpCode").value.trim().toUpperCase(), pct = +$("#cpPct").value, max = +$("#cpMax").value || null, end = $("#cpEnd").value;
+  if (code.length < 3 || !(pct > 0 && pct <= 90)) { toast("اكتب كود (3 أحرف وأكثر) ونسبة خصم بين 1 و90"); return; }
+  if (!fail((await db.from("coupons").insert({ code, pct, max_uses: max, first_order: $("#cpFirst").checked, ends_at: end ? new Date(end + "T23:59:59").toISOString() : null })).error)) { ["#cpCode", "#cpPct", "#cpMax", "#cpEnd"].forEach(k => $(k).value = ""); toast("انضاف الكوبون ✓"); loadMkt(); }
+});
+$("#cpRows").addEventListener("change", async e => { const c = e.target.dataset.cp; if (c && !fail((await db.from("coupons").update({ active: e.target.checked }).eq("code", c)).error)) loadMkt(); });
+$("#rlAdd").addEventListener("click", async e => {
+  const f = $("#rlFile").files[0], title = $("#rlTitle").value.trim(); if (!f || !title) { toast("اكتب عنوان واختار فيديو"); return; }
+  if (f.size > 52428800) { toast("الفيديو أكبر من 50MB"); return; }
+  e.target.disabled = true; e.target.textContent = "عم يرفع…";
+  const path = `${Date.now()}.${f.name.split(".").pop().toLowerCase()}`, up = await db.storage.from("reels").upload(path, f, { contentType: f.type });
+  e.target.disabled = false; e.target.textContent = "+ رفع ريل";
+  if (fail(up.error)) return;
+  const url = db.storage.from("reels").getPublicUrl(path).data.publicUrl;
+  if (!fail((await db.from("reels").insert({ title, video_url: url, product_id: +$("#rlProd").value || null })).error)) { $("#rlTitle").value = ""; $("#rlFile").value = ""; toast("انضاف الريل ✓"); loadMkt(); }
+});
+$("#rlRows").addEventListener("change", async e => {
+  const d = e.target.dataset;
+  if (d.rla && !fail((await db.from("reels").update({ active: e.target.checked }).eq("id", +d.rla)).error)) loadMkt();
+  if (d.rls && !fail((await db.from("reels").update({ sort: +e.target.value || 0 }).eq("id", +d.rls)).error)) toast("انحفظ ✓");
+});
+$("#rlRows").addEventListener("click", async e => { const id = +e.target.dataset.rld; if (id && confirm("تحذف هالريل؟") && !fail((await db.from("reels").delete().eq("id", id)).error)) loadMkt(); });
+$("#prRows").addEventListener("change", async e => { const u = e.target.dataset.pru; if (u && !fail((await db.from("pr_applications").update({ status: e.target.value }).eq("user_id", u)).error)) toast("انحفظ ✓"); });
+
+// reviews waiting for approval first
+async function loadReviews() {
+  const { data, error } = await db.from("reviews").select("*").order("approved").order("created_at", { ascending: false }).limit(200);
+  if (error) { $("#rvRows").innerHTML = `<tr><td colspan="6" class="hint">شغّل ملف phase6.sql أول.</td></tr>`; return; }
+  const R = data || [], pend = R.filter(r => !r.approved).length;
+  $("#rvN").textContent = pend ? `(${pend})` : "";
+  const pn = id => { const p = P.find(x => x.id === id); return p ? `${esc(p.brand)} – ${esc(p.name)}` : "#" + id; };
+  $("#rvRows").innerHTML = R.map(r => `<tr class="${r.approved ? "" : "pend"}"><td dir="ltr">${new Date(r.created_at).toLocaleDateString("en-GB")}</td><td class="nm">${pn(r.product_id)}</td><td class="nm">${esc(r.name)}${r.verified ? `<small>✓ اشترت المنتج</small>` : ""}</td>
+    <td><b style="color:#f5a623">${"★".repeat(r.stars)}</b><small class="hint">${esc(r.body || "")}</small></td><td>${r.photo_url ? `<a href="${esc(r.photo_url)}" target="_blank" rel="noopener"><img src="${esc(r.photo_url)}" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:8px"></a>` : "—"}</td>
+    <td>${r.approved ? `<button class="sm" type="button" data-rvh="${r.id}">إخفاء</button>` : `<button class="sm" type="button" data-rva="${r.id}">موافقة ✓</button>`} <button class="sm no" type="button" data-rvd="${r.id}">حذف</button></td></tr>`).join("") || `<tr><td colspan="6" class="hint">لسا ما في تقييمات.</td></tr>`;
+}
+$("#rvRows").addEventListener("click", async e => {
+  const d = e.target.dataset;
+  if (d.rva && !fail((await db.from("reviews").update({ approved: true }).eq("id", +d.rva)).error)) loadReviews();
+  if (d.rvh && !fail((await db.from("reviews").update({ approved: false }).eq("id", +d.rvh)).error)) loadReviews();
+  if (d.rvd && confirm("تحذف التقييم؟") && !fail((await db.from("reviews").delete().eq("id", +d.rvd)).error)) loadReviews();
 });
 
 // secret codes + restock alerts
@@ -627,7 +710,7 @@ document.addEventListener("click", async e => {
   const d = t.dataset;
   if (d.tab) {
     document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-pressed", b === t));
-    ["orders", "products", "stock", "traders", "cats", "coins", "battles", "alerts", "searches", "settings"].forEach(k => $("#t-" + k).hidden = k !== d.tab);
+    ["orders", "products", "stock", "traders", "cats", "coins", "battles", "alerts", "searches", "mkt", "reviews", "settings"].forEach(k => $("#t-" + k).hidden = k !== d.tab);
   }
   else if (d.edit) openEdit(+d.edit);
   else if (d.alu) { if (!fail((await db.from("restock_alerts").delete().eq("user_id", d.alu).eq("product_id", +d.alp).eq("shade", d.als)).error)) loadExtras(); }

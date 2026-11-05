@@ -16,9 +16,9 @@
 <meta name="twitter:image" content="https://yaloojak2-ai.github.io/tolay-public/img/og.jpg?v=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Rubik:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1793854450">
+<link rel="stylesheet" href="style.css?v=1793854871">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<script src="i18n.js?v=1793854450"></script>
+<script src="i18n.js?v=1793854871"></script>
 </head>
 <body>
 <div class="wholesale-bar" id="wBar" hidden>وضع التاجر: أسعار الجملة ظاهرة لإلك</div>
@@ -36,6 +36,7 @@
 <section class="page" id="pg-home">
   <div class="wrap">
     <div class="bstrip" id="bstrip" aria-label="الماركات"></div>
+    <a class="bday" id="bday" href="#/beauty" hidden>🎂 عيد ميلاد سعيد! هديتك 100 Tolay Coins بالانتظار، اضغطي لتاخديها</a>
     <div class="hero2">
       <div class="h-girl"><img src="img/hero-girl.jpg" alt="Tolay Makeup"><span class="h-tag latin">FROM U.S.A ♡</span></div>
       <div class="h-txt"><div class="eyebrow latin">Tolay Makeup</div><h1 class="latin">Your Beauty Business Starts Here.</h1>
@@ -51,6 +52,10 @@
     </nav>
     <div class="circles" id="circles"></div>
   </div>
+  <section class="rowsec wrap" id="reels" hidden>
+    <div class="rowhead"><div><div class="eyebrow latin">Tolay Reels</div><h2>شوفيها قبل ما تشتري 🎬</h2></div></div>
+    <div class="reelrow" id="reelRow"></div>
+  </section>
   <section class="rowsec wrap" id="picks">
     <div class="ptabs" role="tablist"><button type="button" role="tab" data-pick="trend">🔥 ترند</button><button type="button" role="tab" data-pick="best">⭐ الأكثر مبيعاً</button><button type="button" role="tab" data-pick="new">✨ جديد لدينا</button></div>
     <div class="hrow g3" id="pickRow"></div>
@@ -102,10 +107,12 @@
   <div class="lines" id="lines"></div>
   <label>منطقة التوصيل<select id="cZone"><option value="">اختاري المنطقة</option><option value="20">الضفة الغربية</option><option value="30">القدس</option><option value="70">الداخل</option></select></label>
   <label id="payL" hidden>طريقة الدفع<select id="cPay"><option value="cash">كاش عند الاستلام</option><option value="credit">دين أو أقساط</option></select></label>
+  <div class="cpn"><input id="cCode" dir="ltr" autocomplete="off" placeholder="كود خصم" aria-label="كود خصم"><button type="button" class="btn ghost" id="cApply">تطبيق</button></div>
   <div class="total"><span>المنتجات</span><span id="total" class="price"></span></div>
   <div class="total"><span>التوصيل</span><span id="ship" class="price"></span></div>
   <div class="total"><span>الإجمالي</span><span id="grand" class="price"></span></div>
   <label>الاسم<input id="cName" autocomplete="name"></label>
+  <label>رقم الهاتف<input id="cPhone" type="tel" dir="ltr" autocomplete="tel" placeholder="05XXXXXXXX"></label>
   <label>المدينة والعنوان<input id="cAddr" autocomplete="street-address"></label>
   <label>ملاحظات (اللون، الدرجة…)<textarea id="cNote" rows="2"></textarea></label>
   <a class="btn wa" id="send" href="#" target="_blank" rel="noopener">إرسال الطلب عبر واتساب</a>
@@ -121,6 +128,13 @@
   <div class="bar sform"><label>الميزانية (₪)<input id="spBudget" type="number" min="20" step="10" value="200" dir="ltr"></label><label>القسم<select id="spCat"></select></label><button class="btn" type="button" id="spGo">اقترحيلي</button></div>
   <div id="spOut"></div>
 </div></section>
+<section class="page" id="pg-track" hidden><div class="wrap arcpg">
+  <div class="eyebrow latin">Track Order</div><h2>تتبعي طلبك</h2>
+  <p class="meta">اكتبي رقم الطلب ورقم الهاتف اللي طلبتي فيه.</p>
+  <form class="bar sform" id="trkForm"><label>رقم الطلب<input id="tNo" type="number" min="1" dir="ltr" required></label><label>رقم الهاتف<input id="tPh" type="tel" dir="ltr" required></label><button class="btn" type="submit">تتبّعي</button></form>
+  <div id="tOut"></div>
+</div></section>
+<section class="page" id="pg-beauty" hidden><div class="wrap arcpg" id="beautyBody"></div></section>
 <section class="page" id="pg-about" hidden><div class="wrap arcpg">
   <div class="eyebrow latin">About Tolay</div><h2>مين إحنا</h2>
   <p>Tolay Makeup متجر مكياج وعناية وعطور أصلية، كل قطعة مستوردة من أمريكا. بنبيع للزبائن بالمفرق، وللمحلات بأسعار جملة بعد اعتماد حسابهم.</p>
@@ -146,6 +160,7 @@
 </nav>
 
 <dialog id="splash" class="small splash"><button class="x" type="button" data-close aria-label="إغلاق">✕</button><div id="splashBody"></div></dialog>
+<dialog id="reel" class="reelpl"><button class="x" type="button" data-close aria-label="إغلاق">✕</button><div id="reelBody"></div></dialog>
 <dialog id="pd" class="full"><button class="back" type="button" data-pdback aria-label="رجوع">→ رجوع</button><div class="pd" id="pdBody"></div></dialog>
 
 <dialog id="quiz" class="small"><button class="x" type="button" data-close aria-label="إغلاق">✕</button><div class="auth" id="quizBody"></div></dialog>
@@ -156,13 +171,13 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
 <script src="viz.js?v=1793632833"></script>
-<script src="desc.js?v=1793854450"></script>
-<script src="desc-i18n.js?v=1793854450"></script>
+<script src="desc.js?v=1793854871"></script>
+<script src="desc-i18n.js?v=1793854871"></script>
 <script src="seed.js?v=1793632833"></script>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-let S = {}, CATS = [], ALL = [], byId = {}, profile = null, WS = {}, DISC = { pct: 0 }, VM = false, toP, HID = null, BEST = [];
+let S = {}, CATS = [], ALL = [], byId = {}, profile = null, WS = {}, DISC = { pct: 0 }, VM = false, toP, HID = null, BEST = [], RATE = {}, REELS = [];
 const isTrader = () => profile && profile.status === "approved";
 const money = n => `${Number(n).toLocaleString("en-US")} ${S.currency || ""}`.trim();
 const has = n => n !== null && n !== undefined && n !== "";
@@ -210,7 +225,9 @@ async function load() {
   ALL = prods.filter(p => !p.vault && !(p.drop_end && Date.parse(p.drop_end) < Date.now())).map(toP);
   byId = Object.fromEntries(ALL.map(p => [p.id, p]));
   CATS = (cats || []).map(c => ({ s: c.name, p: ALL.filter(p => p.cat === c.name) })).filter(c => c.p.length);
-  const [h, bs] = await Promise.all([db.rpc("hidden_today"), db.rpc("best_sellers")]);  // null until the phase 4 SQL runs
+  const [h, bs, rt, rl] = await Promise.all([db.rpc("hidden_today"), db.rpc("best_sellers"), db.rpc("product_ratings"), db.from("reels").select("*").order("sort").order("id", { ascending: false })]);  // empty until the SQL runs
+  RATE = Object.fromEntries((rt.data || []).map(r => [r.product_id, r])); REELS = rl.data || [];
+  try { if (!sessionStorage.getItem("tolay-v")) { sessionStorage.setItem("tolay-v", "1"); db.rpc("track_visit").then(() => {}, () => {}); } } catch {}
   HID = h.data || null; BEST = (bs.data || []).map(r => byId[r.product_id]).filter(p => p?.img);
   await loadSession();
   paint();
@@ -270,11 +287,12 @@ const cardHTML = p => `
     <button class="fav" type="button" data-fav="${p.id}" aria-label="أضيفي للمفضلة" aria-pressed="${fav.has(p.id)}">${IC.heart}</button>
     <button class="ph" type="button" data-open="${p.id}" aria-label="${esc(p.n)}"><img src="${esc(p.img)}" alt="" loading="lazy"><span class="tag">${esc(p.cat)}</span>${soldOut(p) ? `<span class="nb out">نفذ</span>` : dropState(p) === "soon" ? `<span class="nb drop">Drop قريباً</span>` : dropState(p) ? `<span class="nb drop">Drop 🔥</span>` : p.isNew ? `<span class="nb">وصل حديثاً</span>` : ""}</button>
     <div class="brand latin">${esc(p.b)}</div>
-    <div class="name">${esc(p.n)}</div>${p.worth ? `<div class="worth">قيمة مضمونة ${money(p.worth)}</div>` : ""}
+    <div class="name">${esc(p.n)}</div>${starsHTML(p.id)}${p.worth ? `<div class="worth">قيمة مضمونة ${money(p.worth)}</div>` : ""}
     ${dotsHTML(p)}
     <div class="row">${priceHTML(p)}<button class="add" type="button" data-add="${p.id}" aria-label="أضيفي للسلة">+</button></div>
   </article>`;
 
+const starsHTML = (id, big) => { const r = RATE[id]; return r ? `<div class="stars${big ? " big" : ""}" aria-label="${r.avg} من 5"><span style="--v:${r.avg / 5 * 100}%"></span><b>${r.avg}</b><small>(${r.n} تقييم)</small></div>` : ""; };
 let si = 0, slideTimer;
 function slideTo(i) {
   const n = $("#slides").children.length; if (!n) return;
@@ -304,6 +322,8 @@ function paint() {
   $("#brand").innerHTML = `<option value="">كل البراندات</option>` + brands.map(b => `<option>${esc(b)}</option>`).join("");
   $("#circles").innerHTML = CATS.map(c => `<a class="circ" href="#/cats/${enc(c.s)}"><span><img src="${esc(withImg(c.p)[0]?.img || "")}" alt="" loading="lazy"></span><b>${esc(c.s)}</b></a>`).join("");
   const fresh = withImg(ALL.filter(p => p.isNew && !["الهدايا", "أدوات المكياج"].includes(p.cat))).slice(-12).reverse();
+  $("#reels").hidden = !REELS.length; drawReels();
+  bdayNote();
   PICKS = { trend: withImg(ALL.filter(p => p.featured)), best: BEST, new: fresh };
   showPick(PICKS.trend.length ? "trend" : "new");
   // brands strip: biggest brands first, with their best discount
@@ -331,6 +351,26 @@ function splash() {
     ${S.splash_code ? `<button class="code" type="button" data-copy="${esc(S.splash_code)}">الكود: <b class="latin">${esc(S.splash_code)}</b> <small>انسخي</small></button>` : ""}
     <a class="btn" href="${esc(S.splash_link || "#/offers")}" data-close>تسوّقي هلأ</a></div>`;
   $("#splash").showModal();
+}
+// reels: real view counts, one count per open
+const fmtN = n => n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1) + "K" : String(n);
+function drawReels() {
+  $("#reelRow").innerHTML = REELS.map(r => `<button class="reelc" type="button" data-reel="${r.id}" aria-label="${esc(r.title)}"><video src="${esc(r.video_url)}#t=0.5" ${r.poster ? `poster="${esc(r.poster)}"` : ""} muted playsinline preload="metadata"></video><span class="rv">▶ ${fmtN(r.views)}</span><b>${esc(r.title)}</b></button>`).join("");
+}
+function openReel(id) {
+  const r = REELS.find(x => x.id === id); if (!r) return;
+  const p = r.product_id && byId[r.product_id];
+  $("#reelBody").innerHTML = `<video src="${esc(r.video_url)}" ${r.poster ? `poster="${esc(r.poster)}"` : ""} autoplay playsinline controls loop></video>
+    <div class="rinfo"><b>${esc(r.title)}</b><small>👁 ${fmtN(r.views + 1)} مشاهدة</small>${p ? `<button class="btn" type="button" data-open="${p.id}">شوفي المنتج</button>` : ""}</div>`;
+  $("#reel").showModal();
+  r.views++; drawReels(); db.rpc("view_reel", { p_id: id }).then(() => {}, () => {});
+}
+// birthday: a note on the home page during the birthday week
+function bdayNote() {
+  const b = profile?.birthday, el = $("#bday"); if (!el) return;
+  if (!b) { el.hidden = true; return; }
+  const now = new Date(), d = new Date(now.getFullYear(), +b.slice(5, 7) - 1, +b.slice(8, 10)), diff = (now - d) / 864e5;
+  el.hidden = !(diff >= 0 && diff < 7);
 }
 let PICKS = {};
 function showPick(k) {
@@ -379,12 +419,12 @@ function wishView() {
   $("#wgrid").innerHTML = l.length ? l.map(cardHTML).join("") : `<div class="empty"><p>لسا ما ضفتي ولا منتج للمفضلة.</p><a class="btn" href="#/shop">تصفّحي المنتجات</a></div>`;
 }
 
-const TABS = { home: "home", brands: "brands", cats: "cats", shop: "cats", cart: "cart", account: "account", wish: "account", arcade: "arcade", club: "club", box: "club", surprise: "club", about: "account" };
+const TABS = { home: "home", brands: "brands", cats: "cats", shop: "cats", cart: "cart", account: "account", wish: "account", arcade: "arcade", club: "club", box: "club", surprise: "club", about: "account", track: "account", beauty: "account" };
 function route() {
   const [, pg = "", arg = ""] = location.hash.split("/"), a = decodeURIComponent(arg);
-  const page = { "": "home", brands: "brands", cats: "cats", shop: "shop", new: "shop", brand: "shop", offers: "shop", g: "shop", wishlist: "wish", cart: "cart", account: "account", arcade: "arcade", club: "club", box: "box", surprise: "surprise", about: "about" }[pg] || "home";
+  const page = { "": "home", brands: "brands", cats: "cats", shop: "shop", new: "shop", brand: "shop", offers: "shop", g: "shop", wishlist: "wish", cart: "cart", account: "account", arcade: "arcade", club: "club", box: "box", surprise: "surprise", about: "about", track: "track", beauty: "beauty" }[pg] || "home";
   cat = pg === "shop" ? a : ""; brand = pg === "brand" ? a : ""; onlyNew = pg === "new"; onlyDisc = pg === "offers"; grp = pg === "g" && GROUPS[a] ? a : "";
-  ["home", "brands", "cats", "shop", "wish", "cart", "account", "arcade", "club", "box", "surprise", "about"].forEach(p => $("#pg-" + p).hidden = p !== page);
+  ["home", "brands", "cats", "shop", "wish", "cart", "account", "arcade", "club", "box", "surprise", "about", "track", "beauty"].forEach(p => $("#pg-" + p).hidden = p !== page);
   document.querySelectorAll("[data-tab]").forEach(t => t.toggleAttribute("aria-current", t.dataset.tab === (onlyNew ? "new" : TABS[page])));
   if (page === "shop") render();
   else if (page === "brands") brandsView();
@@ -394,10 +434,12 @@ function route() {
   else if (page === "arcade") arcadeView();
   else if (page === "club") clubView();
   else if (page === "box") boxView();
+  else if (page === "beauty") beautyView();
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", route);
 window.addEventListener("popstate", () => { if ($("#pd").open) $("#pd").close(); });
+$("#reel").addEventListener("close", () => { $("#reelBody").innerHTML = ""; });
 $("#pd").addEventListener("close", () => { if (history.state?.pd) history.back(); });
 $("#lang").value = window.LANG || "ar";
 $("#lang").addEventListener("change", e => setLang(e.target.value));
@@ -421,6 +463,13 @@ const logSearch = () => { const t = q.trim().toLowerCase(); if (t.length < 2) re
   db.rpc("log_search", { p_term: t, p_results: n }).then(() => {}, () => {}); };
 $("#q").addEventListener("input", e => { qoptsShow(!e.target.value.trim()); clearTimeout(qLogT); qLogT = setTimeout(logSearch, 1500); q = e.target.value; if (/^#\/(shop|brand)/.test(location.hash)) render(); else location.hash = "#/shop"; });
 $("#bq").addEventListener("input", brandsView);
+$("#trkForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const { data, error } = await db.rpc("track_order", { p_id: +$("#tNo").value, p_phone: $("#tPh").value });
+  const o = data?.[0];
+  $("#tOut").innerHTML = error || !o ? `<div class="empty">ما لقينا طلب بهالرقم وهالهاتف. تأكدي منهم أو احكينا عالواتساب.</div>`
+    : `<div class="ord"><div class="oh"><b>#${o.id}</b><span class="os ${o.status}">${OST[o.status]}</span><small>${new Date(o.created_at).toLocaleDateString("en-GB")}</small></div>${trackHTML(o)}${o.total != null ? `<div class="of"><span>${money(o.total)}</span></div>` : ""}</div>`;
+});
 ["sort", "fDisc", "fStock"].forEach(id => $("#" + id).addEventListener("change", render));
 $("#brand").addEventListener("change", e => { location.hash = e.target.value ? "#/brand/" + enc(e.target.value) : "#/shop"; });
 let sx = null;
@@ -428,7 +477,7 @@ $("#slider").addEventListener("touchstart", e => { sx = e.touches[0].clientX; },
 $("#slider").addEventListener("touchend", e => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; sx = null; if (Math.abs(dx) > 40) slideTo(si + (dx > 0 ? 1 : -1)); });
 
 // cart (per-browser convenience only)
-let cart = [];
+let cart = [], CP = {};
 try { cart = JSON.parse(localStorage.getItem("tolay-cart") || "[]"); } catch {}
 const save = () => { try { localStorage.setItem("tolay-cart", JSON.stringify(cart)); } catch {} };
 let cartSum = null;
@@ -459,16 +508,22 @@ function drawCart() {
   const priced = cart.filter(l => unit(byId[l.id]) !== null);
   $("#payL").hidden = !isTrader();
   const pct = isTrader() && $("#cPay").value === "cash" ? +DISC.pct || 0 : 0;
-  const sum = priced.reduce((a, l) => a + unit(byId[l.id]) * l.qty, 0) * (1 - pct / 100);
-  $("#total").textContent = !cart.length ? "—" : priced.length === cart.length ? money(Math.round(sum * 100) / 100) + (pct ? ` (بعد خصم ${DISC.tier} ${pct}%)` : "") : "يتأكد بالواتساب";
+  const base = priced.reduce((a, l) => a + unit(byId[l.id]) * l.qty, 0) * (1 - pct / 100), sum = base * (1 - (CP.pct || 0) / 100);
+  $("#total").textContent = !cart.length ? "—" : priced.length === cart.length ? money(Math.round(sum * 100) / 100) + (pct ? ` (بعد خصم ${DISC.tier} ${pct}%)` : "") + (CP.pct ? ` (بعد كود ${CP.code} −${CP.pct}%)` : "") : "يتأكد بالواتساب";
   cartSum = cart.length && priced.length === cart.length ? sum : null;
   shipView(); boxSum();
-  if (profile) { $("#cName").value ||= profile.full_name || ""; $("#cAddr").value ||= profile.city || ""; }
+  if (profile) { $("#cName").value ||= profile.full_name || ""; $("#cAddr").value ||= profile.city || ""; $("#cPhone").value ||= profile.phone || ""; }
 }
+$("#cApply").addEventListener("click", async () => {
+  const code = $("#cCode").value.trim().toUpperCase(); if (!code) { CP = {}; drawCart(); return; }
+  const { data, error } = await db.rpc("check_coupon", { p_code: code, p_phone: $("#cPhone").value.trim() || null });
+  CP = !error && +data > 0 ? { code, pct: +data } : {};
+  toast(CP.pct ? `انطبق الكود ✓ خصم ${CP.pct}%` : "الكود مش فعّال أو انستعمل قبل"); drawCart();
+});
 function waLink(no) {
   const lines = cart.map((l, i) => { const p = byId[l.id], u = unit(p); return `${i + 1}. ${p.b} - ${p.n}${l.shade ? ` (${l.shade})` : ""} × ${l.qty}${u !== null ? ` = ${money(u * l.qty)}` : ""}`; });
   const head = isTrader() ? `طلب جملة 🏷️ من محل: ${profile.shop_name || ""}` : "مرحبا Tolay Makeup، بدي أطلب:";
-  const msg = [head + (no ? ` (طلب رقم #${no})` : ""), ...lines, "", `المنتجات: ${$("#total").textContent}`, `التوصيل (${$("#cZone").selectedOptions[0].text}): ${money(zoneFee())}`, `الإجمالي: ${$("#grand").textContent}`, `الاسم: ${$("#cName").value}`, `العنوان: ${$("#cAddr").value}`, isTrader() && profile.phone ? `الهاتف: ${profile.phone}` : "", isTrader() ? `الدفع: ${$("#cPay").selectedOptions[0].text}` : "", $("#cNote").value ? `ملاحظات: ${$("#cNote").value}` : ""].filter(Boolean).join("\n");
+  const msg = [head + (no ? ` (طلب رقم #${no})` : ""), ...lines, "", `المنتجات: ${$("#total").textContent}`, `التوصيل (${$("#cZone").selectedOptions[0].text}): ${money(zoneFee())}`, `الإجمالي: ${$("#grand").textContent}`, CP.code ? `كود الخصم: ${CP.code} (${CP.pct}%)` : "", `الاسم: ${$("#cName").value}`, `الهاتف: ${$("#cPhone").value}`, `العنوان: ${$("#cAddr").value}`, isTrader() ? `الدفع: ${$("#cPay").selectedOptions[0].text}` : "", $("#cNote").value ? `ملاحظات: ${$("#cNote").value}` : ""].filter(Boolean).join("\n");
   return `https://wa.me/${S.whatsapp}?text=${encodeURIComponent(msg)}`;
 }
 $("#send").addEventListener("click", async e => {
@@ -476,15 +531,17 @@ $("#send").addEventListener("click", async e => {
   if (!cart.length) { toast("السلة فاضية"); return; }
   if (zoneFee() === null) { $("#cZone").focus(); toast("اختاري منطقة التوصيل"); return; }
   if (!$("#cName").value.trim()) { $("#cName").focus(); toast("اكتبي اسمك لنكمّل الطلب"); return; }
+  if ($("#cPhone").value.replace(/\D/g, "").length < 9) { $("#cPhone").focus(); toast("اكتبي رقم هاتفك ليوصلك الطلب"); return; }
   const btn = e.currentTarget; if (btn.dataset.busy) return; btn.dataset.busy = 1;
   const win = window.open("", "_blank");  // opened now so the popup isn't blocked after the save finishes
   const { data, error } = await db.rpc("place_order", { p_items: cart.map(l => ({ id: l.id, shade: l.shade, qty: l.qty })), p_name: $("#cName").value.trim(),
-    p_phone: profile?.phone || "", p_address: $("#cAddr").value.trim(), p_note: $("#cNote").value.trim(), p_delivery: zoneFee(), p_payment: isTrader() ? $("#cPay").value : "cash" });
+    p_phone: $("#cPhone").value.trim(), p_address: $("#cAddr").value.trim(), p_note: $("#cNote").value.trim(), p_delivery: zoneFee(), p_payment: isTrader() ? $("#cPay").value : "cash", p_coupon: CP.code || null });
   delete btn.dataset.busy;
+  if (error && /coupon/.test(error.message)) { win?.close(); CP = {}; drawCart(); toast("كود الخصم مش فعّال، شلناه. جرّبي ترسلي مرة ثانية"); return; }
   const no = !error && data?.[0]?.order_id;
   const url = waLink(no);  // even if saving failed, the order still reaches WhatsApp
   if (win) win.location.href = url; else location.href = url;
-  if (no) { cart = []; save(); drawCart(); toast(`انحفظ طلبك رقم #${no} ✓`); }
+  if (no) { cart = []; CP = {}; $("#cCode").value = ""; save(); drawCart(); toast(`انحفظ طلبك رقم #${no} ✓`); }
 });
 
 // product dialog
@@ -500,7 +557,7 @@ function openProduct(id) {
       <div class="eyebrow latin">${esc(p.b)}</div>
       <h3>${esc(p.n)}</h3>
       <div class="meta">${esc(p.cat)}${p.z ? " · " + esc(p.z) : ""}${FIN[p.fin] ? `<span class="fin latin">${FIN[p.fin]}</span>` : ""}</div>
-      ${priceHTML(p)}
+      ${starsHTML(p.id, true)}${priceHTML(p)}
       <div class="note"><b>ⓘ ملاحظة مهمة</b>لا يمكن استرجاع أو استبدال المنتج بعد الشراء.<br>الدفع عند الاستلام، وبتقدري تفحصي طلبك قدام الشوفير.</div>
       ${descHTML(p)}
       ${sw.length ? `<div><div class="shade-name">اختاري درجة: <b id="shadeName">${esc(first.name)}</b></div><div class="tiles">${sw.map((s, i) => `<button class="sw tile" type="button" data-shade="${esc(s.name)}" data-img="${esc(s.img || "")}" aria-pressed="${i === 0}" aria-label="${esc(s.name)}"><span class="ti"><img src="${esc(s.img || p.img)}" alt="" loading="lazy">${s.hex ? `<i style="--c:${esc(s.hex)}"></i>` : ""}<em>SOLD OUT</em></span><b class="latin">${esc(s.name)}</b></button>`).join("")}</div></div>`
@@ -510,13 +567,43 @@ function openProduct(id) {
         <button class="btn" type="button" id="pdAdd">أضيفي للسلة</button><span class="stk" id="stk"></span><button class="btn ghost" type="button" id="notify" hidden>🔔 نبّهيني لما يتوفر</button>
         <button class="btn ghost" type="button" data-share="${p.id}" aria-label="شاركي المنتج">شاركي 🔗</button>
       </div>
-      ${lookHTML(p)}${similarHTML(p)}
+      ${lookHTML(p)}<div class="revs" id="revs"></div>${similarHTML(p)}
     </div>`;
   pdStock();
+  loadReviews(p.id);
   if (!$("#pd").open) { history.pushState({ pd: 1 }, ""); $("#pd").showModal(); }
   $("#pd").scrollTop = 0;
 }
 
+// customer reviews: approved ones for everyone, the form for logged-in customers
+async function loadReviews(pid) {
+  const el = $("#revs"); if (!el) return;
+  const { data } = await db.from("reviews").select("*").eq("product_id", pid).order("created_at", { ascending: false }).limit(30);
+  if (pdState.id !== pid) return;
+  const l = data || [], mine = profile && l.find(r => r.user_id === profile.id), shown = l.filter(r => r.approved);
+  const st = n => "★".repeat(n) + "☆".repeat(5 - n);
+  el.innerHTML = `<div class="shade-name">تقييمات الزباين ${RATE[pid] ? `· ${RATE[pid].avg} ★` : ""}</div>
+    ${shown.length ? shown.map(r => `<div class="rev"><div class="rh"><b>${esc(r.name)}</b><span class="st">${st(r.stars)}</span>${r.verified ? `<small class="vb">✓ اشترت المنتج</small>` : ""}</div>${r.body ? `<p>${esc(r.body)}</p>` : ""}${r.photo_url ? `<img src="${esc(r.photo_url)}" alt="صورة من الزبونة" loading="lazy">` : ""}</div>`).join("") : `<p class="meta">لسا ما في تقييمات. كوني أول وحدة بتقيّم!</p>`}
+    ${mine ? `<p class="meta">${mine.approved ? "شكراً على تقييمك 💗" : "استلمنا تقييمك ✓ بيظهر بعد المراجعة."}</p>`
+      : profile ? `<form class="revf" id="revF"><div class="pick" role="radiogroup" aria-label="عدد النجوم">${[5, 4, 3, 2, 1].map(n => `<label><input type="radio" name="stars" value="${n}" ${n === 5 ? "checked" : ""}><span>★</span></label>`).join("")}</div>
+        <textarea name="body" rows="3" maxlength="1000" placeholder="شو رأيك بالمنتج؟"></textarea>
+        <label class="ph">📷 ضيفي صورة (اختياري)<input type="file" name="photo" accept="image/jpeg,image/png,image/webp"></label>
+        <button class="btn" type="submit">أرسلي التقييم</button></form>`
+      : `<button class="btn ghost" type="button" data-gologin>سجّلي دخول لتكتبي تقييم</button>`}`;
+  $("#revF")?.addEventListener("submit", async e => {
+    e.preventDefault(); const f = e.target, b = f.querySelector("button[type=submit]"); if (b.disabled) return; b.disabled = true;
+    let photo_url = null; const file = f.photo.files[0];
+    if (file) {
+      if (file.size > 5e6) { toast("الصورة كبيرة، اختاري صورة أصغر من 5MB"); b.disabled = false; return; }
+      const path = `${profile.id}/${pid}-${Date.now()}.${(file.type.split("/")[1] || "jpg").replace("jpeg", "jpg")}`;
+      const up = await db.storage.from("reviews").upload(path, file, { contentType: file.type });
+      if (up.error) { toast("ما انرفعت الصورة، جرّبي مرة ثانية"); b.disabled = false; return; }
+      photo_url = db.storage.from("reviews").getPublicUrl(path).data.publicUrl;
+    }
+    const { error } = await db.from("reviews").insert({ product_id: pid, user_id: profile.id, name: (profile.full_name || profile.shop_name || "زبونة").slice(0, 60), stars: +f.stars.value, body: f.body.value.trim() || null, photo_url });
+    toast(error ? "ما انحفظ التقييم" : "شكراً! تقييمك بيظهر بعد المراجعة 💗"); loadReviews(pid);
+  });
+}
 function pdStock() {
   const p = byId[pdState.id], n = stockOf(p, pdState.shade), b = $("#pdAdd");
   document.querySelectorAll("#pdBody .sw").forEach(x => x.classList.toggle("oos", stockOf(p, x.dataset.shade) === 0));
@@ -761,7 +848,15 @@ async function tierCard() {
     <small>المستوى بينحسب من الطلبات اللي تم تسليمها بالشهر اللي قبله.</small>`;
 }
 
-const OST = { new: "جديد", confirmed: "مؤكد", delivered: "تم التسليم", cancelled: "ملغي" };
+const OST = { new: "جديد", confirmed: "مؤكد", shipped: "بالطريق 🚚", delivered: "تم التسليم", cancelled: "ملغي" };
+// order tracking steps with the time each one happened
+const STEPS = [["new", "استلمنا طلبك"], ["confirmed", "تأكد وتجهّز"], ["shipped", "طلع مع الشوفير"], ["delivered", "وصلك ✓"]];
+function trackHTML(o) {
+  if (o.status === "cancelled") return `<div class="trk off">الطلب ملغي</div>`;
+  const at = { new: o.created_at }; (o.status_log || []).forEach(x => at[x.s] = x.at);
+  const cur = STEPS.findIndex(([k]) => k === o.status), t = v => v ? new Date(v).toLocaleString("en-GB", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
+  return `<ol class="trk">${STEPS.map(([k, l], i) => `<li class="${i <= cur ? "done" : ""}"><i></i><b>${l}</b><small dir="ltr">${i <= cur ? t(at[k]) : ""}</small></li>`).join("")}</ol>`;
+}
 let myOrders = [];
 async function ordersView() {
   const b = $("#acctBody");
@@ -770,8 +865,83 @@ async function ordersView() {
   myOrders = data || [];
   $("#olist").outerHTML = error ? `<div class="empty">ما قدرنا نحمّل الطلبات.</div>` : !myOrders.length ? `<div class="empty">لسا ما في طلبات محفوظة.</div>`
     : `<div class="olist">${myOrders.map((o, i) => `<div class="ord"><div class="oh"><b>#${o.id}</b><span class="os ${o.status}">${OST[o.status]}</span><small>${new Date(o.created_at).toLocaleDateString("en-GB")}</small></div>
-      <ul>${o.items.map(it => `<li>${esc(it.brand)} – ${esc(it.name)}${it.shade ? " · " + esc(it.shade) : ""} × ${it.qty}</li>`).join("")}</ul>
+      ${trackHTML(o)}<ul>${o.items.map(it => `<li>${esc(it.brand)} – ${esc(it.name)}${it.shade ? " · " + esc(it.shade) : ""} × ${it.qty}</li>`).join("")}</ul>
       <div class="of"><span>${o.total !== null ? money(o.total) : "السعر يتأكد"}</span><a class="btn ghost" href="invoice.html?id=${o.id}" target="_blank" rel="noopener">🧾 الفاتورة</a><button class="btn ghost" type="button" data-reorder="${i}">أعيدي الطلب</button></div></div>`).join("")}</div>`;
+}
+
+// PR program: creators apply, the admin approves from the dashboard
+async function prView() {
+  const b = $("#acctBody");
+  b.innerHTML = `<button class="chip" type="button" data-mode="">‹ رجوع</button><h2 style="margin-top:14px">برنامج Tolay PR 💗</h2>
+    <p class="meta">إذا عندك صفحة انستغرام أو تيك توك وبتحبي المكياج، قدّمي على البرنامج. إذا انقبلتي بنبعتلك منتجات جديدة تجربيها وتعملي عنها محتوى، وممكن تاخدي كود خصم باسمك لمتابعينك.</p><div id="prOut" class="empty">لحظة…</div>`;
+  const { data, error } = await db.from("pr_applications").select("*").maybeSingle();
+  const ST = { pending: "طلبك وصلنا وقيد المراجعة ⏳ رح نتواصل معك عالواتساب.", approved: "مبروك! انقبلتي ببرنامج PR 🎉 رح نتواصل معك بخصوص أول صندوق.", rejected: "شكراً على اهتمامك. هالمرة ما انقبل الطلب، بس منحب نشوفك مرة ثانية!" };
+  if (error) { $("#prOut").textContent = "البرنامج بيفتح قريباً."; return; }
+  if (data?.handle) { $("#prOut").outerHTML = `<div class="pcard"><div><h2>@${esc(data.handle)}</h2><p>${ST[data.status]}</p></div></div>`; return; }
+  $("#prOut").outerHTML = `<form class="auth" id="prF">
+    <label>المنصة<select name="platform"><option value="instagram">Instagram</option><option value="tiktok">TikTok</option><option value="snapchat">Snapchat</option><option value="youtube">YouTube</option><option value="other">غيرها</option></select></label>
+    <label>اسم الحساب<input name="handle" dir="ltr" required maxlength="60" placeholder="@username"></label>
+    <label>عدد المتابعين تقريباً<input name="followers" type="number" min="0" dir="ltr"></label>
+    <label>ليش بدك تنضمي؟ (اختياري)<textarea name="note" rows="3" maxlength="500"></textarea></label>
+    <button class="btn" type="submit">قدّمي</button></form>`;
+  $("#prF").addEventListener("submit", async e => {
+    e.preventDefault(); const f = e.target;
+    const { error } = await db.from("pr_applications").insert({ user_id: profile.id, platform: f.platform.value, handle: f.handle.value.trim().replace(/^@/, ""), followers: f.followers.value ? +f.followers.value : null, note: f.note.value.trim() || null });
+    toast(error ? "ما انبعت الطلب، جرّبي مرة ثانية" : "انبعت طلبك ✓"); if (!error) prView();
+  });
+}
+
+// beauty helper: a few questions, then products from the store that fit (no paid AI)
+const BQ = [
+  ["skin", "شو نوع بشرتك؟", [["oily", "دهنية"], ["dry", "جافة"], ["combo", "مختلطة"], ["normal", "عادية"], ["sensitive", "حساسة"]]],
+  ["tone", "لون بشرتك؟", [["fair", "فاتحة كتير"], ["light", "فاتحة"], ["medium", "حنطية"], ["tan", "سمراء"], ["deep", "داكنة"]]],
+  ["under", "لون عروقك بالمعصم؟", [["warm", "خضر (دافي)"], ["cool", "زرق أو بنفسجي (بارد)"], ["neutral", "بين الاثنين"], ["unsure", "مش متأكدة"]]],
+  ["concern", "شو أكثر اشي بيضايقك؟", [["pores", "المسام"], ["shine", "اللمعة"], ["dry", "الجفاف"], ["spots", "البقع والتصبغات"], ["lines", "الخطوط والتجاعيد"], ["none", "ولا اشي"]]],
+  ["look", "أي ستايل بتحبي؟", [["natural", "طبيعي ناعم"], ["glam", "سهرة وجلام"], ["bold", "جريء وملوّن"]]],
+];
+let BA = {};
+const LIGHT = { fair: .86, light: .78, medium: .66, tan: .54, deep: .4 };
+const hexL = h => { const n = parseInt((h || "#888").slice(1), 16), r = n >> 16 & 255, g = n >> 8 & 255, b = n & 255; return (Math.max(r, g, b) + Math.min(r, g, b)) / 510; };
+const hexWarm = h => { const n = parseInt((h || "#888").slice(1), 16), r = n >> 16 & 255, b = n & 255; return r - b; };
+function beautyPicks(a) {
+  const has = (p, re) => re.test(`${p.n} ${p.d || ""}`), withP = l => l.filter(p => p.img && !soldOut(p));
+  const KEY = { pores: /pore|blur|filter|primer|مسام/i, shine: /matte|oil|mattif|powder|setting|مطفي|لمعان/i, dry: /hydra|moist|dew|glow|balm|serum|oil|ترطيب/i, spots: /correct|conceal|bright|serum|vitamin|تصبغ/i, lines: /firm|collagen|repair|serum|smooth|تجاعيد/i };
+  const skinRe = { oily: /matte|pore|oil|blur|setting/i, dry: /hydra|dew|glow|moist|serum|balm/i, combo: /blur|filter|primer|setting/i, normal: /glow|skin|tint/i, sensitive: /hydra|gentle|tint|balm/i }[a.skin];
+  const base = withP(ALL.filter(p => ["البرايمر", "البشرة والبودرة", "العناية بالبشرة"].includes(p.cat))).sort((x, y) => has(y, skinRe) - has(x, skinRe) + (a.concern !== "none" ? has(y, KEY[a.concern]) - has(x, KEY[a.concern]) : 0)).slice(0, 4);
+  // foundation shade closest to her tone
+  const t = LIGHT[a.tone], fnd = withP(ALL.filter(p => p.cat === "البشرة والبودرة" && p.sw.some(s => s.hex))).map(p => ({ p, s: p.sw.filter(s => s.hex).sort((x, y) => Math.abs(hexL(x.hex) - t) - Math.abs(hexL(y.hex) - t))[0] })).slice(0, 2);
+  // lips: warm undertone -> warmer shades, cool -> pinks/berries, bolder look -> deeper
+  const want = a.look === "bold" ? .35 : a.look === "glam" ? .45 : .6, w = a.under === "warm" ? 1 : a.under === "cool" ? -1 : 0;
+  const lips = withP(ALL.filter(p => p.cat === "الشفاه" && p.sw.some(s => s.hex))).map(p => ({ p, s: p.sw.filter(s => s.hex).sort((x, y) => (Math.abs(hexL(x.hex) - want) - w * hexWarm(x.hex) / 600) - (Math.abs(hexL(y.hex) - want) - w * hexWarm(y.hex) / 600))[0] })).slice(0, 3);
+  return { base, fnd, lips };
+}
+async function beautyView() {
+  const b = $("#beautyBody"), saved = profile?.beauty || {};
+  if (!Object.keys(BA).length && saved.skin) BA = { ...saved };
+  const step = BQ.findIndex(([k]) => !BA[k]);
+  if (step >= 0) {
+    const [k, q, opts] = BQ[step];
+    b.innerHTML = `<div class="eyebrow latin">Beauty Helper</div><h2>مساعدة الجمال ✨</h2><p class="meta">سؤال ${step + 1} من ${BQ.length}</p>
+      <div class="pbar"><i style="width:${step / BQ.length * 100}%"></i></div><h3>${q}</h3><div class="bopts">${opts.map(([v, l]) => `<button class="chip" type="button" data-ba="${k}" data-bv="${v}">${l}</button>`).join("")}</div>
+      ${step ? `<button class="btn ghost" type="button" data-bback>‹ السؤال اللي قبل</button>` : ""}`;
+    return;
+  }
+  const { base, fnd, lips } = beautyPicks(BA), pairs = [...fnd, ...lips];
+  const L = Object.fromEntries(BQ.flatMap(([k, , o]) => o.map(([v, l]) => [k + v, l])));
+  const bdayIn = profile ? (profile.birthday ? `<p class="meta">🎂 عيد ميلادك محفوظ: <span dir="ltr">${esc(profile.birthday)}</span>. بأسبوع عيد ميلادك بتاخدي 100 Tolay Coins هدية.</p><button class="btn ghost" type="button" data-bclaim>خدي هدية عيد ميلادي</button>`
+      : `<label class="sform">تاريخ عيد ميلادك (منبعتلك هدية فيه 🎂)<input type="date" id="bDate" dir="ltr"></label>`) : `<p class="meta">سجّلي دخول لنحفظ إجاباتك ونتذكر عيد ميلادك 🎂</p>`;
+  b.innerHTML = `<div class="eyebrow latin">Beauty Helper</div><h2>اختياراتنا إلك 💗</h2>
+    <p class="meta">بشرة ${L["skin" + BA.skin]} · ${L["tone" + BA.tone]} · ${L["under" + BA.under]} · ${L["look" + BA.look]}</p>
+    ${pairs.length ? `<h3>درجاتك المقترحة</h3><div class="olist">${pairs.map(({ p, s }) => `<div class="qres"><i style="background:${esc(s.hex)}"></i><div><small>${esc(p.cat)}</small><b>${esc(p.b)} · ${esc(p.n)}</b><small>${esc(s.name)}</small></div><button class="btn ghost" type="button" data-qopen="${p.id}" data-qshade="${esc(s.name)}">شوفي</button></div>`).join("")}</div>` : ""}
+    ${base.length ? `<h3>لبشرتك</h3><div class="grid">${base.map(cardHTML).join("")}</div>` : ""}
+    <div class="bar">${pairs.length ? `<button class="btn" type="button" data-ball>ضيفي الدرجات للسلة</button>` : ""}<button class="btn ghost" type="button" data-breset>أعيدي الأسئلة</button></div>
+    <div class="ord" style="margin-top:18px">${bdayIn}</div>`;
+  if (profile) db.rpc("save_beauty", { p_beauty: BA, p_birthday: null }).then(() => { profile.beauty = { ...BA }; }, () => {});
+  $("#bDate")?.addEventListener("change", async e => {
+    if (!e.target.value) return;
+    const { error } = await db.rpc("save_beauty", { p_beauty: BA, p_birthday: e.target.value });
+    if (!error) { profile.birthday = e.target.value; toast("حفظنا عيد ميلادك 🎂"); bdayNote(); beautyView(); } else toast("ما انحفظ، جرّبي مرة ثانية");
+  });
 }
 
 // account page: menu for everyone, trader login/signup and status inside it
@@ -780,12 +950,14 @@ function acctView(mode) {
   const row = (ic, t, sub, attrs, tag = "button") => `<${tag} class="mrow" ${attrs}><span class="mi">${IC[ic]}</span><span class="mt"><b>${t}</b>${sub ? `<small>${sub}</small>` : ""}</span><span class="chev">‹</span></${tag}>`;
   const base = row("heart", "مفضلتي", `${fav.size} منتج`, 'href="#/wishlist"', "a")
     + row("spark", "اكتشفي درجتك", "فاونديشن وأحمر شفاه مناسبين لبشرتك", "type=button data-quiz")
+    + row("spark", "مساعدة الجمال", "شو بيناسب بشرتك ولونك؟", 'href="#/beauty"', "a")
+    + row("bag", "تتبعي طلبك", "برقم الطلب ورقم الهاتف", 'href="#/track"', "a")
     + row("chat", "تواصلي معنا", "واتساب", `href="https://wa.me/${wa}" target="_blank" rel="noopener"`, "a");
   if (profile) {
     const st = { active: "حسابك فعّال. طلباتك بتنحفظ هون وبتقدري تعيديها بضغطة.", pending: "طلبك قيد المراجعة. رح نفعّل حسابك بأقرب وقت ونبلّغك.", approved: "حسابك مفعّل وأسعار الجملة ظاهرة لإلك.", rejected: "للأسف ما تمت الموافقة على الحساب. تواصلي معنا عالواتساب." }[profile.status];
     const nm = profile.shop_name || profile.full_name || "حسابي";
     b.innerHTML = `<div class="pcard"><span class="av">${esc(nm.trim()[0] || "T")}</span><div><h2>${esc(nm)}</h2><p>${st}</p></div></div>
-      <div class="tier" id="tier"></div><div class="mlist">${base}${row("spark", "Beauty Arcade", "نقاطك وألعابك وجوائزك", 'href="#/arcade"', "a")}${row("brands", "Tolay Club", "الدروبات والقبو السري وكوّني صندوقك", 'href="#/club"', "a")}${row("bag", "طلباتي", "كل طلباتك وإعادة الطلب", 'type=button data-orders')}${profile.role === "admin" ? row("shop", "لوحة التحكم", "إدارة المنتجات والطلبات", 'href="admin.html"', "a") : ""}${row("out", "تسجيل خروج", "", 'type=button id="logout"')}</div>`;
+      <div class="tier" id="tier"></div><div class="mlist">${base}${row("spark", "Beauty Arcade", "نقاطك وألعابك وجوائزك", 'href="#/arcade"', "a")}${row("brands", "Tolay Club", "الدروبات والقبو السري وكوّني صندوقك", 'href="#/club"', "a")}${row("bag", "طلباتي", "تتبّعي طلباتك وأعيديها", 'type=button data-orders')}${row("spark", "برنامج PR", "للمؤثرات وصانعات المحتوى", "type=button data-pr")}${profile.role === "admin" ? row("shop", "لوحة التحكم", "إدارة المنتجات والطلبات", 'href="admin.html"', "a") : ""}${row("out", "تسجيل خروج", "", 'type=button id="logout"')}</div>`;
     tierCard();
     return;
   }
@@ -870,7 +1042,15 @@ document.addEventListener("click", async e => {
   else if (d.qopen) { $("#quiz").close(); openProduct(+d.qopen); [...document.querySelectorAll("#pdBody .sw")].find(b => b.dataset.shade === d.qshade)?.click(); }
   else if (d.pq) { pdState.qty = Math.max(minQty(byId[pdState.id]), pdState.qty + +d.pq); $("#pq").textContent = pdState.qty; }
   else if (d.pdback !== undefined) history.back();
+  else if (d.gologin !== undefined) { $("#pd").close(); location.hash = "#/account"; setTimeout(() => acctView("login"), 50); }
   else if (d.pick) showPick(d.pick);
+  else if (d.ba) { BA[d.ba] = d.bv; beautyView(); }
+  else if (d.bback !== undefined) { const i = BQ.findIndex(([k]) => !BA[k]); delete BA[BQ[i - 1][0]]; beautyView(); }
+  else if (d.breset !== undefined) { BA = {}; beautyView(); }
+  else if (d.ball !== undefined) { const { fnd, lips } = beautyPicks(BA); [...fnd, ...lips].forEach(({ p, s }) => addToCart(p.id, s.name, minQty(p))); toast("انضافوا للسلة ✓"); }
+  else if (d.bclaim !== undefined) { const { error } = await db.rpc("claim_birthday"); toast(error ? (/week/.test(error.message) ? "الهدية بتفتح بأسبوع عيد ميلادك 🎂" : "أخدتي هديتك هالسنة 💗") : "كل عام وانتِ بخير 🎂 انضافت 100 نقطة"); }
+  else if (d.reel) openReel(+d.reel);
+  else if (d.pr !== undefined) prView();
   else if (d.copy) { navigator.clipboard?.writeText(d.copy).catch(() => {}); toast("انسخ الكود ✓ استعمليه بالسلة"); }
   else if (d.qr) { $("#q").value = d.qr; $("#q").dispatchEvent(new Event("input")); }
   else if (t.id === "pdAdd") { addToCart(pdState.id, pdState.shade, pdState.qty); $("#pd").close(); }

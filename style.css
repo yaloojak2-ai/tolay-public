@@ -562,7 +562,7 @@ td small.hint{display:block;margin-top:2px}
 
 /* product opens as its own full page with a back button */
 dialog#pd.full{max-width:100vw;width:100vw;height:100dvh;max-height:100dvh;margin:0;border-radius:0;overflow-y:auto;overscroll-behavior:contain}
-dialog#pd.full .pd{min-height:100%}
+
 #pd .back{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:6px;width:100%;padding:12px 16px;background:#fff;border:0;border-bottom:1px solid var(--line);font:600 15px var(--f-body);color:var(--ivory);text-align:start}
 #pd .stage{min-height:420px}
 #pd .body{padding-top:28px}
@@ -608,3 +608,53 @@ dialog.splash{overflow:hidden;background:#fff}
 .splash .code{border:2px dashed #e0002a;background:#fff0f3;color:#e0002a;border-radius:12px;padding:10px 18px;font:16px var(--f-body)}
 .splash .code small{color:var(--muted);margin-inline-start:6px}
 .splash .btn{width:100%}
+.cpn{display:flex;gap:8px}.cpn input{flex:1;min-width:0;text-transform:uppercase}
+/* order tracking */
+.trk{list-style:none;margin:12px 0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);position:relative}
+.trk li{display:grid;justify-items:center;text-align:center;gap:4px;position:relative;font-size:12px;color:var(--muted)}
+.trk li::before{content:"";position:absolute;top:8px;inset-inline-start:-50%;width:100%;height:3px;background:var(--line);z-index:0}
+.trk li:first-child::before{display:none}
+.trk li.done::before{background:#1aa75b}
+.trk i{width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid var(--line);z-index:1}
+.trk li.done i{background:#1aa75b;border-color:#1aa75b}
+.trk li.done b{color:var(--ivory)}
+.trk b{font-weight:600}
+.trk.off{display:block;color:var(--muted)}
+.os.shipped{color:#1a73e8}
+/* stars */
+.stars{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted)}
+.stars span{position:relative;display:inline-block;font-size:12px;letter-spacing:1px;color:#ddd}
+.stars span::before{content:"★★★★★"}
+.stars span::after{content:"★★★★★";position:absolute;inset-inline-start:0;top:0;width:var(--v);overflow:hidden;color:#f5a623;white-space:nowrap}
+.stars b{color:var(--ivory);font-weight:600}
+.stars.big{font-size:13px}.stars.big span{font-size:16px}
+/* reviews */
+.revs{display:grid;gap:10px;margin-top:20px}
+.rev{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.rev .rh{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.rev .st{color:#f5a623;letter-spacing:1px}
+.rev .vb{color:#1aa75b;font-size:11px}
+.rev p{margin:6px 0 0;font-size:14px}
+.rev img{margin-top:8px;max-width:160px;border-radius:10px}
+.revf{display:grid;gap:8px}
+.revf .pick{display:flex;flex-direction:row-reverse;justify-content:flex-end;gap:2px}
+.revf .pick input{display:none}
+.revf .pick span{font-size:28px;color:#ddd;cursor:pointer}
+.revf .pick label:has(input:checked) span,.revf .pick label:has(input:checked)~label span{color:#f5a623}
+.revf .ph{font-size:14px;color:var(--muted)}
+/* reels */
+.reelrow{display:grid;grid-auto-flow:column;grid-auto-columns:min(38vw,170px);gap:10px;overflow-x:auto;scrollbar-width:none}
+.reelrow::-webkit-scrollbar{display:none}
+.reelc{position:relative;aspect-ratio:9/16;border-radius:16px;overflow:hidden;border:0;padding:0;background:#111;color:#fff;text-align:start}
+.reelc video{width:100%;height:100%;object-fit:cover;display:block}
+.reelc .rv{position:absolute;top:8px;inset-inline-start:8px;background:rgba(0,0,0,.55);border-radius:999px;padding:2px 8px;font-size:12px}
+.reelc b{position:absolute;bottom:0;inset-inline:0;padding:24px 10px 10px;background:linear-gradient(transparent,rgba(0,0,0,.7));font-size:13px}
+dialog.reelpl{max-width:min(420px,100vw);background:#000;color:#fff}
+.reelpl video{width:100%;max-height:78dvh;display:block;background:#000}
+.reelpl .rinfo{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:12px 14px}
+.reelpl .rinfo small{color:#bbb}
+/* birthday + beauty helper */
+.bday{display:block;margin:10px 0 0;padding:12px 16px;border-radius:14px;background:linear-gradient(90deg,#ffe3f0,#f3ffd1);color:#111;font-weight:600;text-decoration:none}
+.bopts{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 18px}
+.bopts .chip{font-size:15px;padding:10px 18px}
+.revf textarea{font:inherit;padding:10px;border-radius:12px;border:1px solid var(--line);width:100%;box-sizing:border-box}
