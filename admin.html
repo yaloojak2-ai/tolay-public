@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Tolay Admin</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700&family=Rubik:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1793805826">
+<link rel="stylesheet" href="style.css?v=1793854450">
 <style>
 body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 .adm{padding-block:28px 80px;display:flex;flex-direction:column;gap:20px}
@@ -178,6 +178,13 @@ tr.off td{opacity:.45}
         <label>العنوان الرئيسي<input name="hero_title"></label>
         <label>العنوان (السطر الملوّن)<input name="hero_accent"></label>
         <label class="full">نص الواجهة<textarea name="hero_text" rows="3"></textarea></label>
+        <h3 class="full" style="margin:10px 0 0">إعلان أول ما يفتح الموقع</h3>
+        <label>يطلع الإعلان؟<select name="splash_on"><option value="0">لا</option><option value="1">نعم</option></select></label>
+        <label>العنوان<input name="splash_title" placeholder="أهلاً فيكي بـ Tolay 💗"></label>
+        <label class="full">النص<input name="splash_text" placeholder="مثلاً: خصم 10% على أول طلب"></label>
+        <label>كود الخصم (اختياري)<input name="splash_code" dir="ltr"></label>
+        <label>الزر بودّي على<input name="splash_link" dir="ltr" placeholder="#/offers"></label>
+        <label class="full">رابط الصورة (فاضي = صورة المنتجات)<input name="splash_img" dir="ltr" placeholder="img/og.jpg"></label>
         <div class="full"><button class="btn" type="submit">حفظ</button></div>
       </form>
       <p class="hint">المنتجات اللي معلّم عليها "مميّز" بتطلع بأول الصفحة (أول 3).</p>
