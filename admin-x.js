@@ -79,6 +79,7 @@ $("#nfGoal").addEventListener("change", async e => { GOAL = +e.target.value || 0
 
 // ===== 2FA (TOTP, e.g. Google Authenticator) =====
 async function drawMfa() {
+  if (!db.auth.mfa) return;
   const f = (await db.auth.mfa.listFactors()).data?.totp || [], on = f.find(x => x.status === "verified");
   $("#mfaBox").innerHTML = on ? `<span>✅ التحقق بخطوتين شغّال على حسابك.</span><button class="sm no" type="button" id="mfaOff">إيقاف</button>`
     : `<span class="hint">زيادة أمان: بعد كلمة السر بيطلب رمز من تطبيق على تلفونك.</span><button class="sm ok" type="button" id="mfaOn">تفعيل التحقق بخطوتين</button>`;

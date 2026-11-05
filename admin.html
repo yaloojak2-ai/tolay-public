@@ -488,7 +488,7 @@ async function boot() {
   }
   $("#login").hidden = admin; $("#app").hidden = !admin; $("#logout").hidden = !session;
   // two-step login: if this account turned 2FA on, ask for the code before opening the dashboard
-  if (admin) { const a = (await db.auth.mfa.getAuthenticatorAssuranceLevel()).data;
+  if (admin) { const a = (await db.auth.mfa?.getAuthenticatorAssuranceLevel?.())?.data;
     if (a && a.nextLevel === "aal2" && a.currentLevel !== "aal2") { $("#login").hidden = false; $("#app").hidden = true; $("#loginForm").hidden = true; $("#mfaForm").hidden = false; $("#mfaCode").focus(); return; } }
   if (admin) { PERMS = (await db.rpc("my_perms")).data || (role === "admin" ? ["all"] : []); gateTabs(); await loadAll(); }
 }
