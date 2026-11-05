@@ -810,3 +810,16 @@ dialog.reelpl{max-width:min(420px,100vw);background:#000;color:#fff}
 .sp-cd>span{display:flex;gap:6px;direction:ltr}
 .sp-cd i{min-width:46px;padding:5px}.sp-cd i b{font-size:20px}
 @media (max-width:900px){.feats{grid-auto-columns:116px}.feats>div{grid-template-columns:1fr;justify-items:center;text-align:center;row-gap:3px;padding:12px 8px}.feats i{grid-row:auto}}
+/* Nov 5 fix: countdown on its own bar, selling points scroll under it */
+.pbar{justify-content:center!important;gap:12px!important}
+.mbar{background:var(--gold);color:#fff;overflow:hidden;direction:ltr;padding:8px 0;font-size:13.5px;font-weight:600}
+.mbar .track{display:flex;width:max-content;animation:mbar 38s linear infinite}
+.mbar span{white-space:nowrap;direction:rtl;padding-inline:22px;position:relative}
+.mbar span::after{content:"✦";position:absolute;right:-6px;color:var(--sun);font-size:11px;top:2px}
+.mbar span.dup{display:none}
+.mbar:hover .track{animation-play-state:paused}
+@keyframes mbar{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.mbar .track{animation:none}}
+/* product photo: show the whole product, no zoom */
+.stage{background:#fff}
+.stage .photo img{object-fit:contain;animation:none;padding:18px;background:#fff}
