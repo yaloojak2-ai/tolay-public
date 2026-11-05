@@ -16,9 +16,9 @@
 <meta name="twitter:image" content="https://yaloojak2-ai.github.io/tolay-public/img/og.jpg?v=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Rubik:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1793884500">
+<link rel="stylesheet" href="style.css?v=1793885106">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<script src="i18n.js?v=1793884500"></script>
+<script src="i18n.js?v=1793885106"></script>
 </head>
 <body>
 <div class="wholesale-bar" id="wBar" hidden>وضع التاجر: أسعار الجملة ظاهرة لإلك</div>
@@ -137,6 +137,21 @@
   <div id="tOut"></div>
 </div></section>
 <section class="page" id="pg-beauty" hidden><div class="wrap arcpg" id="beautyBody"></div></section>
+<section class="page" id="pg-help" hidden><div class="wrap arcpg">
+  <div class="eyebrow latin">Ask Tolay</div><h2>اسألي Tolay 💬</h2>
+  <p class="meta">اسألي عن أي منتج: متوفر؟ قديش؟ إيمتى بيرجع؟ أو عن التوصيل والدفع. بتقدري تحكي بالصوت 🎙️</p>
+  <form id="askF" class="srch2"><input id="askQ" placeholder="مثلاً: في عندكم Huda Beauty blush؟" autocomplete="off"><button class="mic" type="button" data-mic="askQ" aria-label="احكي بالصوت">🎙️</button><button class="btn" type="submit">اسألي</button></form>
+  <div id="askA" class="askA"></div>
+  <h3 style="margin-top:22px">ما لقيتي جوابك؟ ابعتيلنا</h3>
+  <form id="tkF" class="tkform">
+    <div class="chips"><label><input type="radio" name="kind" value="question" checked> سؤال</label><label><input type="radio" name="kind" value="complaint"> شكوى</label><label><input type="radio" name="kind" value="return"> مشكلة بطلب</label></div>
+    <input name="name" placeholder="اسمك" required maxlength="80"><input name="phone" placeholder="رقم الهاتف" required dir="ltr" inputmode="tel" maxlength="20">
+    <input name="order" placeholder="رقم الطلب (إذا في)" dir="ltr" inputmode="numeric">
+    <div class="srch2"><textarea id="tkBody" name="body" rows="3" required maxlength="2000" placeholder="اكتبي أو احكي رسالتك…"></textarea><button class="mic" type="button" data-mic="tkBody" aria-label="احكي بالصوت">🎙️</button></div>
+    <label class="ph" id="tkPh">📷 صوّري المنتج أو المشكلة (اختياري)<input type="file" name="photo" accept="image/jpeg,image/png,image/webp" capture="environment"></label>
+    <button class="btn" type="submit">ابعتي</button>
+  </form>
+</div></section>
 <section class="page" id="pg-about" hidden><div class="wrap arcpg">
   <div class="eyebrow latin">About Tolay</div><h2>مين إحنا</h2>
   <p>Tolay Makeup متجر مكياج وعناية وعطور أصلية، كل قطعة مستوردة من أمريكا. بنبيع للزبائن بالمفرق، وللمحلات بأسعار جملة بعد اعتماد حسابهم.</p>
@@ -173,9 +188,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
 <script src="viz.js?v=1793632833"></script>
-<script src="desc.js?v=1793884500"></script>
-<script src="desc-i18n.js?v=1793884500"></script>
-<script src="search.js?v=1793884500"></script>
+<script src="desc.js?v=1793885106"></script>
+<script src="desc-i18n.js?v=1793885106"></script>
+<script src="search.js?v=1793885106"></script>
 <script src="seed.js?v=1793632833"></script>
 <script>
 const $ = s => document.querySelector(s);
@@ -459,9 +474,9 @@ function wishView() {
 const TABS = { home: "home", brands: "brands", cats: "cats", shop: "cats", cart: "cart", account: "account", wish: "account", arcade: "arcade", club: "club", box: "club", surprise: "club", about: "account", track: "account", beauty: "account" };
 function route() {
   const [, pg = "", arg = ""] = location.hash.split("/"), a = decodeURIComponent(arg);
-  const page = { "": "home", brands: "brands", cats: "cats", shop: "shop", new: "shop", brand: "shop", offers: "shop", g: "shop", wishlist: "wish", cart: "cart", account: "account", arcade: "arcade", club: "club", box: "box", surprise: "surprise", about: "about", track: "track", beauty: "beauty" }[pg] || "home";
+  const page = { "": "home", brands: "brands", cats: "cats", shop: "shop", new: "shop", brand: "shop", offers: "shop", g: "shop", wishlist: "wish", cart: "cart", account: "account", arcade: "arcade", club: "club", box: "box", surprise: "surprise", about: "about", track: "track", beauty: "beauty", help: "help" }[pg] || "home";
   cat = pg === "shop" ? a : ""; brand = pg === "brand" ? a : ""; onlyNew = pg === "new"; onlyDisc = pg === "offers"; grp = pg === "g" && GROUPS[a] ? a : "";
-  ["home", "brands", "cats", "shop", "wish", "cart", "account", "arcade", "club", "box", "surprise", "about", "track", "beauty"].forEach(p => $("#pg-" + p).hidden = p !== page);
+  ["home", "brands", "cats", "shop", "wish", "cart", "account", "arcade", "club", "box", "surprise", "about", "track", "beauty", "help"].forEach(p => $("#pg-" + p).hidden = p !== page);
   document.querySelectorAll("[data-tab]").forEach(t => t.toggleAttribute("aria-current", t.dataset.tab === (onlyNew ? "new" : TABS[page])));
   if (page === "shop") render();
   else if (page === "brands") brandsView();
@@ -472,6 +487,7 @@ function route() {
   else if (page === "club") clubView();
   else if (page === "box") boxView();
   else if (page === "beauty") beautyView();
+  else if (page === "help") helpView(a);
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", route);
@@ -615,7 +631,7 @@ function openProduct(id) {
         : p.s ? `<div class="meta">${esc(p.s)}، اكتبي اللون اللي بدك ياه بالملاحظات.</div>` : ""}
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:auto">
         <div class="qty"><button type="button" data-pq="-1" aria-label="أقل">−</button><span id="pq">${mq}</span><button type="button" data-pq="1" aria-label="أكثر">+</button></div>
-        <button class="btn" type="button" id="pdAdd">أضيفي للسلة</button><span class="stk" id="stk"></span><button class="btn ghost" type="button" id="notify" hidden>🔔 نبّهيني لما يتوفر</button>
+        <button class="btn" type="button" id="pdAdd">أضيفي للسلة</button><span class="stk" id="stk"></span><button class="btn ghost" type="button" id="notify" hidden>🔔 نبّهيني لما يتوفر</button><a class="btn ghost" id="askP" href="#/help">💬 اسألي عنه</a>
         <button class="btn ghost" type="button" data-share="${p.id}" aria-label="شاركي المنتج">شاركي 🔗</button>
       </div>
       ${lookHTML(p)}<div class="revs" id="revs"></div>${similarHTML(p)}
@@ -659,7 +675,7 @@ function pdStock() {
   const p = byId[pdState.id], n = stockOf(p, pdState.shade), b = $("#pdAdd");
   document.querySelectorAll("#pdBody .sw").forEach(x => x.classList.toggle("oos", stockOf(p, x.dataset.shade) === 0));
   b.disabled = n === 0 || !canBuy(p); b.textContent = !canBuy(p) ? "الدروب بيفتح قريباً" : n === 0 ? (pdState.shade ? "هالدرجة نفذت" : "نفذ من المخزون") : "أضيفي للسلة";
-  $("#notify").hidden = !(n === 0 || !canBuy(p));
+  $("#notify").hidden = !(n === 0 || !canBuy(p)); $("#askP").href = "#/help/" + p.id;
   $("#stk").textContent = n === null || n === 0 ? "" : n <= 3 ? `باقي ${n} بس` : `متوفر ${n} قطعة`;
 }
 
@@ -922,10 +938,69 @@ async function ordersView() {
       <div class="of"><span>${o.total !== null ? money(o.total) : "السعر يتأكد"}</span><a class="btn ghost" href="invoice.html?id=${o.id}" target="_blank" rel="noopener">🧾 الفاتورة</a><button class="btn ghost" type="button" data-reorder="${i}">أعيدي الطلب</button></div></div>`).join("")}</div>`;
   // restock requests with the shop's reply and expected date
   const { data: al } = await db.from("restock_alerts").select("*").order("created_at", { ascending: false });
+  const { data: tk } = await db.from("tickets").select("*").order("created_at", { ascending: false }).limit(20);
+  if (tk?.length) $("#acctBody").insertAdjacentHTML("beforeend", `<h2 style="margin-top:18px">💬 رسائلي</h2><div class="olist">${tk.map(t => `<div class="ord"><div class="oh"><b>${esc(t.body.slice(0, 80))}</b><small>${new Date(t.created_at).toLocaleDateString("en-GB")}</small></div>
+    <p class="hint" style="margin:6px 0 0">${t.reply ? `💬 ${esc(t.reply)}` : "استلمنا رسالتك، رح نردّ قريب."}</p></div>`).join("")}</div>`);
   if (al?.length) $("#acctBody").insertAdjacentHTML("beforeend", `<h2 style="margin-top:18px">🔔 طلبات التوفير</h2><div class="olist">${al.map(a => { const p = byId[a.product_id];
     return `<div class="ord"><div class="oh"><b>${esc(p ? p.b + " – " + p.n : "#" + a.product_id)}</b>${a.shade ? `<small>${esc(a.shade)}</small>` : ""}</div>
       <p class="hint" style="margin:6px 0 0">${a.reply ? `💬 ${esc(a.reply)}` : "استلمنا طلبك، رح نردّ عليكي قريب."}${a.eta ? ` · متوقع يتوفر <b dir="ltr">${new Date(a.eta).toLocaleDateString("en-GB")}</b>` : ""}</p></div>`; }).join("")}</div>`);
 }
+
+// ===== Ask Tolay: instant answers from the catalogue (stock + when it's back), else a message to the team =====
+let ETA = null;
+async function etaMap() {
+  if (ETA) return ETA;
+  const { data } = await db.rpc("restock_eta"); ETA = {};
+  (data || []).forEach(r => ETA[r.product_id + "|" + r.shade] = r.eta);
+  return ETA;
+}
+function helpView(arg) {
+  const f = $("#tkF");
+  if (profile) { if (!f.name.value) f.name.value = profile.full_name || profile.shop_name || ""; if (!f.phone.value) f.phone.value = profile.phone || ""; }
+  $("#tkPh").hidden = !profile;
+  const p = arg && byId[+arg];
+  if (p && !$("#askQ").value) { $("#askQ").value = `${p.b} ${p.n}`; answer(); }
+}
+const FAQ = [
+  [/توصيل|شحن|delivery|بيوصل|بتوصل/, () => `🚚 التوصيل: الضفة ${S.fee_west || 20} ₪ · القدس ${S.fee_jer || 30} ₪ · الداخل ${S.fee_48 || 70} ₪. بيوصل عادةً خلال 1-3 أيام عمل، وبتقدري تتبعي طلبك من <a href="#/track">هون</a>.`],
+  [/دفع|كاش|فيزا|visa|pay/, () => "💵 الدفع كاش عند الاستلام، وبتقدري تفحصي الطلب قبل ما تدفعي."],
+  [/ارجاع|إرجاع|استرجاع|ترجيع|return/, () => "↩️ ما في إرجاع بعد الاستلام، عشان هيك افحصي الطلب قدام المندوب. إذا في مشكلة، ابعتيلنا تحت مع صورة ومنحلّها."],
+  [/اصلي|أصلي|original|تقليد/, () => "✅ كل منتجاتنا أصلية 100% ومستوردة من متاجر أمريكية معتمدة."],
+  [/طلبي|وين طلب|تتبع|track/, () => `📦 بتقدري تتبعي طلبك برقمه ورقم هاتفك من <a href="#/track">صفحة التتبع</a>.`],
+];
+async function answer() {
+  const q = $("#askQ").value.trim(), el = $("#askA"); if (!q) return;
+  const faq = FAQ.find(([re]) => re.test(q.toLowerCase()));
+  // drop question words so "في عندكم X؟" searches for X
+  const term = q.replace(/[؟?!.,]/g, " ").replace(/(^|\s)(في|فيه|عندكم|عندك|موجود|متوفر|متوفره|بدي|بدّي|هل|is|do|you|have|available|كم|قديش|سعر|ايمتى|إيمتى|بيرجع|يرجع)(?=\s|$)/gi, " ").trim();
+  const r = term ? TS.search(term, p => has(p.pr) ? unit(p) : NaN).list.slice(0, 4) : [];
+  if (!r.length) { el.innerHTML = faq ? `<div class="ans">${faq[1]()}</div>` : `<div class="ans">ما لقيت منتج بهالاسم 🙈 جرّبي اسم الماركة أو نوع المنتج، أو ابعتيلنا سؤالك تحت ومنرد عليكي.</div>`; return; }
+  const E = await etaMap(), days = d => Math.max(1, Math.ceil((Date.parse(d) - Date.now()) / 864e5));
+  el.innerHTML = (faq ? `<div class="ans">${faq[1]()}</div>` : "") + r.map(p => {
+    const sh = p.sw?.length ? p.sw.map(s => s.name) : [""], st = sh.map(k => [k, stockOf(p, k)]), any = st.some(([, n]) => n !== 0), out = st.filter(([, n]) => n === 0);
+    const eta = out.map(([k]) => E[p.id + "|" + k]).filter(Boolean).sort()[0];
+    const line = !any ? (eta ? `❌ خلص هلأ، <b>بيرجع يتوفر خلال حوالي ${days(eta)} يوم</b>` : "❌ خلص هلأ، ما في موعد مؤكد. اضغطي «نبّهيني» بصفحة المنتج")
+      : out.length ? `✅ متوفر · بس ${out.length} درجة خلصت${eta ? ` (بترجع خلال ~${days(eta)} يوم)` : ""}: ${out.slice(0, 4).map(([k]) => esc(k)).join("، ")}`
+      : `✅ متوفر${st.length === 1 && st[0][1] ? (st[0][1] <= 5 ? ` · ضل ${st[0][1]} بس!` : "") : ""}`;
+    return `<button class="ansp" type="button" data-open="${p.id}">${p.img ? `<img src="${esc(p.img)}" alt="" loading="lazy">` : ""}<div><small>${esc(p.b)}</small><b>${esc(p.n)}</b><span>${line}</span>${has(p.pr) ? `<span class="price">${money(unit(p))}</span>` : ""}</div></button>`;
+  }).join("");
+}
+$("#askF").addEventListener("submit", e => { e.preventDefault(); answer(); });
+$("#tkF").addEventListener("submit", async e => {
+  e.preventDefault(); const f = e.target, b = f.querySelector("button[type=submit]"); if (b.disabled) return; b.disabled = true;
+  let image_url = null; const file = profile && f.photo.files[0];
+  if (file) {
+    if (file.size > 5e6) { toast("الصورة كبيرة، اختاري صورة أصغر من 5MB"); b.disabled = false; return; }
+    const path = `${profile.id}/${Date.now()}.${(file.type.split("/")[1] || "jpg").replace("jpeg", "jpg")}`;
+    const up = await db.storage.from("help").upload(path, file, { contentType: file.type });
+    if (!up.error) image_url = db.storage.from("help").getPublicUrl(path).data.publicUrl;
+  }
+  const { error } = await db.from("tickets").insert({ kind: f.kind.value, name: f.name.value.trim(), phone: f.phone.value.trim(), body: f.body.value.trim(), order_id: +f.order.value || null, image_url, product_id: +location.hash.split("/")[2] || null });
+  b.disabled = false;
+  if (error) { toast("ما انبعتت، جرّبي بعد شوي"); return; }
+  f.body.value = ""; f.order.value = ""; f.photo.value = "";
+  toast(profile ? "وصلتنا رسالتك 💗 الرد بيوصلك بحسابك ← طلباتي" : "وصلتنا رسالتك 💗 رح نتواصل معك على رقمك");
+});
 
 // PR program: creators apply, the admin approves from the dashboard
 async function prView() {
@@ -1010,6 +1085,7 @@ function acctView(mode) {
     + row("spark", "اكتشفي درجتك", "فاونديشن وأحمر شفاه مناسبين لبشرتك", "type=button data-quiz")
     + row("spark", "مساعدة الجمال", "شو بيناسب بشرتك ولونك؟", 'href="#/beauty"', "a")
     + row("bag", "تتبعي طلبك", "برقم الطلب ورقم الهاتف", 'href="#/track"', "a")
+    + row("spark", "اسألي Tolay", "توفّر المنتجات، أسئلة، شكاوى", 'href="#/help"', "a")
     + row("chat", "تواصلي معنا", "واتساب", `href="https://wa.me/${wa}" target="_blank" rel="noopener"`, "a");
   if (profile) {
     const st = { active: "حسابك فعّال. طلباتك بتنحفظ هون وبتقدري تعيديها بضغطة.", pending: "طلبك قيد المراجعة. رح نفعّل حسابك بأقرب وقت ونبلّغك.", approved: "حسابك مفعّل وأسعار الجملة ظاهرة لإلك.", rejected: "للأسف ما تمت الموافقة على الحساب. تواصلي معنا عالواتساب." }[profile.status];

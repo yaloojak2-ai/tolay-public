@@ -1,9 +1,9 @@
 // admin-ops.js: staff permissions, the order desk, delivery companies + shipments, customer accounts + receipts, audit log.
 // Runs after the main admin script and uses its globals ($, db, esc, money, toast, fail, P, O, OST, PERMS, ME, STAFF).
 
-const TABPERM = { orders: "orders", alerts: "orders", products: "products", cats: "products", stock: "stock", inv: "stock", sup: "finance", rep: "finance", traders: "traders", coins: "marketing", battles: "marketing", searches: "marketing", mkt: "marketing", reviews: "marketing", delivery: "delivery", money: "finance", settings: "settings", audit: "audit", staff: "owner" };
+const TABPERM = { orders: "orders", alerts: "orders", products: "products", cats: "products", stock: "stock", inv: "stock", sup: "finance", rep: "finance", ntf: "team", ai: "team", help: "orders", traders: "traders", coins: "marketing", battles: "marketing", searches: "marketing", mkt: "marketing", reviews: "marketing", delivery: "delivery", money: "finance", settings: "settings", audit: "audit", staff: "owner" };
 const PERM_LABEL = { orders: "الطلبات وطلبات التنبيه", products: "المنتجات والأقسام", stock: "المخزون", traders: "التجار", marketing: "التسويق والنقاط والتقييمات", delivery: "التوصيل والشحن", finance: "المالية (التكلفة، الأرباح، الدفعات)", settings: "الإعدادات", audit: "سجل العمليات" };
-const can = p => PERMS.includes("all") || PERMS.includes(p);
+const can = p => p === "team" || PERMS.includes("all") || PERMS.includes(p);
 const staffName = id => { const s = STAFF.find(x => x.id === id); return s ? s.full_name || s.email : "—"; };
 const r2 = n => Math.round(n * 100) / 100;
 const fmt = v => v ? new Date(v).toLocaleString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
@@ -12,7 +12,7 @@ const ZONE = { 20: "الضفة الغربية", 30: "القدس", 70: "الدا�
 
 function gateTabs() {
   document.querySelectorAll(".tabbar [data-tab]").forEach(b => b.hidden = !can(TABPERM[b.dataset.tab] || "owner"));
-  document.body.classList.toggle("nofin", !can("finance"));
+  document.body.classList.toggle("nofin", !can("finance")); document.body.classList.toggle("noowner", !can("owner"));
   $("#ost").innerHTML = `<option value="">كل الطلبات</option>` + Object.entries(OST).map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
   if (!can("orders")) [...document.querySelectorAll(".tabbar [data-tab]")].find(b => !b.hidden)?.click();
 }
@@ -28,6 +28,7 @@ async function loadOps() {
   if (can("audit")) loadAudit();
   if (can("stock") && window.loadInv) loadInv();
   if (can("finance") && window.loadFin) loadFin();
+  if (window.loadX) loadX();
 }
 
 // ===== order desk =====

@@ -674,3 +674,17 @@ dialog.reelpl{max-width:min(420px,100vw);background:#000;color:#fff}
 .qprods a{border:0!important;color:var(--gold)!important;font-weight:600}
 .didyou{margin:6px 0;color:var(--muted)}.didyou b{color:#e0002a}
 .prng{display:flex;gap:4px}.prng input{width:80px}
+
+/* Ask Tolay */
+.srch2{display:flex;gap:8px;align-items:stretch;margin:12px 0}
+.srch2 input,.srch2 textarea{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;font:inherit;background:#fff}
+.srch2 .mic{border:0;background:var(--pink-soft,#ffe3f0);border-radius:14px;padding:0 14px;font-size:18px;cursor:pointer}
+.askA{display:flex;flex-direction:column;gap:10px}
+.ans{background:var(--ink-3,#f4f4f4);border-radius:16px;padding:12px 14px;line-height:1.7}
+.ansp{display:flex;gap:12px;align-items:center;text-align:start;border:1.5px solid var(--line);border-radius:16px;padding:10px;background:#fff;font:inherit;color:inherit;cursor:pointer}
+.ansp img{width:64px;height:76px;object-fit:cover;border-radius:10px;flex:none}
+.ansp div{display:flex;flex-direction:column;gap:2px;min-width:0}.ansp small{color:var(--gold);font-weight:600;font-size:11px}.ansp .price{color:#e0002a;font-weight:700}
+.tkform{display:flex;flex-direction:column;gap:10px}
+.tkform>input{border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;font:inherit}
+.tkform .chips{display:flex;gap:8px;flex-wrap:wrap}.tkform .chips label{border:1.5px solid var(--line);border-radius:999px;padding:6px 14px;display:flex;gap:6px;align-items:center}
+.tkform .ph{display:flex;flex-direction:column;gap:6px;font-size:14px}

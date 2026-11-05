@@ -346,6 +346,26 @@ window.I18N_ROWS = [
   ["متوقع يتوفر", "expected back", "צפוי לחזור"],
   ["من ₪", "From ₪", "מ-₪"],
   ["لـ ₪", "To ₪", "עד ₪"],
+  // ask tolay
+  ["اسألي Tolay 💬", "Ask Tolay 💬", "שאלי את Tolay 💬"],
+  ["اسألي Tolay", "Ask Tolay", "שאלי את Tolay"],
+  ["اسألي", "Ask", "שאלי"],
+  ["💬 اسألي عنه", "💬 Ask about it", "💬 שאלי על זה"],
+  ["ما لقيتي جوابك؟ ابعتيلنا", "Didn't find your answer? Message us", "לא מצאת תשובה? כתבי לנו"],
+  ["شكوى", "Complaint", "תלונה"],
+  ["مشكلة بطلب", "Order problem", "בעיה בהזמנה"],
+  ["اسمك", "Your name", "השם שלך"],
+  ["رقم الطلب (إذا في)", "Order number (if any)", "מספר הזמנה (אם יש)"],
+  ["اكتبي أو احكي رسالتك…", "Type or say your message…", "כתבי או אמרי את ההודעה…"],
+  ["📷 صوّري المنتج أو المشكلة (اختياري)", "📷 Photo of the product or problem (optional)", "📷 צלמי את המוצר או הבעיה (לא חובה)"],
+  ["ابعتي", "Send", "שלחי"],
+  ["💬 رسائلي", "💬 My messages", "💬 ההודעות שלי"],
+  ["استلمنا رسالتك، رح نردّ قريب.", "We got your message, we'll reply soon.", "קיבלנו את ההודעה, נחזור אלייך בקרוב."],
+  ["توفّر المنتجات، أسئلة، شكاوى", "Availability, questions, complaints", "זמינות, שאלות, תלונות"],
+  ["✅ متوفر", "✅ In stock", "✅ במלאי"],
+  ["❌ خلص هلأ", "❌ Sold out now", "❌ אזל כרגע"],
+  ["بيرجع يتوفر خلال حوالي", "back in stock in about", "יחזור למלאי בעוד כ-"],
+  ["اسألي عن أي منتج: متوفر؟ قديش؟ إيمتى بيرجع؟ أو عن التوصيل والدفع. بتقدري تحكي بالصوت 🎙️", "Ask about any product: in stock? price? when is it back? Or about delivery and payment. You can speak too 🎙️", "שאלי על כל מוצר: במלאי? מחיר? מתי יחזור? או על משלוח ותשלום. אפשר גם לדבר 🎙️"],
 ];
 
 (() => {

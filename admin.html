@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Tolay Admin</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700&family=Rubik:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1793884500">
+<link rel="stylesheet" href="style.css?v=1793885106">
 <style>
 body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 .adm{padding-block:28px 80px;display:flex;flex-direction:column;gap:20px}
@@ -51,6 +51,14 @@ dialog.wide{width:min(980px,96vw);max-height:92vh}
 .odh{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline}.odh h2{margin:0}
 .odg{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
 [data-mv][hidden]{display:none}
+.nofin .fin,.noowner .owner{display:none!important}
+.aibox{display:flex;flex-direction:column;gap:10px;max-width:860px}
+.ailog{display:flex;flex-direction:column;gap:10px;min-height:280px;max-height:60vh;overflow:auto;border:1px solid var(--line);border-radius:16px;padding:14px}
+.aim{max-width:92%;padding:10px 14px;border-radius:16px;line-height:1.6;font-size:14px}.aim.me{align-self:flex-start;background:#111;color:#fff}.aim.bot{align-self:flex-end;background:var(--ink-2)}
+.aim table{margin-top:6px;font-size:13px}.aim td,.aim th{padding:5px 8px}
+.tklist{display:flex;flex-direction:column;gap:10px}.tk{border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:6px}.tk img{max-width:180px;border-radius:10px}
+.nfi.unread td{font-weight:600}.nfi td small{display:block;color:var(--muted);font-weight:400}
+.live{border-radius:12px;padding:8px 12px;background:#fff7e0;margin-bottom:6px;font-size:14px}
 .rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:10px}.rgrid h3{margin:0 0 6px;font-size:15px}
 .bars i{display:block;height:6px;border-radius:3px;background:var(--gold);margin-top:3px}
 .pos{color:#2e8b57}.neg{color:var(--danger)}
@@ -87,6 +95,12 @@ tr.late td{background:#fff1f1}
       <button class="btn" type="submit">دخول</button>
       <button class="btn ghost" type="button" id="signupAdmin">أول مرة؟ أنشئ الحساب بهالإيميل وكلمة السر</button>
     </form>
+    <form id="mfaForm" class="auth" style="padding:0" hidden>
+      <p class="hint">🔐 التحقق بخطوتين: افتح تطبيق المصادقة (Google Authenticator) واكتب الرقم.</p>
+      <label>الرمز (6 أرقام)<input id="mfaCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required dir="ltr"></label>
+      <div class="msg" id="mfaMsg"></div>
+      <button class="btn" type="submit">تأكيد</button>
+    </form>
   </section>
 
   <section id="app" hidden>
@@ -106,6 +120,9 @@ tr.late td{background:#fff1f1}
       <button class="chip" type="button" data-tab="money">الحسابات والدفعات</button>
       <button class="chip" type="button" data-tab="staff">الموظفين والصلاحيات</button>
       <button class="chip" type="button" data-tab="inv">المخازن والحركات <span id="invN"></span></button>
+      <button class="chip" type="button" data-tab="ntf">🔔 الإشعارات <span id="ntfN"></span></button>
+      <button class="chip" type="button" data-tab="ai">✨ Tolay AI</button>
+      <button class="chip" type="button" data-tab="help">الدعم والمهام <span id="hlpN"></span></button>
       <button class="chip" type="button" data-tab="sup">الموردين والمشتريات</button>
       <button class="chip" type="button" data-tab="rep">التقارير والأرباح</button>
       <button class="chip" type="button" data-tab="audit">سجل العمليات</button>
@@ -250,6 +267,13 @@ tr.late td{background:#fff1f1}
       <div class="bar"><input id="stEmail" type="email" dir="ltr" placeholder="إيميل الموظف" style="flex:1 1 220px"><button class="btn" type="button" id="stAdd">+ إضافة موظف</button></div>
       <div class="bar" id="stPerms"></div>
       <div class="tbl"><table><thead><tr><th>الموظف</th><th>الصلاحيات</th><th></th></tr></thead><tbody id="sfRows"></tbody></table></div>
+      <h3 style="margin:8px 0 0">إنشاء حساب جديد</h3><p class="hint">بتعمل الحساب بنفسك (زبونة، تاجر معتمد، أو موظف بالصلاحيات المختارة فوق) وبتعطيه الإيميل وكلمة السر.</p>
+      <div class="odg"><label>نوع الحساب<select id="acK"><option value="customer">زبونة</option><option value="merchant">تاجر (معتمد)</option><option value="staff">موظف</option></select></label>
+        <label>الاسم<input id="acN"></label><label>الإيميل<input id="acE" type="email" dir="ltr"></label><label>الهاتف<input id="acP" dir="ltr"></label>
+        <label>كلمة سر (8 وأكثر)<input id="acW" dir="ltr"></label><label style="justify-content:end"><button class="btn" type="button" id="acGo">إنشاء الحساب</button></label></div>
+      <h3 style="margin:8px 0 0">كل الحسابات</h3>
+      <div class="bar"><input id="acQ" type="search" placeholder="ابحث بالاسم أو الإيميل أو الهاتف" style="flex:1"></div>
+      <div class="tbl" style="max-height:360px"><table><tbody id="acRows"></tbody></table></div>
     </div>
 
     <div class="panel" id="t-inv" hidden>
@@ -290,6 +314,34 @@ tr.late td{background:#fff1f1}
       <h3 style="margin:8px 0 0">سجل الحركات</h3>
       <div class="bar"><select id="mlT"><option value="">كل الأنواع</option></select><input id="mlQ" type="search" placeholder="ابحث باسم المنتج أو رقم الطلب" style="flex:1"></div>
       <div class="tbl" style="max-height:420px"><table><thead><tr><th>الوقت</th><th>النوع</th><th>المنتج</th><th>العدد</th><th>المخزن</th><th>مين</th><th>ملاحظة</th></tr></thead><tbody id="mlRows"></tbody></table></div>
+    </div>
+
+    <div class="panel" id="t-ntf" hidden>
+      <div class="bar"><h3 style="margin:0;flex:1">مركز الإشعارات</h3><button class="sm" type="button" id="nfPush">🔔 فعّل تنبيهات المتصفح</button><button class="sm ok" type="button" id="nfAll">علّم الكل مقروء</button></div>
+      <div id="nfLive"></div>
+      <div class="tbl" style="max-height:460px"><table><tbody id="nfRows"></tbody></table></div>
+      <div class="owner"><h3 style="margin:8px 0 0">مين بيستلم كل إشعار</h3><p class="hint">إنت بتشوف كل اشي دايماً. اختار الموظفين لكل نوع، أو طفّي النوع كله.</p>
+        <div class="tbl"><table><thead><tr><th>الإشعار</th><th>شغّال</th><th>الموظفين</th></tr></thead><tbody id="nrRows"></tbody></table></div>
+        <div class="odg"><label>هدف المبيعات الشهري ₪ (بيجيك إشعار لما توصله)<input id="nfGoal" type="number" min="0" dir="ltr"></label></div></div>
+      <h3 style="margin:8px 0 0">🔐 أمان حسابي</h3>
+      <div id="mfaBox" class="bar"></div>
+      <div class="owner"><h3 style="margin:8px 0 0">💾 نسخة احتياطية</h3><p class="hint">بتنزّل ملف فيه كل بيانات المتجر (منتجات، طلبات، زباين، دفعات، مخزون، موردين…). احتفظ فيه بمكان آمن، أسبوعياً مثلاً.</p>
+        <div class="bar"><button class="sm ok" type="button" id="bkGo">⬇️ نزّل نسخة احتياطية</button><span class="hint" id="bkMsg"></span></div></div>
+    </div>
+
+    <div class="panel" id="t-ai" hidden>
+      <div class="aibox"><div id="aiLog" class="ailog"><div class="aim bot">أهلاً 👋 أنا Tolay AI. بحسبلك من بيانات متجرك الحقيقية: اسألني أو اختار سؤال.</div></div>
+        <div class="bar" id="aiChips"></div>
+        <form id="aiForm" class="bar"><input id="aiQ" placeholder="اسأل: شو لازم أطلب؟ مين أكثر ماركة بتربح؟" style="flex:1" autocomplete="off"><button class="btn" type="submit">اسأل</button></form></div>
+    </div>
+
+    <div class="panel" id="t-help" hidden>
+      <h3 style="margin:0">أسئلة وشكاوى الزباين</h3>
+      <div class="bar"><select id="tkF"><option value="open">المفتوحة</option><option value="answered">انرد عليها</option><option value="closed">المسكّرة</option><option value="">الكل</option></select></div>
+      <div id="tkList" class="tklist"></div>
+      <h3 style="margin:8px 0 0">مهام الفريق</h3>
+      <div class="bar"><input id="taT" placeholder="المهمة…" style="flex:1 1 200px"><select id="taA"></select><input id="taD" type="date" dir="ltr"><button class="sm ok" type="button" id="taAdd">+ مهمة</button><label class="hint"><input type="checkbox" id="taDone" style="width:auto"> اعرض المنتهية</label></div>
+      <div class="tbl"><table><tbody id="taRows"></tbody></table></div>
     </div>
 
     <div class="panel" id="t-sup" hidden>
@@ -435,8 +487,18 @@ async function boot() {
     if (!admin) $("#lMsg").textContent = "هاد الحساب مش حساب أدمن.";
   }
   $("#login").hidden = admin; $("#app").hidden = !admin; $("#logout").hidden = !session;
+  // two-step login: if this account turned 2FA on, ask for the code before opening the dashboard
+  if (admin) { const a = (await db.auth.mfa.getAuthenticatorAssuranceLevel()).data;
+    if (a && a.nextLevel === "aal2" && a.currentLevel !== "aal2") { $("#login").hidden = false; $("#app").hidden = true; $("#loginForm").hidden = true; $("#mfaForm").hidden = false; $("#mfaCode").focus(); return; } }
   if (admin) { PERMS = (await db.rpc("my_perms")).data || (role === "admin" ? ["all"] : []); gateTabs(); await loadAll(); }
 }
+$("#mfaForm").addEventListener("submit", async e => {
+  e.preventDefault(); $("#mfaMsg").textContent = "لحظة…";
+  const f = (await db.auth.mfa.listFactors()).data?.totp?.find(x => x.status === "verified");
+  const { error } = f ? await db.auth.mfa.challengeAndVerify({ factorId: f.id, code: $("#mfaCode").value.trim() }) : { error: 1 };
+  if (error) { $("#mfaMsg").textContent = "الرمز غلط أو انتهى، جرّب الرمز الجديد."; return; }
+  $("#mfaForm").hidden = true; $("#loginForm").hidden = false; $("#mfaCode").value = ""; boot();
+});
 $("#loginForm").addEventListener("submit", async e => {
   e.preventDefault(); $("#lMsg").textContent = "لحظة…";
   const { error } = await db.auth.signInWithPassword({ email: $("#lEmail").value.trim(), password: $("#lPass").value });
@@ -897,8 +959,9 @@ document.addEventListener("click", async e => {
 });
 window.addEventListener("load", boot);  // after admin-ops.js is in
 </script>
-<script src="admin-ops.js?v=1793884500"></script>
-<script src="admin-fin.js?v=1793884500"></script>
-<script src="admin-inv.js?v=1793884500"></script>
+<script src="admin-ops.js?v=1793885106"></script>
+<script src="admin-x.js?v=1793885106"></script>
+<script src="admin-fin.js?v=1793885106"></script>
+<script src="admin-inv.js?v=1793885106"></script>
 </body>
 </html>
