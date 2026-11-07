@@ -661,7 +661,7 @@ function openProduct(id) {
       ${starsHTML(p.id, true)}${priceHTML(p)}
       <div class="note"><b>ⓘ ملاحظة مهمة</b>لا يمكن استرجاع أو استبدال المنتج بعد الشراء.<br>الدفع عند الاستلام، وبتقدري تفحصي طلبك قدام الشوفير.</div>
       ${descHTML(p)}${useHTML(p)}
-      ${sw.length ? `<div><div class="shade-name">اختاري درجة: <b id="shadeName">${esc(first.name)}</b></div><div class="tiles">${sw.map((s, i) => `<button class="sw tile" type="button" data-shade="${esc(s.name)}" data-img="${esc(s.img || "")}" aria-pressed="${i === 0}" aria-label="${esc(s.name)}"><span class="ti"><img src="${esc(s.img || p.img)}" alt="" loading="lazy">${s.hex ? `<i style="--c:${esc(s.hex)}"></i>` : ""}<em>SOLD OUT</em></span><b class="latin">${esc(s.name)}</b></button>`).join("")}</div></div>`
+      ${sw.length ? `<div><div class="shade-name">اختاري درجة: <b id="shadeName">${esc(first.name)}</b></div><div class="tiles">${sw.map((s, i) => `<button class="sw tile" type="button" data-shade="${esc(s.name)}" data-img="${esc(s.img || "")}" aria-pressed="${i === 0}" aria-label="${esc(s.name)}"><span class="ti"><img src="${esc(s.img || p.img)}" alt="" loading="lazy">${s.hex ? `<i style="--c:${esc(s.hex)}"></i>` : ""}<em>غير متوفر</em></span><b class="latin">${esc(s.name)}</b></button>`).join("")}</div></div>`
         : p.s ? `<div class="meta">${esc(p.s)}، اكتبي اللون اللي بدك ياه بالملاحظات.</div>` : ""}
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:auto">
         <div class="qty"><button type="button" data-pq="-1" aria-label="أقل">−</button><span id="pq">${mq}</span><button type="button" data-pq="1" aria-label="أكثر">+</button></div>
@@ -708,9 +708,9 @@ async function loadReviews(pid) {
 function pdStock() {
   const p = byId[pdState.id], n = stockOf(p, pdState.shade), b = $("#pdAdd");
   document.querySelectorAll("#pdBody .sw").forEach(x => x.classList.toggle("oos", stockOf(p, x.dataset.shade) === 0));
-  b.disabled = n === 0 || !canBuy(p); b.textContent = !canBuy(p) ? "الدروب بيفتح قريباً" : n === 0 ? (pdState.shade ? "هالدرجة نفذت" : "نفذ من المخزون") : "أضيفي للسلة";
+  b.disabled = n === 0 || !canBuy(p); b.textContent = !canBuy(p) ? "الدروب بيفتح قريباً" : n === 0 ? (pdState.shade ? "هالدرجة غير متوفرة حالياً" : "غير متوفر حالياً") : "أضيفي للسلة";
   $("#notify").hidden = !(n === 0 || !canBuy(p)); $("#askP").href = "#/help/" + p.id;
-  $("#stk").textContent = n === null || n === 0 ? "" : n <= 3 ? `باقي ${n} بس` : `متوفر ${n} قطعة`;
+  $("#stk").textContent = n === 0 ? "سيتم توفيرها قريباً، اضغطي نبّهيني" : n === null ? "" : n <= 3 ? `باقي ${n} بس` : `متوفر ${n} قطعة`;
 }
 
 // "complete the look": one product from each of three complementary sections, picked by id so it stays stable
