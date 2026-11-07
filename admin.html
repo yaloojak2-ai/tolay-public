@@ -421,7 +421,7 @@ tr.late td{background:#fff1f1}
         <div class="full"><button class="btn" type="submit">حفظ</button></div>
       </form>
       <p class="hint">المنتجات اللي معلّم عليها "مميّز" بتطلع بأول الصفحة (أول 3).</p>
-      <div class="bar"><button class="btn ghost" type="button" id="seedSw">تعبئة الألوان المقترحة للدرجات</button><button class="btn" type="button" id="addNew">إضافة المنتجات الجديدة (<span id="addN"></span>)</button><span class="hint" id="seedMsg">بيعبّي ألوان تقريبية لكل الدرجات الموجودة وشكل التجربة لكل قسم. ما بيلمس منتج إله ألوان أصلاً، إلا المنتجات اللي انصححت ألوانها.</span></div>
+      <div class="bar"><button class="btn ghost" type="button" id="seedNames">تعبئة أسماء الدرجات (بدون ألوان)</button><button class="btn ghost" type="button" id="seedSw">تعبئة الألوان المقترحة للدرجات</button><button class="btn" type="button" id="addNew">إضافة المنتجات الجديدة (<span id="addN"></span>)</button><span class="hint" id="seedMsg">بيعبّي ألوان تقريبية لكل الدرجات الموجودة وشكل التجربة لكل قسم. ما بيلمس منتج إله ألوان أصلاً، إلا المنتجات اللي انصححت ألوانها.</span></div>
     </div>
   </section>
 </main>
@@ -466,6 +466,7 @@ tr.late td{background:#fff1f1}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
 <script src="seed.js"></script>
+<script src="shades.js?v=1"></script>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -833,7 +834,7 @@ $("#eFile").addEventListener("change", e => { pickedFile = e.target.files[0] || 
 $("#eForm").addEventListener("submit", async e => {
   e.preventDefault();
   const f = e.target.elements, m = $("#eMsg"); m.textContent = "عم نحفظ…";
-  const rows = [...$("#swList").children].map(d => ({ name: d.querySelector("[type=text]").value.trim(), hex: d.querySelector("[type=color]").value, qty: d.querySelector("[type=number]").value })).filter(s => s.name);
+  const rows = [...$("#swList").children].map(d => ({ name: d.querySelector("[type=text]").value.trim(), hex: d.dataset.nohex ? null : d.querySelector("[type=color]").value, qty: d.querySelector("[type=number]").value })).filter(s => s.name);
   const swatches = rows.map(({ name, hex }) => ({ name, hex }));
   const stock = {}; rows.forEach(r => { if (r.qty !== "") stock[r.name] = Math.max(0, +r.qty); }); if (f.stock0.value !== "") stock[""] = Math.max(0, +f.stock0.value);
   const row = { swatches, stock, arrived_at: f.arrived_at.value || null, drop_start: iso(f.drop_start.value), drop_end: iso(f.drop_end.value), worth: num(f.worth.value), vault: f.vault.checked, finish: f.finish.value, brand: f.brand.value.trim(), name: f.name.value.trim(), category_id: +f.category_id.value || null, size: f.size.value.trim(), shades: f.shades.value.trim(), description: f.description.value.trim(), retail_price: num(f.retail_price.value), sort: +f.sort.value || 0, discount: pct(f.rdisc.value), active: f.active.checked, featured: f.featured.checked };
@@ -865,8 +866,10 @@ $("#eDel").addEventListener("click", async () => {
 $("#newP").addEventListener("click", () => openEdit(null));
 function addSwRow(s = { name: "", hex: "#c25a5a" }) {
   const d = document.createElement("div");
-  d.innerHTML = `<input type="color" value="${esc(s.hex || "#c25a5a")}" aria-label="لون الدرجة"><input type="text" value="${esc(s.name)}" placeholder="اسم الدرجة" aria-label="اسم الدرجة"><input type="number" min="0" value="${s.qty ?? ""}" placeholder="كمية" aria-label="الكمية" style="width:80px" dir="ltr"><button class="sm" type="button" data-pickc aria-label="خذ اللون من صورة" title="خذ اللون من صورة">📷</button><button class="sm no" type="button" data-rmsw aria-label="حذف الدرجة">✕</button>`;
+  d.innerHTML = `<input type="color" value="${esc(s.hex || "#c25a5a")}" aria-label="لون الدرجة" ${s.hex ? "" : 'style="opacity:.25" title="ما انحدد لون، اضغطي 📷 أو اختاري لون"'}><input type="text" value="${esc(s.name)}" placeholder="اسم الدرجة" aria-label="اسم الدرجة"><input type="number" min="0" value="${s.qty ?? ""}" placeholder="كمية" aria-label="الكمية" style="width:80px" dir="ltr"><button class="sm" type="button" data-pickc aria-label="خذ اللون من صورة" title="خذ اللون من صورة">📷</button><button class="sm no" type="button" data-rmsw aria-label="حذف الدرجة">✕</button>`;
   d.querySelector("[data-rmsw]").onclick = () => d.remove();
+  if (!s.hex) d.dataset.nohex = "1";
+  d.querySelector("[type=color]").addEventListener("input", e => { delete d.dataset.nohex; e.target.style.opacity = ""; });
   d.querySelector("[data-pickc]").onclick = () => pickColor(d.querySelector("[type=color]"));
   $("#swList").append(d);
 }
@@ -929,6 +932,15 @@ $("#addCat").addEventListener("click", async () => {
   $("#newCat").value = ""; loadAll();
 });
 
+$("#seedNames").addEventListener("click", async () => {
+  const m = $("#seedMsg"); let n = 0, skip = [];
+  for (const p of P) {
+    const l = (window.SHADES || {})[p.brand + "|" + p.name]; if (!l) continue;
+    if ((p.swatches || []).length) { skip.push(p.name); continue; }
+    const { error } = await db.from("products").update({ swatches: l.map(name => ({ name, hex: null })), shades: "" }).eq("id", p.id); if (fail(error)) return; n++;
+  }
+  m.textContent = `تم ✓ انضافت أسماء الدرجات لـ ${n} منتج${skip.length ? `. تجاوزت (فيها درجات أصلاً): ${skip.join("، ")}` : ""}. الكميات والألوان من زر "تعديل" عالمنتج.`; loadAll();
+});
 $("#seedSw").addEventListener("click", async () => {
   const m = $("#seedMsg"); m.textContent = "عم نعبّي…"; let n = 0;
   for (const c of C) if (SEED.viz[c.name] && c.viz === "photo") { const { error } = await db.from("categories").update({ viz: SEED.viz[c.name] }).eq("id", c.id); if (fail(error)) return; }

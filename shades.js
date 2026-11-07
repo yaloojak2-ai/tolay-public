@@ -1,0 +1,7 @@
+// Exact shade names copied from each brand's own product page (checked Nov 7). No colours: those are picked from photos.
+// Key = "brand|product name" as in the database. The admin button "تعبئة أسماء الدرجات" applies these to products that have no shades yet.
+window.SHADES = {
+  "Huda Beauty|Easy Bake Loose Powder / Easy Bake Duo": ["Banana Bread", "Peach Pie", "Matcha Milk Cake", "Ube Birthday Cake", "Sugar Cookie", "Cherry Blossom Cake", "Cupcake", "Pound Cake", "Blondie", "Kunafa", "Cinnamon Bun", "Coffee Cake"],
+  "Saie|Slip Tint Dewy Tinted Moisturizer": ["One: Very Light - Pink", "Two: Very Light - Peach", "Three: Light to Medium - Peach", "Three and Half: Light to Medium - Golden", "Four: Light to Medium - Neutral-red", "Four and Half: Medium - Golden", "Five: Medium - Peach", "Five and Half: Medium - Neutral-red", "Six: Medium to Tan - Golden", "Seven: Medium to Tan - Olive", "Eight: Deep - Peach", "Nine: Deep - Red", "Nine and Half: Rich - Red", "Ten: Rich - Neutral"],
+  "e.l.f.|Camo CC Cream": ["Fair 100 W", "Fair 120 N", "Fair 125 C", "Fair 140 W", "Fair 150 C", "Light 205 N", "Light 210 N", "Light 240 W", "Light 250 W", "Light 280 N", "Medium 310 C", "Medium 330 W", "Medium 355 W", "Medium 370 N", "Medium 375 N", "Tan 400 W", "Tan 415 C", "Tan 425 N", "Tan 450 N", "Tan 460 W", "Deep 500 W", "Deep 510 C", "Deep 530 W", "Deep 540 N", "Deep 560 C", "Rich 610 N", "Rich 620 W", "Rich 640 W", "Rich 650 C", "Rich 660 N"],
+};
