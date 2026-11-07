@@ -837,8 +837,9 @@ $("#eFile").addEventListener("change", e => { pickedFile = e.target.files[0] || 
 $("#eForm").addEventListener("submit", async e => {
   e.preventDefault();
   const f = e.target.elements, m = $("#eMsg"); m.textContent = "عم نحفظ…";
-  const rows = [...$("#swList").children].map(d => ({ name: d.querySelector("[type=text]").value.trim(), hex: d.dataset.nohex ? null : d.querySelector("[type=color]").value, qty: d.querySelector("[type=number]").value })).filter(s => s.name);
-  const swatches = rows.map(({ name, hex }) => ({ name, hex }));
+  const rows = [...$("#swList").children].map(d => ({ name: d.querySelector("[type=text]").value.trim(), hex: d.dataset.nohex ? null : d.querySelector("[type=color]").value, qty: d.querySelector("[type=number]").value, m: d._m || {} })).filter(s => s.name);
+  // keep where a colour came from (src/conf) while the colour itself is unchanged
+  const swatches = rows.map(({ name, hex, m }) => m.src && hex === m.hex ? { name, hex, src: m.src, conf: m.conf } : { name, hex });
   const stock = {}; rows.forEach(r => { if (r.qty !== "") stock[r.name] = Math.max(0, +r.qty); }); if (f.stock0.value !== "") stock[""] = Math.max(0, +f.stock0.value);
   const row = { swatches, stock, arrived_at: f.arrived_at.value || null, drop_start: iso(f.drop_start.value), drop_end: iso(f.drop_end.value), worth: num(f.worth.value), vault: f.vault.checked, finish: f.finish.value, brand: f.brand.value.trim(), name: f.name.value.trim(), category_id: +f.category_id.value || null, size: f.size.value.trim(), shades: f.shades.value.trim(), description: f.description.value.trim(), retail_price: num(f.retail_price.value), sort: +f.sort.value || 0, discount: pct(f.rdisc.value), active: f.active.checked, featured: f.featured.checked };
   // only send sku/barcode when used, so saving still works before phase7.sql adds the columns
@@ -872,6 +873,7 @@ function addSwRow(s = { name: "", hex: "#c25a5a" }) {
   d.innerHTML = `<input type="color" value="${esc(s.hex || "#c25a5a")}" aria-label="لون الدرجة" ${s.hex ? "" : 'title="ما في لون لهالدرجة لسا، اضغطي 📷 وصوّري العلبة أو التستر"'}><input type="text" value="${esc(s.name)}" placeholder="اسم الدرجة" aria-label="اسم الدرجة"><input type="number" min="0" value="${s.qty ?? ""}" placeholder="كمية" aria-label="الكمية" style="width:80px" dir="ltr"><button class="sm" type="button" data-pickc aria-label="خذ اللون من صورة" title="خذ اللون من صورة">📷</button><button class="sm no" type="button" data-rmsw aria-label="حذف الدرجة">✕</button>`;
   d.querySelector("[data-rmsw]").onclick = () => d.remove();
   if (!s.hex) d.dataset.nohex = "1";
+  d._m = { hex: s.hex ? s.hex.toLowerCase() : null, src: s.src, conf: s.conf };
   d.querySelector("[type=color]").addEventListener("input", e => { delete d.dataset.nohex; });
   d.querySelector("[data-pickc]").onclick = () => pickColor(d.querySelector("[type=color]"));
   $("#swList").append(d);
