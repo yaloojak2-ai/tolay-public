@@ -76,6 +76,9 @@ dialog.wide{width:min(980px,96vw);max-height:92vh}
 .notes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:14px}
 .notes li{background:var(--ink-2);border-radius:10px;padding:8px 12px}.notes small{display:block;color:var(--muted);font-size:11px}
 tr.late td{background:#fff1f1}
+/* no saved colour: show an empty checkered box, not a fake colour */
+#swList [data-nohex] [type=color]::-webkit-color-swatch{background:repeating-conic-gradient(#ddd 0 25%,#fff 0 50%) 0 0/10px 10px!important}
+#swList [data-nohex] [type=color]::-moz-color-swatch{background:repeating-conic-gradient(#ddd 0 25%,#fff 0 50%) 0 0/10px 10px!important}
 </style>
 </head>
 <body>
@@ -866,10 +869,10 @@ $("#eDel").addEventListener("click", async () => {
 $("#newP").addEventListener("click", () => openEdit(null));
 function addSwRow(s = { name: "", hex: "#c25a5a" }) {
   const d = document.createElement("div");
-  d.innerHTML = `<input type="color" value="${esc(s.hex || "#c25a5a")}" aria-label="لون الدرجة" ${s.hex ? "" : 'style="opacity:.25" title="ما انحدد لون، اضغطي 📷 أو اختاري لون"'}><input type="text" value="${esc(s.name)}" placeholder="اسم الدرجة" aria-label="اسم الدرجة"><input type="number" min="0" value="${s.qty ?? ""}" placeholder="كمية" aria-label="الكمية" style="width:80px" dir="ltr"><button class="sm" type="button" data-pickc aria-label="خذ اللون من صورة" title="خذ اللون من صورة">📷</button><button class="sm no" type="button" data-rmsw aria-label="حذف الدرجة">✕</button>`;
+  d.innerHTML = `<input type="color" value="${esc(s.hex || "#c25a5a")}" aria-label="لون الدرجة" ${s.hex ? "" : 'title="ما في لون لهالدرجة لسا، اضغطي 📷 وصوّري العلبة أو التستر"'}><input type="text" value="${esc(s.name)}" placeholder="اسم الدرجة" aria-label="اسم الدرجة"><input type="number" min="0" value="${s.qty ?? ""}" placeholder="كمية" aria-label="الكمية" style="width:80px" dir="ltr"><button class="sm" type="button" data-pickc aria-label="خذ اللون من صورة" title="خذ اللون من صورة">📷</button><button class="sm no" type="button" data-rmsw aria-label="حذف الدرجة">✕</button>`;
   d.querySelector("[data-rmsw]").onclick = () => d.remove();
   if (!s.hex) d.dataset.nohex = "1";
-  d.querySelector("[type=color]").addEventListener("input", e => { delete d.dataset.nohex; e.target.style.opacity = ""; });
+  d.querySelector("[type=color]").addEventListener("input", e => { delete d.dataset.nohex; });
   d.querySelector("[data-pickc]").onclick = () => pickColor(d.querySelector("[type=color]"));
   $("#swList").append(d);
 }
