@@ -16,7 +16,7 @@
 <meta name="twitter:image" content="https://yaloojak2-ai.github.io/tolay-public/img/og.jpg?v=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Rubik:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1794153223">
+<link rel="stylesheet" href="style.css?v=1794153877">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <script src="i18n.js?v=1793894897"></script>
 </head>
@@ -651,13 +651,24 @@ let pdState = {}, setShade = null;
 let smN = 0;
 function smearSVG(hex) {
   const k = "sm" + (++smN);
-  return `<svg class="smear" viewBox="0 0 200 260" aria-hidden="true"><defs>
-<linearGradient id="${k}f" x1="0" y1="0" x2="0" y2="1"><stop offset=".55" stop-color="#fff"/><stop offset=".97" stop-color="#000"/></linearGradient><mask id="${k}m"><rect width="200" height="260" fill="url(#${k}f)"/></mask>
-<radialGradient id="${k}s" cx=".42" cy=".3" r=".75"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></radialGradient>
-<filter id="${k}d" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="5" dy="6" stdDeviation="5" flood-opacity=".22"/></filter></defs>
-<g mask="url(#${k}m)" filter="url(#${k}d)"><path d="M122 12C168 12 194 50 182 98C174 132 150 150 130 168C110 186 98 210 88 252C84 222 72 200 58 180C34 146 24 104 40 66C54 30 88 10 122 12Z" fill="${hex}"/>
-<path d="M122 12C168 12 194 50 182 98C174 132 150 150 130 168C110 186 98 210 88 252C84 222 72 200 58 180C34 146 24 104 40 66C54 30 88 10 122 12Z" fill="url(#${k}s)"/>
-<path d="M56 74C64 46 88 28 116 26C94 40 80 58 74 84C70 102 70 118 72 134C60 116 52 96 56 74Z" fill="#fff" opacity=".22"/></g></svg>`;
+  return `<svg viewBox="0 0 380 540" class="smear" aria-hidden="true"><defs>
+<linearGradient id="${k}f" x1="0" y1="0" x2="0" y2="1"><stop offset=".66" stop-color="#fff"/><stop offset=".82" stop-color="#999"/><stop offset=".95" stop-color="#000"/></linearGradient>
+<mask id="${k}m"><rect width="380" height="540" fill="url(#${k}f)"/></mask>
+<linearGradient id="${k}t" x1="0" y1="0" x2="0" y2="1"><stop offset=".56" stop-color="#fff" stop-opacity="0"/><stop offset=".72" stop-color="#fff" stop-opacity=".35"/><stop offset=".9" stop-color="#fff" stop-opacity=".85"/></linearGradient>
+<linearGradient id="${k}h" x1="0" y1="0" x2="1" y2="0"><stop offset=".15" stop-color="#000" stop-opacity=".2"/><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset=".85" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#000" stop-opacity=".1"/></linearGradient>
+<linearGradient id="${k}w" gradientUnits="userSpaceOnUse" x1="0" y1="300" x2="0" y2="520"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".35" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity=".9"/></linearGradient><filter id="${k}b" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5"/></filter><filter id="${k}b2"><feGaussianBlur stdDeviation="2.5"/></filter><filter id="${k}b3" x="-100%" y="-20%" width="300%" height="140%"><feGaussianBlur stdDeviation="9"/></filter>
+<filter id="${k}d" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="7" dy="2" stdDeviation="4" flood-color="#000" flood-opacity=".3"/></filter>
+<path id="${k}p" d="M160 24C168 25 197 26 211 30C225 34 234 40 243 45C252 50 257 55 264 60C271 65 277 70 283 75C289 80 294 85 298 90C302 95 306 100 309 105C312 110 315 115 318 120C321 125 323 130 325 135C327 140 329 145 331 150C333 155 334 160 335 165C336 170 337 175 338 180C339 185 340 189 340 195C340 201 341 208 341 215C341 222 341 233 340 240C339 247 338 250 337 255C336 260 334 265 333 270C332 275 331 280 329 285C327 290 326 292 323 300C320 308 315 320 310 330C305 340 298 350 292 360C286 370 281 380 275 390C269 400 264 410 258 420C252 430 244 442 238 450C232 458 226 462 221 470C216 478 209 488 205 495C201 502 198 509 196 512C195 510 190 510 188 500C186 490 185 466 184 450C183 434 182 417 180 405C178 393 178 386 175 378C172 370 164 360 162 356L151 386C150 383 148 377 146 370C144 363 142 354 140 345C138 336 134 322 131 315C128 308 126 305 123 300C120 295 116 290 113 285C110 280 106 275 102 270C98 265 92 260 88 255C84 250 80 245 75 240C70 235 65 230 61 225C57 220 52 215 49 210C46 205 43 200 41 195C39 190 37 185 36 180C35 175 34 170 33 165C32 160 32 155 32 150C32 145 32 140 32 135C32 130 33 125 34 120C35 115 36 110 37 105C38 100 41 95 43 90C45 85 48 80 51 75C54 70 58 65 63 60C68 55 73 50 81 45C89 40 99 34 112 30C125 26 152 25 160 24Z"/><clipPath id="${k}c"><use href="#${k}p"/></clipPath></defs>
+<g mask="url(#${k}m)"><use href="#${k}p" fill="${hex}" filter="url(#${k}d)"/>
+<g clip-path="url(#${k}c)">
+<use href="#${k}p" fill="url(#${k}h)"/>
+<use href="#${k}p" fill="none" stroke="#fff" stroke-opacity=".1" stroke-width="30" filter="url(#${k}b3)"/>
+<use href="#${k}p" fill="none" stroke="#000" stroke-opacity=".25" stroke-width="6" filter="url(#${k}b2)"/>
+<path d="M135 281C134 279 130 273 127 269C124 265 121 261 118 256C114 252 110 248 106 244C102 240 99 236 95 232C92 227 87 223 84 219C80 215 77 211 74 207C71 202 69 198 67 194C65 190 64 186 63 182C62 178 61 173 61 169C60 165 60 161 60 157C60 153 59 148 60 144C60 140 61 136 61 132C62 128 63 124 64 119C65 115 67 111 69 107C71 103 73 99 75 95C78 90 81 86 85 82C90 78 94 74 100 70C107 66 115 60 126 57C137 54 152 52 166 52C180 52 197 54 208 57C220 60 228 66 235 70C242 74 247 78 252 82C258 86 263 90 268 95C273 99 277 103 280 107C284 111 287 115 290 119C292 124 295 128 297 132C299 136 301 140 303 144C305 148 306 153 308 157C309 161 310 165 311 169C312 173 313 178 314 182C314 186 315 189 315 194C316 199 316 205 316 211C316 217 316 226 315 232C315 237 314 240 313 244C312 248 311 252 310 256C308 261 308 265 306 269C305 273 302 279 301 281" fill="none" stroke="#000" stroke-opacity=".28" stroke-width="10" filter="url(#${k}b)"/>
+<path d="M135 281C134 279 130 273 127 269C124 265 121 261 118 256C114 252 110 248 106 244C102 240 99 236 95 232C92 227 87 223 84 219C80 215 77 211 74 207C71 202 69 198 67 194C65 190 64 186 63 182C62 178 61 173 61 169C60 165 60 161 60 157C60 153 59 148 60 144C60 140 61 136 61 132C62 128 63 124 64 119C65 115 67 111 69 107C71 103 73 99 75 95C78 90 81 86 85 82C90 78 94 74 100 70C107 66 115 60 126 57C137 54 152 52 166 52C180 52 197 54 208 57C220 60 228 66 235 70C242 74 247 78 252 82C258 86 263 90 268 95C273 99 277 103 280 107C284 111 287 115 290 119C292 124 295 128 297 132C299 136 301 140 303 144C305 148 306 153 308 157C309 161 310 165 311 169C312 173 313 178 314 182C314 186 315 189 315 194C316 199 316 205 316 211C316 217 316 226 315 232C315 237 314 240 313 244C312 248 311 252 310 256C308 261 308 265 306 269C305 273 302 279 301 281" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="10" transform="translate(-8 -7)" filter="url(#${k}b)"/>
+<rect x="130" y="290" width="220" height="250" fill="url(#${k}t)"/>
+<path d="M240 300C230 370 210 440 194 520" stroke="url(#${k}w)" stroke-width="26" fill="none" filter="url(#${k}b3)"/>
+</g></g></svg>`;
 }
 function openProduct(id) {
   const p = byId[id], sw = swatchesOf(p), mq = minQty(p), first = sw[0];
