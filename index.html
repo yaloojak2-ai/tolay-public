@@ -16,7 +16,7 @@
 <meta name="twitter:image" content="https://yaloojak2-ai.github.io/tolay-public/img/og.jpg?v=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Rubik:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1794153877">
+<link rel="stylesheet" href="style.css?v=1794168591">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <script src="i18n.js?v=1793894897"></script>
 </head>
@@ -670,6 +670,28 @@ function smearSVG(hex) {
 <path d="M240 300C230 370 210 440 194 520" stroke="url(#${k}w)" stroke-width="26" fill="none" filter="url(#${k}b3)"/>
 </g></g></svg>`;
 }
+// pressed-powder swatch for powder products (blush, bronzer, highlighter, setting/face powder, eyeshadow)
+const isPowder = p => /powder|بودرة|buttermelt|eyeshadow|palette|diamond veil|soft glow highlighter|suede/i.test(p.n) && !/pen|wand|stick/i.test(p.n);
+function powderSVG(hex) {
+  const k = "pw" + (++smN);
+  return `<svg viewBox="0 0 340 500" class="smear" aria-hidden="true"><defs>
+<linearGradient id="${k}f" x1="0" y1="0" x2="0" y2="1"><stop offset=".74" stop-color="#fff"/><stop offset=".87" stop-color="#999"/><stop offset=".97" stop-color="#000"/></linearGradient>
+<mask id="${k}m"><rect width="340" height="500" fill="url(#${k}f)"/></mask>
+<linearGradient id="${k}l" x1="0" y1="0" x2="0" y2="1"><stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset=".85" stop-color="#fff" stop-opacity=".28"/></linearGradient>
+<filter id="${k}r" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".11" numOctaves="3" seed="4"/><feDisplacementMap in="SourceGraphic" scale="9"/></filter>
+<filter id="${k}cr" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".1" numOctaves="4" seed="9"/><feDisplacementMap in="SourceGraphic" scale="20"/></filter>
+<filter id="${k}g" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7"/><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2 1.1"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+<filter id="${k}g3" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".18" numOctaves="3" seed="3"/><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.2"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+<clipPath id="${k}x"><rect x="0" y="0" width="326" height="500"/></clipPath>
+<clipPath id="${k}c"><rect x="34" y="28" width="292" height="460"/></clipPath></defs>
+<g mask="url(#${k}m)"><g clip-path="url(#${k}x)">
+<rect x="30" y="24" width="310" height="470" rx="4" fill="${hex}" filter="url(#${k}r)"/>
+<g clip-path="url(#${k}c)"><rect width="340" height="500" fill="url(#${k}l)"/><rect width="340" height="500" fill="#000" opacity=".06" filter="url(#${k}g)"/></g>
+<g filter="url(#${k}cr)"><path id="${k}b" d="M28 44Q28 16 58 16H300Q328 16 328 44V44Q250 50 180 44Q110 50 46 46Q42 160 46 300Q40 380 44 450H30Q22 300 28 44Z" fill="${hex}"/><use href="#${k}b" fill="${hex}" opacity=".5" style="mix-blend-mode:multiply"/><use href="#${k}b" fill="#000" opacity=".2" filter="url(#${k}g3)"/><use href="#${k}b" fill="#fff" opacity=".3" filter="url(#${k}g3)" transform="translate(-2 -2)"/></g>
+<rect x="318" y="30" width="8" height="460" fill="#000" opacity=".06"/>
+</g></g></svg>`;
+}
+const swatchSVG = (p, hex) => (isPowder(p) ? powderSVG : smearSVG)(hex);
 function openProduct(id) {
   const p = byId[id], sw = swatchesOf(p), mq = minQty(p), first = sw[0];
   pdState = { id, shade: first?.name || "", qty: mq };
@@ -679,7 +701,7 @@ function openProduct(id) {
       ${sw.some(s => s.hex) ? `<button class="thumb" type="button" data-pdbox hidden aria-label="صورة العلبة"><img src="${esc(p.img)}" alt=""></button>` : ""}${p.id === HID ? `<button class="hunt" type="button" data-hunt="${p.id}" aria-label="لقيتيها!">✨</button>` : ""}
       ${first ? `<div class="badge big" id="pdBadge"><i style="--c:${esc(first.hex || "transparent")}"${first.hex ? "" : " hidden"}></i><b class="latin">${esc(first.name)}</b></div>` : ""}
     </div>
-      ${sw.length ? `<div class="pdsw"><div class="shade-name">اختاري درجة: <b id="shadeName">${esc(first.name)}</b></div><div class="tiles">${sw.map((s, i) => `<button class="sw tile" type="button" data-shade="${esc(s.name)}" data-hex="${esc(s.hex || "")}" aria-pressed="${i === 0}" aria-label="${esc(s.name)}"><span class="ti">${s.hex ? smearSVG(esc(s.hex)) : `<img src="${esc(p.img)}" alt="" loading="lazy">`}<em>غير متوفر</em></span><b class="latin">${esc(s.name)}</b></button>`).join("")}</div></div>`
+      ${sw.length ? `<div class="pdsw"><div class="shade-name">اختاري درجة: <b id="shadeName">${esc(first.name)}</b></div><div class="tiles">${sw.map((s, i) => `<button class="sw tile" type="button" data-shade="${esc(s.name)}" data-hex="${esc(s.hex || "")}" aria-pressed="${i === 0}" aria-label="${esc(s.name)}"><span class="ti">${s.hex ? swatchSVG(p, esc(s.hex)) : `<img src="${esc(p.img)}" alt="" loading="lazy">`}<em>غير متوفر</em></span><b class="latin">${esc(s.name)}</b></button>`).join("")}</div></div>`
         : p.s ? `<div class="meta">${esc(p.s)}، اكتبي اللون اللي بدك ياه بالملاحظات.</div>` : ""}
     </div>
     <div class="body">
@@ -734,7 +756,7 @@ async function loadReviews(pid) {
 // stage shows the product box, or the picked shade's smear when it has a real colour
 function pdView(hex) {
   const sm = $("#pdSmear"); if (!sm) return;
-  sm.innerHTML = hex ? smearSVG(hex) : ""; sm.hidden = !hex; $("#pdImg").parentElement.hidden = !!hex;
+  sm.innerHTML = hex ? swatchSVG(byId[pdState.id], hex) : ""; sm.hidden = !hex; $("#pdImg").parentElement.hidden = !!hex;
   const b = document.querySelector("[data-pdbox]"); if (b) b.hidden = !hex;
 }
 function pdStock() {
