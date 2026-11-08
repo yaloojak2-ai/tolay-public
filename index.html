@@ -16,7 +16,7 @@
 <meta name="twitter:image" content="https://yaloojak2-ai.github.io/tolay-public/img/og.jpg?v=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Rubik:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1793897406">
+<link rel="stylesheet" href="style.css?v=1794142499">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <script src="i18n.js?v=1793894897"></script>
 </head>
@@ -651,8 +651,12 @@ function openProduct(id) {
   const p = byId[id], sw = swatchesOf(p), mq = minQty(p), first = sw[0];
   pdState = { id, shade: first?.name || "", qty: mq };
   $("#pdBody").innerHTML = `
-    <div class="stage" id="stage">
+    <div class="pdl"><div class="stage" id="stage">
       <div class="photo"><img id="pdImg" src="${esc(first?.img || p.img)}" alt="${esc(p.n)}"></div>${p.id === HID ? `<button class="hunt" type="button" data-hunt="${p.id}" aria-label="لقيتيها!">✨</button>` : ""}
+      ${first ? `<div class="badge big" id="pdBadge"><i style="--c:${esc(first.hex || "transparent")}"${first.hex ? "" : " hidden"}></i><b class="latin">${esc(first.name)}</b></div>` : ""}
+    </div>
+      ${sw.length ? `<div class="pdsw"><div class="shade-name">اختاري درجة: <b id="shadeName">${esc(first.name)}</b></div><div class="tiles">${sw.map((s, i) => `<button class="sw tile" type="button" data-shade="${esc(s.name)}" data-img="${esc(s.img || "")}" aria-pressed="${i === 0}" aria-label="${esc(s.name)}"><span class="ti"><img src="${esc(s.img || p.img)}" alt="" loading="lazy">${s.hex ? `<i style="--c:${esc(s.hex)}"></i>` : ""}<em>غير متوفر</em></span><b class="latin">${esc(s.name)}</b></button>`).join("")}</div></div>`
+        : p.s ? `<div class="meta">${esc(p.s)}، اكتبي اللون اللي بدك ياه بالملاحظات.</div>` : ""}
     </div>
     <div class="body">
       <div class="eyebrow latin">${esc(p.b)}</div>
@@ -661,8 +665,6 @@ function openProduct(id) {
       ${starsHTML(p.id, true)}${priceHTML(p)}
       <div class="note"><b>ⓘ ملاحظة مهمة</b>لا يمكن استرجاع أو استبدال المنتج بعد الشراء.<br>الدفع عند الاستلام، وبتقدري تفحصي طلبك قدام الشوفير.</div>
       ${descHTML(p)}${useHTML(p)}
-      ${sw.length ? `<div><div class="shade-name">اختاري درجة: <b id="shadeName">${esc(first.name)}</b></div><div class="tiles">${sw.map((s, i) => `<button class="sw tile" type="button" data-shade="${esc(s.name)}" data-img="${esc(s.img || "")}" aria-pressed="${i === 0}" aria-label="${esc(s.name)}"><span class="ti"><img src="${esc(s.img || p.img)}" alt="" loading="lazy">${s.hex ? `<i style="--c:${esc(s.hex)}"></i>` : ""}<em>غير متوفر</em></span><b class="latin">${esc(s.name)}</b></button>`).join("")}</div></div>`
-        : p.s ? `<div class="meta">${esc(p.s)}، اكتبي اللون اللي بدك ياه بالملاحظات.</div>` : ""}
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:auto">
         <div class="qty"><button type="button" data-pq="-1" aria-label="أقل">−</button><span id="pq">${mq}</span><button type="button" data-pq="1" aria-label="أكثر">+</button></div>
         <button class="btn" type="button" id="pdAdd">أضيفي للسلة</button><span class="stk" id="stk"></span><button class="btn ghost" type="button" id="notify" hidden>🔔 نبّهيني لما يتوفر</button><a class="btn ghost" id="askP" href="#/help">💬 اسألي عنه</a>
@@ -1200,6 +1202,9 @@ document.addEventListener("click", async e => {
     pdState.shade = d.shade; $("#shadeName").textContent = d.shade; pdStock();
     t.parentElement.querySelectorAll(".sw").forEach(b => b.setAttribute("aria-pressed", b === t));
     $("#pdImg").src = d.img || byId[pdState.id].img;
+    const hx = t.querySelector(".ti i")?.style.getPropertyValue("--c"), bd = $("#pdBadge");
+    if (bd) { bd.querySelector("b").textContent = d.shade; bd.querySelector("i").hidden = !hx; if (hx) bd.querySelector("i").style.setProperty("--c", hx); }
+    $("#pd").scrollTo({ top: 0, behavior: "smooth" });
   }
   else if (d.quiz !== undefined || d.qreset !== undefined) { qa = {}; qi = 0; quizView(); if (!$("#quiz").open) $("#quiz").showModal(); }
   else if (d.share) {

@@ -831,3 +831,11 @@ dialog.reelpl{max-width:min(420px,100vw);background:#000;color:#fff}
 .is-q progress{width:100%;accent-color:var(--gold)}
 @media (max-width:420px){.srch .mic{padding-inline:2px;font-size:15px}}
 footer .num{color:var(--sun);font-weight:700;font-size:16px;text-decoration:none}
+/* product page: no sideways scroll on phones; shades sit under the photo, selected one shown big on it */
+.pd>*{min-width:0}
+dialog#pd.full{overflow-x:hidden}
+@media (max-width:700px){.pd{grid-template-columns:minmax(0,1fr)}}
+.pdsw{padding:14px 16px 4px}
+.stage .badge.big{top:auto;bottom:14px;font-size:15px;padding:8px 16px 8px 10px;gap:10px;background:rgba(255,255,255,.95);box-shadow:0 4px 16px rgba(0,0,0,.12)}
+.stage .badge.big i{width:34px;height:34px;box-shadow:0 0 0 2px #fff,0 0 0 3px var(--line)}
+@media (max-width:700px){#pd .stage{aspect-ratio:auto;min-height:0;height:min(420px,95vw)}}
