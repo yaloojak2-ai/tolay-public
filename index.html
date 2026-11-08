@@ -16,7 +16,7 @@
 <meta name="twitter:image" content="https://yaloojak2-ai.github.io/tolay-public/img/og.jpg?v=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Rubik:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1794142499">
+<link rel="stylesheet" href="style.css?v=1794153223">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <script src="i18n.js?v=1793894897"></script>
 </head>
@@ -647,15 +647,28 @@ $("#send").addEventListener("click", async e => {
 
 // product dialog
 let pdState = {}, setShade = null;
+// shade "swatch smear" drawn in the shade's real hex (no model photos)
+let smN = 0;
+function smearSVG(hex) {
+  const k = "sm" + (++smN);
+  return `<svg class="smear" viewBox="0 0 200 260" aria-hidden="true"><defs>
+<linearGradient id="${k}f" x1="0" y1="0" x2="0" y2="1"><stop offset=".55" stop-color="#fff"/><stop offset=".97" stop-color="#000"/></linearGradient><mask id="${k}m"><rect width="200" height="260" fill="url(#${k}f)"/></mask>
+<radialGradient id="${k}s" cx=".42" cy=".3" r=".75"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></radialGradient>
+<filter id="${k}d" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="5" dy="6" stdDeviation="5" flood-opacity=".22"/></filter></defs>
+<g mask="url(#${k}m)" filter="url(#${k}d)"><path d="M122 12C168 12 194 50 182 98C174 132 150 150 130 168C110 186 98 210 88 252C84 222 72 200 58 180C34 146 24 104 40 66C54 30 88 10 122 12Z" fill="${hex}"/>
+<path d="M122 12C168 12 194 50 182 98C174 132 150 150 130 168C110 186 98 210 88 252C84 222 72 200 58 180C34 146 24 104 40 66C54 30 88 10 122 12Z" fill="url(#${k}s)"/>
+<path d="M56 74C64 46 88 28 116 26C94 40 80 58 74 84C70 102 70 118 72 134C60 116 52 96 56 74Z" fill="#fff" opacity=".22"/></g></svg>`;
+}
 function openProduct(id) {
   const p = byId[id], sw = swatchesOf(p), mq = minQty(p), first = sw[0];
   pdState = { id, shade: first?.name || "", qty: mq };
   $("#pdBody").innerHTML = `
     <div class="pdl"><div class="stage" id="stage">
-      <div class="photo"><img id="pdImg" src="${esc(first?.img || p.img)}" alt="${esc(p.n)}"></div>${p.id === HID ? `<button class="hunt" type="button" data-hunt="${p.id}" aria-label="لقيتيها!">✨</button>` : ""}
+      <div class="photo"><img id="pdImg" src="${esc(p.img)}" alt="${esc(p.n)}"></div><div class="photo smw" id="pdSmear" hidden></div>
+      ${sw.some(s => s.hex) ? `<button class="thumb" type="button" data-pdbox hidden aria-label="صورة العلبة"><img src="${esc(p.img)}" alt=""></button>` : ""}${p.id === HID ? `<button class="hunt" type="button" data-hunt="${p.id}" aria-label="لقيتيها!">✨</button>` : ""}
       ${first ? `<div class="badge big" id="pdBadge"><i style="--c:${esc(first.hex || "transparent")}"${first.hex ? "" : " hidden"}></i><b class="latin">${esc(first.name)}</b></div>` : ""}
     </div>
-      ${sw.length ? `<div class="pdsw"><div class="shade-name">اختاري درجة: <b id="shadeName">${esc(first.name)}</b></div><div class="tiles">${sw.map((s, i) => `<button class="sw tile" type="button" data-shade="${esc(s.name)}" data-img="${esc(s.img || "")}" aria-pressed="${i === 0}" aria-label="${esc(s.name)}"><span class="ti"><img src="${esc(s.img || p.img)}" alt="" loading="lazy">${s.hex ? `<i style="--c:${esc(s.hex)}"></i>` : ""}<em>غير متوفر</em></span><b class="latin">${esc(s.name)}</b></button>`).join("")}</div></div>`
+      ${sw.length ? `<div class="pdsw"><div class="shade-name">اختاري درجة: <b id="shadeName">${esc(first.name)}</b></div><div class="tiles">${sw.map((s, i) => `<button class="sw tile" type="button" data-shade="${esc(s.name)}" data-hex="${esc(s.hex || "")}" aria-pressed="${i === 0}" aria-label="${esc(s.name)}"><span class="ti">${s.hex ? smearSVG(esc(s.hex)) : `<img src="${esc(p.img)}" alt="" loading="lazy">`}<em>غير متوفر</em></span><b class="latin">${esc(s.name)}</b></button>`).join("")}</div></div>`
         : p.s ? `<div class="meta">${esc(p.s)}، اكتبي اللون اللي بدك ياه بالملاحظات.</div>` : ""}
     </div>
     <div class="body">
@@ -706,6 +719,12 @@ async function loadReviews(pid) {
     const { error } = await db.from("reviews").insert({ product_id: pid, user_id: profile.id, name: (profile.full_name || profile.shop_name || "زبونة").slice(0, 60), stars: +f.stars.value, body: f.body.value.trim() || null, photo_url });
     toast(error ? "ما انحفظ التقييم" : "شكراً! تقييمك بيظهر بعد المراجعة 💗"); loadReviews(pid);
   });
+}
+// stage shows the product box, or the picked shade's smear when it has a real colour
+function pdView(hex) {
+  const sm = $("#pdSmear"); if (!sm) return;
+  sm.innerHTML = hex ? smearSVG(hex) : ""; sm.hidden = !hex; $("#pdImg").parentElement.hidden = !!hex;
+  const b = document.querySelector("[data-pdbox]"); if (b) b.hidden = !hex;
 }
 function pdStock() {
   const p = byId[pdState.id], n = stockOf(p, pdState.shade), b = $("#pdAdd");
@@ -1198,11 +1217,12 @@ document.addEventListener("click", async e => {
   else if (d.spadd !== undefined) { SP.forEach(p => addToCart(p.id, "", minQty(p))); location.hash = "#/cart"; }
   else if (d.vote) { t.disabled = true; const { error } = await db.rpc("vote_battle", { p_battle: +d.vote, p_pick: +d.pick }); toast(error ? "التصويت مسكّر" : "انحفظ توقعك ✓"); clubView(); }
   else if (d.add) { const p = byId[d.add]; if (soldOut(p)) { toast("نفذ من المخزون"); return; } if (!canBuy(p)) { toast("الدروب بيفتح قريباً"); return; } shadesOf(p).length ? openProduct(p.id) : addToCart(p.id, "", minQty(p)); }
+  else if (d.pdbox !== undefined) pdView("");
   else if (d.shade !== undefined) {
     pdState.shade = d.shade; $("#shadeName").textContent = d.shade; pdStock();
     t.parentElement.querySelectorAll(".sw").forEach(b => b.setAttribute("aria-pressed", b === t));
-    $("#pdImg").src = d.img || byId[pdState.id].img;
-    const hx = t.querySelector(".ti i")?.style.getPropertyValue("--c"), bd = $("#pdBadge");
+    const hx = d.hex, bd = $("#pdBadge");
+    pdView(hx);
     if (bd) { bd.querySelector("b").textContent = d.shade; bd.querySelector("i").hidden = !hx; if (hx) bd.querySelector("i").style.setProperty("--c", hx); }
     $("#pd").scrollTo({ top: 0, behavior: "smooth" });
   }

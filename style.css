@@ -839,3 +839,11 @@ dialog#pd.full{overflow-x:hidden}
 .stage .badge.big{top:auto;bottom:14px;font-size:15px;padding:8px 16px 8px 10px;gap:10px;background:rgba(255,255,255,.95);box-shadow:0 4px 16px rgba(0,0,0,.12)}
 .stage .badge.big i{width:34px;height:34px;box-shadow:0 0 0 2px #fff,0 0 0 3px var(--line)}
 @media (max-width:700px){#pd .stage{aspect-ratio:auto;min-height:0;height:min(420px,95vw)}}
+.stage .photo[hidden],.stage .thumb[hidden]{display:none}
+.stage .smw{display:grid;place-items:center;background:#fff}
+.stage .smw .smear{height:86%;width:auto;animation:smIn .35s ease-out}
+.stage .thumb{bottom:auto;top:14px;background:#fff;border-color:var(--line)}
+.stage .thumb img{object-fit:contain}
+.sw.tile .ti .smear{width:100%;height:100%;display:block}
+.sw.tile.oos .smear{opacity:.35}
+@keyframes smIn{from{opacity:0;transform:scale(.92)}}
