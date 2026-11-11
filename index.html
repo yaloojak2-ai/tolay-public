@@ -225,12 +225,16 @@ function priceHTML(p) {
 }
 
 async function load() {
+  // everything that does not depend on the products starts now, in parallel (was 3 sequential rounds)
+  const tmo = (p, ms) => Promise.race([p, new Promise(r => setTimeout(() => r(null), ms))]);
+  const secP = tmo(Promise.all([db.rpc("hidden_today"), db.rpc("best_sellers"), db.rpc("product_ratings"), db.from("reels").select("*").order("sort").order("id", { ascending: false }), db.rpc("top_searches")]), 6000).catch(() => null);
+  const sesP = tmo(loadSession(), 6000).catch(() => null);
   const [{ data: st }, { data: cats }, { data: prods, error }] = await Promise.all([
     db.from("settings").select("key,value"),
     db.from("categories").select("*").order("sort"),
     db.from("products").select("*").eq("active", true).order("sort"),
   ]);
-  if (error) { $("#grid").innerHTML = `<div class="empty">ما قدرنا نحمّل المنتجات، حدّثي الصفحة.</div>`; return; }
+  if (error) { if (!load.tried) { load.tried = 1; return setTimeout(load, 1200); } $("#grid").innerHTML = `<div class="empty">ما قدرنا نحمّل المنتجات، حدّثي الصفحة.</div>`; return; }
   S = Object.fromEntries((st || []).map(r => [r.key, r.value]));
   const catName = Object.fromEntries((cats || []).map(c => [c.id, c.name]));
   const catViz = Object.fromEntries((cats || []).map(c => [c.id, c.viz || "photo"]));
@@ -244,12 +248,12 @@ async function load() {
   byId = Object.fromEntries(ALL.map(p => [p.id, p]));
   CATS = (cats || []).map(c => ({ s: c.name, p: ALL.filter(p => p.cat === c.name) })).filter(c => c.p.length);
   TS.build(ALL, window.DESC);
-  const [h, bs, rt, rl, tq] = await Promise.all([db.rpc("hidden_today"), db.rpc("best_sellers"), db.rpc("product_ratings"), db.from("reels").select("*").order("sort").order("id", { ascending: false }), db.rpc("top_searches")]);  // empty until the SQL runs
+  const [h, bs, rt, rl, tq] = (await secP) || [{}, {}, {}, {}, {}];
   TOPQ = (tq.data || []).map(r => r.term);
   RATE = Object.fromEntries((rt.data || []).map(r => [r.product_id, r])); REELS = rl.data || [];
   try { if (!sessionStorage.getItem("tolay-v")) { sessionStorage.setItem("tolay-v", "1"); db.rpc("track_visit").then(() => {}, () => {}); } } catch {}
   HID = h.data || null; BEST = (bs.data || []).map(r => byId[r.product_id]).filter(p => p?.img);
-  await loadSession();
+  await sesP; ALL.forEach(p => p.w = WS[p.id]);
   paint();
 }
 
@@ -518,6 +522,7 @@ function route() {
   else if (page === "beauty") beautyView();
   else if (page === "help") helpView(a);
   window.scrollTo(0, 0);
+  if (pg === "p" && byId[a]) { history.replaceState(null, "", "#/"); openProduct(+a); }  // shared product link
 }
 window.addEventListener("hashchange", route);
 window.addEventListener("popstate", () => { if ($("#pd").open) $("#pd").close(); });
@@ -1261,7 +1266,7 @@ document.addEventListener("click", async e => {
   }
   else if (d.quiz !== undefined || d.qreset !== undefined) { qa = {}; qi = 0; quizView(); if (!$("#quiz").open) $("#quiz").showModal(); }
   else if (d.share) {
-    const p = byId[d.share], text = `${p.b} - ${p.n}\n${location.origin}${location.pathname}`;
+    const p = byId[d.share], text = `${p.b} - ${p.n}\n${location.origin}/p/${p.id}.html`;
     if (navigator.share) navigator.share({ title: "Tolay Makeup", text }).catch(() => {});
     else window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener");
   }
