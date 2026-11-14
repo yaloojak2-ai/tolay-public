@@ -703,10 +703,10 @@ function openProduct(id) {
   $("#pdBody").innerHTML = `
     <div class="pdl"><div class="stage" id="stage">
       <div class="photo"><img id="pdImg" src="${esc(p.img)}" alt="${esc(p.n)}"></div><div class="photo smw" id="pdSmear" hidden></div>
-      ${sw.some(s => s.hex) ? `<button class="thumb" type="button" data-pdbox hidden aria-label="صورة العلبة"><img src="${esc(p.img)}" alt=""></button>` : ""}${p.id === HID ? `<button class="hunt" type="button" data-hunt="${p.id}" aria-label="لقيتيها!">✨</button>` : ""}
+      ${sw.some(s => s.hex || s.cut) ? `<button class="thumb" type="button" data-pdbox hidden aria-label="صورة العلبة"><img src="${esc(p.img)}" alt=""></button>` : ""}${p.id === HID ? `<button class="hunt" type="button" data-hunt="${p.id}" aria-label="لقيتيها!">✨</button>` : ""}
       ${first ? `<div class="badge big" id="pdBadge"><i style="--c:${esc(first.hex || "transparent")}"${first.hex ? "" : " hidden"}></i><b class="latin">${esc(first.name)}</b></div>` : ""}
     </div>
-      ${sw.length ? `<div class="pdsw"><div class="shade-name">اختاري درجة: <b id="shadeName">${esc(first.name)}</b></div><div class="tiles">${sw.map((s, i) => `<button class="sw tile" type="button" data-shade="${esc(s.name)}" data-hex="${esc(s.hex || "")}" aria-pressed="${i === 0}" aria-label="${esc(s.name)}"><span class="ti">${s.hex ? swatchSVG(p, esc(s.hex)) : `<img src="${esc(p.img)}" alt="" loading="lazy">`}<em>غير متوفر</em></span><b class="latin">${esc(s.name)}</b></button>`).join("")}</div></div>`
+      ${sw.length ? `<div class="pdsw"><div class="shade-name">اختاري درجة: <b id="shadeName">${esc(first.name)}</b></div><div class="tiles">${sw.map((s, i) => `<button class="sw tile" type="button" data-shade="${esc(s.name)}" data-hex="${esc(s.hex || "")}" data-cut="${esc(s.cut || "")}" aria-pressed="${i === 0}" aria-label="${esc(s.name)}"><span class="ti">${s.cut ? `<img class="cutimg" src="${esc(s.cut)}" alt="" loading="lazy">` : s.hex ? swatchSVG(p, esc(s.hex)) : `<img src="${esc(p.img)}" alt="" loading="lazy">`}<em>غير متوفر</em></span><b class="latin">${esc(s.name)}</b></button>`).join("")}</div></div>`
         : p.s ? `<div class="meta">${esc(p.s)}، اكتبي اللون اللي بدك ياه بالملاحظات.</div>` : ""}
     </div>
     <div class="body">
@@ -759,10 +759,10 @@ async function loadReviews(pid) {
   });
 }
 // stage shows the product box, or the picked shade's smear when it has a real colour
-function pdView(hex) {
-  const sm = $("#pdSmear"); if (!sm) return;
-  sm.innerHTML = hex ? swatchSVG(byId[pdState.id], hex) : ""; sm.hidden = !hex; $("#pdImg").parentElement.hidden = !!hex;
-  const b = document.querySelector("[data-pdbox]"); if (b) b.hidden = !hex;
+function pdView(hex, cut) {
+  const sm = $("#pdSmear"); if (!sm) return; const on = !!(hex || cut);
+  sm.innerHTML = cut ? `<img class="cutimg" src="${esc(cut)}" alt="">` : hex ? swatchSVG(byId[pdState.id], hex) : ""; sm.hidden = !on; $("#pdImg").parentElement.hidden = on;
+  const b = document.querySelector("[data-pdbox]"); if (b) b.hidden = !on;
 }
 function pdStock() {
   const p = byId[pdState.id], n = stockOf(p, pdState.shade), b = $("#pdAdd");
@@ -1260,7 +1260,7 @@ document.addEventListener("click", async e => {
     pdState.shade = d.shade; $("#shadeName").textContent = d.shade; pdStock();
     t.parentElement.querySelectorAll(".sw").forEach(b => b.setAttribute("aria-pressed", b === t));
     const hx = d.hex, bd = $("#pdBadge");
-    pdView(hx);
+    pdView(hx, d.cut);
     if (bd) { bd.querySelector("b").textContent = d.shade; bd.querySelector("i").hidden = !hx; if (hx) bd.querySelector("i").style.setProperty("--c", hx); }
     $("#pd").scrollTo({ top: 0, behavior: "smooth" });
   }

@@ -839,7 +839,7 @@ $("#eForm").addEventListener("submit", async e => {
   const f = e.target.elements, m = $("#eMsg"); m.textContent = "عم نحفظ…";
   const rows = [...$("#swList").children].map(d => ({ name: d.querySelector("[type=text]").value.trim(), hex: d.dataset.nohex ? null : d.querySelector("[type=color]").value, qty: d.querySelector("[type=number]").value, m: d._m || {} })).filter(s => s.name);
   // keep where a colour came from (src/conf) while the colour itself is unchanged
-  const swatches = rows.map(({ name, hex, m }) => m.src && hex === m.hex ? { name, hex, src: m.src, conf: m.conf } : { name, hex });
+  const swatches = rows.map(({ name, hex, m }) => ({ name, hex, ...(m.src && hex === m.hex ? { src: m.src, conf: m.conf } : {}), ...(m.cut ? { cut: m.cut } : {}) }));
   const stock = {}; rows.forEach(r => { if (r.qty !== "") stock[r.name] = Math.max(0, +r.qty); }); if (f.stock0.value !== "") stock[""] = Math.max(0, +f.stock0.value);
   const row = { swatches, stock, arrived_at: f.arrived_at.value || null, drop_start: iso(f.drop_start.value), drop_end: iso(f.drop_end.value), worth: num(f.worth.value), vault: f.vault.checked, finish: f.finish.value, brand: f.brand.value.trim(), name: f.name.value.trim(), category_id: +f.category_id.value || null, size: f.size.value.trim(), shades: f.shades.value.trim(), description: f.description.value.trim(), retail_price: num(f.retail_price.value), sort: +f.sort.value || 0, discount: pct(f.rdisc.value), active: f.active.checked, featured: f.featured.checked };
   // only send sku/barcode when used, so saving still works before phase7.sql adds the columns
@@ -870,15 +870,60 @@ $("#eDel").addEventListener("click", async () => {
 $("#newP").addEventListener("click", () => openEdit(null));
 function addSwRow(s = { name: "", hex: "#c25a5a" }) {
   const d = document.createElement("div");
-  d.innerHTML = `<input type="color" value="${esc(s.hex || "#c25a5a")}" aria-label="لون الدرجة" ${s.hex ? "" : 'title="ما في لون لهالدرجة لسا، اضغطي 📷 وصوّري العلبة أو التستر"'}><input type="text" value="${esc(s.name)}" placeholder="اسم الدرجة" aria-label="اسم الدرجة"><input type="number" min="0" value="${s.qty ?? ""}" placeholder="كمية" aria-label="الكمية" style="width:80px" dir="ltr"><button class="sm" type="button" data-pickc aria-label="خذ اللون من صورة" title="خذ اللون من صورة">📷</button><button class="sm no" type="button" data-rmsw aria-label="حذف الدرجة">✕</button>`;
+  d.innerHTML = `<input type="color" value="${esc(s.hex || "#c25a5a")}" aria-label="لون الدرجة" ${s.hex ? "" : 'title="ما في لون لهالدرجة لسا، اضغطي 📷 وصوّري العلبة أو التستر"'}><input type="text" value="${esc(s.name)}" placeholder="اسم الدرجة" aria-label="اسم الدرجة"><input type="number" min="0" value="${s.qty ?? ""}" placeholder="كمية" aria-label="الكمية" style="width:80px" dir="ltr"><button class="sm" type="button" data-pickc aria-label="خذ اللون من صورة" title="خذ اللون من صورة">📷</button><button class="sm" type="button" data-cut aria-label="صورة الدرجة بدون خلفية" title="ارفع صورة الدرجة: بتنشال الخلفية ويضل اللون">🖼️</button><img class="swcut" alt="" ${s.cut ? `src="${esc(s.cut)}"` : "hidden"} style="width:34px;height:34px;object-fit:contain;background:repeating-conic-gradient(#eee 0 25%,#fff 0 50%) 0/10px 10px;border-radius:6px"><button class="sm no" type="button" data-rmsw aria-label="حذف الدرجة">✕</button>`;
   d.querySelector("[data-rmsw]").onclick = () => d.remove();
   if (!s.hex) d.dataset.nohex = "1";
-  d._m = { hex: s.hex ? s.hex.toLowerCase() : null, src: s.src, conf: s.conf };
+  d._m = { hex: s.hex ? s.hex.toLowerCase() : null, src: s.src, conf: s.conf, cut: s.cut };
+  d.querySelector("[data-cut]").onclick = () => uploadCut(d);
   d.querySelector("[type=color]").addEventListener("input", e => { delete d.dataset.nohex; });
   d.querySelector("[data-pickc]").onclick = () => pickColor(d.querySelector("[type=color]"));
   $("#swList").append(d);
 }
 $("#addSw").addEventListener("click", () => addSwRow());
+// shade photo -> transparent cutout (background removed from the edges inward, so highlights inside stay) + median colour
+function cutoutFromImage(img) {
+  const k = Math.min(1, 520 / Math.max(img.width, img.height)), w = Math.round(img.width * k), h = Math.round(img.height * k);
+  const c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d", { willReadFrequently: true }); x.drawImage(img, 0, 0, w, h);
+  const id = x.getImageData(0, 0, w, h), D = id.data, N = w * h, B = [[], [], []];
+  const edge = i => { const px = i % w, py = (i / w) | 0; return px === 0 || py === 0 || px === w - 1 || py === h - 1; };
+  for (let i = 0; i < N; i++) if (edge(i)) for (let q = 0; q < 3; q++) B[q].push(D[i * 4 + q]);
+  const bg = B.map(a => a.sort((p, q) => p - q)[a.length >> 1]);
+  const dist = i => Math.hypot(D[i * 4] - bg[0], D[i * 4 + 1] - bg[1], D[i * 4 + 2] - bg[2]);
+  const seen = new Uint8Array(N), st = []; const T = 70;
+  for (let i = 0; i < N; i++) if (edge(i) && dist(i) < T) { seen[i] = 1; st.push(i); }
+  while (st.length) { const i = st.pop(), px = i % w, py = (i / w) | 0;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = px + dx, ny = py + dy; if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue; const j = ny * w + nx; if (!seen[j] && dist(j) < T) { seen[j] = 1; st.push(j); } } }
+  let x0 = w, y0 = h, x1 = 0, y1 = 0; const R = [], G = [], Bl = [];
+  for (let i = 0; i < N; i++) { let a = 255; if (seen[i]) a = Math.max(0, Math.min(255, Math.round((dist(i) - 14) / (T - 14) * 255)));
+    D[i * 4 + 3] = a; if (a > 8) { const px = i % w, py = (i / w) | 0; x0 = Math.min(x0, px); x1 = Math.max(x1, px); y0 = Math.min(y0, py); y1 = Math.max(y1, py); }
+    if (a === 255) { R.push(D[i * 4]); G.push(D[i * 4 + 1]); Bl.push(D[i * 4 + 2]); } }
+  if (R.length < 50) return null;
+  x.putImageData(id, 0, 0);
+  const pad = 6, o = document.createElement("canvas"); o.width = x1 - x0 + 1 + pad * 2; o.height = y1 - y0 + 1 + pad * 2;
+  o.getContext("2d").drawImage(c, x0, y0, x1 - x0 + 1, y1 - y0 + 1, pad, pad, x1 - x0 + 1, y1 - y0 + 1);
+  const med = a => a.sort((p, q) => p - q)[a.length >> 1];
+  return { canvas: o, hex: "#" + [med(R), med(G), med(Bl)].map(v => v.toString(16).padStart(2, "0")).join("") };
+}
+function uploadCut(d) {
+  const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*";
+  inp.onchange = () => {
+    const f = inp.files[0]; if (!f) return; toast("عم نجهّز الصورة…");
+    const img = new Image(); img.onload = () => {
+      const r = cutoutFromImage(img); if (!r) { toast("ما قدرت أفصل الخلفية، جرّب صورة ثانية"); return; }
+      r.canvas.toBlob(async blob => {
+        const path = `${editing?.id || "new"}/${Date.now()}.png`;
+        const up = await db.storage.from("shades").upload(path, blob, { contentType: "image/png" });
+        if (up.error) { toast("ما انرفعت الصورة: " + up.error.message); return; }
+        const url = db.storage.from("shades").getPublicUrl(path).data.publicUrl;
+        d._m.cut = url; d._m.hex = r.hex; d._m.src = "صورة من الأدمن"; d._m.conf = "photo";
+        const ci = d.querySelector("[type=color]"); ci.value = r.hex; delete d.dataset.nohex;
+        const im = d.querySelector(".swcut"); im.src = url; im.hidden = false;
+        toast("تمت إضافة صورة الدرجة ✓ اضغط حفظ");
+      }, "image/png");
+    }; img.src = URL.createObjectURL(f);
+  };
+  inp.click();
+}
 // take a shade's colour from a photo: choose the picture, tap the colour, done (works on phones too)
 function pickColor(target) {
   const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*";
