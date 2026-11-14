@@ -440,7 +440,7 @@ tr.late td{background:#fff1f1}
     <label>الحجم<input name="size"></label>
     <label>SKU (رمز داخلي)<input name="sku" dir="ltr"></label>
     <label>الباركود<input name="barcode" dir="ltr" inputmode="numeric"></label>
-    <div class="full"><div class="hint" style="margin-bottom:6px">الدرجات وألوانها (بتطلع بالتجربة المتحركة بصفحة المنتج)</div><div id="swList" class="swl"></div><button class="sm" type="button" id="addSw">+ درجة</button><div class="hint">خانة الكمية جنب كل درجة: اتركها فاضية إذا ما بدك تتابع مخزونها، و0 يعني نفذت.</div></div>
+    <div class="full"><div class="hint" style="margin-bottom:6px">الدرجات وألوانها (بتطلع بالتجربة المتحركة بصفحة المنتج)</div><div id="swList" class="swl"></div><button class="sm" type="button" id="addSw">+ درجة</button> <button class="sm" type="button" id="addSwImg" style="background:var(--p,#e5007d);color:#fff">🖼️ + درجة من صورة (بدون خلفية)</button><div class="hint">خانة الكمية جنب كل درجة: اتركها فاضية إذا ما بدك تتابع مخزونها، و0 يعني نفذت.</div></div>
     <label>الكمية المتوفرة (لمنتج بدون درجات)<input name="stock0" type="number" min="0" dir="ltr" placeholder="فاضي = ما بنتابع"></label>
     <label>تاريخ الوصول (بيطلع "وصل حديثاً" 30 يوم)<input name="arrived_at" type="date" dir="ltr"></label>
     <label>الدروب يفتح (اختياري)<input name="drop_start" type="datetime-local" dir="ltr"></label>
@@ -837,7 +837,7 @@ $("#eFile").addEventListener("change", e => { pickedFile = e.target.files[0] || 
 $("#eForm").addEventListener("submit", async e => {
   e.preventDefault();
   const f = e.target.elements, m = $("#eMsg"); m.textContent = "عم نحفظ…";
-  const rows = [...$("#swList").children].map(d => ({ name: d.querySelector("[type=text]").value.trim(), hex: d.dataset.nohex ? null : d.querySelector("[type=color]").value, qty: d.querySelector("[type=number]").value, m: d._m || {} })).filter(s => s.name);
+  const rows = [...$("#swList").children].map(d => ({ name: d.querySelector("[type=text]").value.trim(), hex: d.dataset.nohex ? null : d.querySelector("[type=color]").value, qty: d.querySelector("[type=number]").value, m: d._m || {} })).map((s, i) => s.name || !s.m.cut ? s : { ...s, name: "درجة " + (i + 1) }).filter(s => s.name);
   // keep where a colour came from (src/conf) while the colour itself is unchanged
   const swatches = rows.map(({ name, hex, m }) => ({ name, hex, ...(m.src && hex === m.hex ? { src: m.src, conf: m.conf } : {}), ...(m.cut ? { cut: m.cut } : {}) }));
   const stock = {}; rows.forEach(r => { if (r.qty !== "") stock[r.name] = Math.max(0, +r.qty); }); if (f.stock0.value !== "") stock[""] = Math.max(0, +f.stock0.value);
@@ -882,7 +882,7 @@ function addSwRow(s = { name: "", hex: "#c25a5a" }) {
 $("#addSw").addEventListener("click", () => addSwRow());
 // shade photo -> transparent cutout (background removed from the edges inward, so highlights inside stay) + median colour
 function cutoutFromImage(img) {
-  const k = Math.min(1, 520 / Math.max(img.width, img.height)), w = Math.round(img.width * k), h = Math.round(img.height * k);
+  const k = Math.min(1, 1400 / Math.max(img.width, img.height)), w = Math.round(img.width * k), h = Math.round(img.height * k);
   const c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d", { willReadFrequently: true }); x.drawImage(img, 0, 0, w, h);
   const id = x.getImageData(0, 0, w, h), D = id.data, N = w * h, B = [[], [], []];
   const edge = i => { const px = i % w, py = (i / w) | 0; return px === 0 || py === 0 || px === w - 1 || py === h - 1; };
@@ -904,26 +904,39 @@ function cutoutFromImage(img) {
   const med = a => a.sort((p, q) => p - q)[a.length >> 1];
   return { canvas: o, hex: "#" + [med(R), med(G), med(Bl)].map(v => v.toString(16).padStart(2, "0")).join("") };
 }
+async function applyCut(d, f) {
+  const url0 = URL.createObjectURL(f), img = new Image();
+  await new Promise((ok, no) => { img.onload = ok; img.onerror = no; img.src = url0; }).catch(() => { throw new Error("الصورة ما انفتحت"); });
+  const r = cutoutFromImage(img); if (!r) throw new Error("ما قدرت أفصل الخلفية من هالصورة");
+  const blob = await new Promise(ok => r.canvas.toBlob(ok, "image/png"));
+  const path = `${editing?.id || "new"}/${Date.now()}-${Math.random().toString(36).slice(2, 6)}.png`;
+  const up = await db.storage.from("shades").upload(path, blob, { contentType: "image/png" });
+  if (up.error) throw new Error("ما انرفعت الصورة: " + up.error.message);
+  const url = db.storage.from("shades").getPublicUrl(path).data.publicUrl;
+  d._m.cut = url; d._m.hex = r.hex; d._m.src = "صورة من الأدمن"; d._m.conf = "photo";
+  d.querySelector("[type=color]").value = r.hex; delete d.dataset.nohex;
+  const im = d.querySelector(".swcut"); im.src = url; im.hidden = false;
+}
 function uploadCut(d) {
   const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*";
-  inp.onchange = () => {
-    const f = inp.files[0]; if (!f) return; toast("عم نجهّز الصورة…");
-    const img = new Image(); img.onload = () => {
-      const r = cutoutFromImage(img); if (!r) { toast("ما قدرت أفصل الخلفية، جرّب صورة ثانية"); return; }
-      r.canvas.toBlob(async blob => {
-        const path = `${editing?.id || "new"}/${Date.now()}.png`;
-        const up = await db.storage.from("shades").upload(path, blob, { contentType: "image/png" });
-        if (up.error) { toast("ما انرفعت الصورة: " + up.error.message); return; }
-        const url = db.storage.from("shades").getPublicUrl(path).data.publicUrl;
-        d._m.cut = url; d._m.hex = r.hex; d._m.src = "صورة من الأدمن"; d._m.conf = "photo";
-        const ci = d.querySelector("[type=color]"); ci.value = r.hex; delete d.dataset.nohex;
-        const im = d.querySelector(".swcut"); im.src = url; im.hidden = false;
-        toast("تمت إضافة صورة الدرجة ✓ اضغط حفظ");
-      }, "image/png");
-    }; img.src = URL.createObjectURL(f);
-  };
+  inp.onchange = async () => { const f = inp.files[0]; if (!f) return; toast("عم نجهّز الصورة…");
+    try { await applyCut(d, f); toast("تمت إضافة صورة الدرجة ✓ اكتب اسم الدرجة واضغط حفظ"); } catch (e) { toast(e.message); } };
   inp.click();
 }
+// one tap: pick one or many shade photos, each becomes a shade row (name from the file name, editable)
+$("#addSwImg").addEventListener("click", () => {
+  const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*"; inp.multiple = true;
+  inp.onchange = async () => {
+    const fs = [...inp.files]; if (!fs.length) return; toast(`عم نجهّز ${fs.length} صورة…`); let ok = 0;
+    for (const f of fs) {
+      addSwRow({ name: f.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim(), hex: null });
+      const d = $("#swList").lastElementChild;
+      try { await applyCut(d, f); ok++; } catch (e) { d.remove(); toast(e.message); }
+    }
+    if (ok) toast(`انضافت ${ok} درجة ✓ راجع الأسماء واضغط حفظ`);
+  };
+  inp.click();
+});
 // take a shade's colour from a photo: choose the picture, tap the colour, done (works on phones too)
 function pickColor(target) {
   const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*";
