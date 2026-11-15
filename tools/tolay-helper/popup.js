@@ -19,7 +19,8 @@ $("#go").onclick = async () => {
     if (!found.shades.length) return msg("ما لقيت درجات بهالصفحة. استعمل ملفات المورّد بالأدمن.", true);
     msg(`${found.brand} — ${found.name}: ${found.shades.length} درجة، ${found.images.length} صورة. شيل الإشارة عن أي إشي ما بدك ياه.`);
     $("#list").innerHTML = found.shades.map((s, i) => `<label class="row"><input type="checkbox" data-s="${i}" checked>${s.swatch || s.pack ? `<img src="${esc(s.swatch || s.pack)}" alt="">` : ""}<span>${esc(s.name)}</span>${s.hex ? `<span class="chip" style="background:${esc(s.hex)}"></span>` : ""}</label>`).join("")
-      + `<p class="hint">صور المنتج:</p>` + found.images.filter(i => !i.shade).map((im, i) => `<label class="row"><input type="checkbox" data-i="${found.images.indexOf(im)}" ${im.type === "lifestyle" ? "" : "checked"}><img src="${esc(im.url)}" alt=""><span>${esc(im.type)}</span></label>`).join("");
+      + `<p class="hint">صور المنتج (الموديل، الإيد، العلبة المفتوحة…):</p><label class="hint">هالصور لـ <select id="for"><option value="">كل المنتج (معرض)</option>${found.shades.map(s => `<option>${esc(s.name)}</option>`).join("")}</select></label><p class="hint">إذا الصور بالصفحة هلّق لدرجة معيّنة (كبستها بموقع الشركة)، اختار اسمها. بتقدر تعيد لكل درجة وتنزّل ملف لكل وحدة.</p>`
+      + found.images.filter(i => !i.shade).map(im => `<label class="row"><input type="checkbox" data-i="${found.images.indexOf(im)}" checked><img src="${esc(im.url)}" alt=""><span>${esc(im.type)}</span></label>`).join("");
     $("#save").hidden = false;
   } catch (e) { msg("ما زبطت القراءة: " + e.message, true); }
 };
@@ -27,7 +28,8 @@ $("#go").onclick = async () => {
 const b64 = buf => { let s = ""; const a = new Uint8Array(buf); for (let i = 0; i < a.length; i += 0x8000) s += String.fromCharCode(...a.subarray(i, i + 0x8000)); return btoa(s); };
 $("#save").onclick = async () => {
   const shades = found.shades.filter((_, i) => $(`[data-s="${i}"]`).checked), names = new Set(shades.map(s => s.name));
-  const pick = found.images.filter((im, i) => im.shade ? names.has(im.shade) : $(`[data-i="${i}"]`)?.checked);
+  const forShade = $("#for")?.value || null; // admin says the page's photos now show this shade
+  const pick = found.images.filter((im, i) => im.shade ? names.has(im.shade) && (!forShade || im.shade === forShade) : $(`[data-i="${i}"]`)?.checked).map(im => im.shade || !forShade ? im : { ...im, shade: forShade, type: "lifestyle" });
   const origins = [...new Set(pick.map(i => new URL(i.url).origin + "/*"))];
   // asked per click, only for the image hosts of this product
   if (origins.length && !await chrome.permissions.request({ origins })) return msg("بدون إذن ما بنقدر نجيب الصور. الملف رح ينزل بالروابط بس.", true);
@@ -43,7 +45,7 @@ $("#save").onclick = async () => {
   }
   const bundle = { ...found, shades, images: pick, saved: new Date().toISOString() };
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(bundle)], { type: "application/json" }));
-  a.download = `tolay-${(found.brand + "-" + found.name).toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 60)}.json`; a.click();
+  a.download = `tolay-${(found.brand + "-" + found.name + (forShade ? "-" + forShade : "")).toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 60)}.json`; a.click();
   msg(`✓ نزل الملف: ${shades.length} درجة، ${ok}/${pick.length} صورة. ارفعه بالأدمن من «من المتصفح».${ok < pick.length ? " الصور اللي ما إجت رح تحاول من السيرفر، وإذا انمنعت بتطلع بالتقرير." : ""}`);
   $("#save").disabled = false;
 };

@@ -434,6 +434,7 @@ tr.late td{background:#fff1f1}
   <form id="eForm" class="f">
     <h3 class="full" id="eTitle" style="font-family:var(--f-body)">منتج</h3>
     <div class="full" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><img class="prev" id="ePrev" alt=""><label>صورة المنتج<input type="file" id="eFile" accept="image/*"></label></div>
+    <div class="full"><div class="hint">معرض الصور (موديلات، إيد، علبة مفتوحة…) بيبين بصفحة المنتج تحت الصورة الرئيسية. بينعبّى من «🌐 استيراد».</div><div id="eGal" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div></div>
     <label>البراند<input name="brand"></label>
     <label>اسم المنتج<input name="name" required></label>
     <label>القسم<select name="category_id" id="eCat"></select></label>
@@ -814,9 +815,14 @@ $("#pRows").addEventListener("change", async e => {
 // datetime-local works in local time; the database keeps UTC
 const dl = v => { if (!v) return ""; const d = new Date(v); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 16); };
 const iso = v => v ? new Date(v).toISOString() : null;
-let editing = null, pickedFile = null, impMain = null; // impMain: main image chosen in the official-site importer
+let editing = null, pickedFile = null, impMain = null, gal = []; // impMain: main image chosen in the official-site importer; gal: product gallery
+function renderGal() {
+  $("#eGal").innerHTML = gal.length ? gal.map((g, i) => `<span style="position:relative"><img src="${esc(g.url)}" alt="" loading="lazy" style="width:64px;height:64px;object-fit:cover;border-radius:8px;background:#fff"><button type="button" class="sm" data-rmg="${i}" aria-label="شيل الصورة" style="position:absolute;top:-6px;inset-inline-start:-6px;padding:0 6px">✕</button></span>`).join("") : `<span class="hint">ما في صور بالمعرض</span>`;
+  $("#eGal").querySelectorAll("[data-rmg]").forEach(b => b.onclick = () => { gal.splice(+b.dataset.rmg, 1); renderGal(); });
+}
+function addGallery(list) { for (const g of list) if (!gal.some(x => x.url === g.url)) gal.push(g); renderGal(); }
 function openEdit(id) {
-  editing = id ? P.find(p => p.id === id) : null; pickedFile = null; impMain = null; $("#eFile").value = "";
+  editing = id ? P.find(p => p.id === id) : null; pickedFile = null; impMain = null; $("#eFile").value = ""; gal = [...((id && P.find(p => p.id === id)?.gallery) || [])]; renderGal();
   const p = editing || { brand: "", name: "", category_id: C[0]?.id, size: "", shades: "", description: "", retail_price: "", sort: (P.at(-1)?.sort || 0) + 1, active: true, featured: false, image_url: "" };
   const f = $("#eForm").elements;
   ["brand", "name", "category_id", "size", "shades", "description", "sort", "finish", "sku", "barcode"].forEach(k => f[k].value = p[k] ?? "");
@@ -839,9 +845,9 @@ $("#eForm").addEventListener("submit", async e => {
   const f = e.target.elements, m = $("#eMsg"); m.textContent = "عم نحفظ…";
   const rows = [...$("#swList").children].map(d => ({ name: d.querySelector("[type=text]").value.trim(), hex: d.dataset.nohex ? null : d.querySelector("[type=color]").value, qty: d.querySelector("[type=number]").value, m: d._m || {} })).map((s, i) => s.name || !s.m.cut ? s : { ...s, name: "درجة " + (i + 1) }).filter(s => s.name);
   // keep where a colour came from (src/conf) while the colour itself is unchanged
-  const swatches = rows.map(({ name, hex, m }) => ({ name, hex, ...(m.src && hex === m.hex ? { src: m.src, conf: m.conf } : {}), ...Object.fromEntries(["cut", "sku", "barcode", "code", "orig"].filter(k => m[k]).map(k => [k, m[k]])) }));
+  const swatches = rows.map(({ name, hex, m }) => ({ name, hex, ...(m.src && hex === m.hex ? { src: m.src, conf: m.conf } : {}), ...Object.fromEntries(["cut", "sku", "barcode", "code", "orig", "imgs"].filter(k => m[k] && (!Array.isArray(m[k]) || m[k].length)).map(k => [k, m[k]])) }));
   const stock = {}; rows.forEach(r => { if (r.qty !== "") stock[r.name] = Math.max(0, +r.qty); }); if (f.stock0.value !== "") stock[""] = Math.max(0, +f.stock0.value);
-  const row = { swatches, stock, arrived_at: f.arrived_at.value || null, drop_start: iso(f.drop_start.value), drop_end: iso(f.drop_end.value), worth: num(f.worth.value), vault: f.vault.checked, finish: f.finish.value, brand: f.brand.value.trim(), name: f.name.value.trim(), category_id: +f.category_id.value || null, size: f.size.value.trim(), shades: f.shades.value.trim(), description: f.description.value.trim(), retail_price: num(f.retail_price.value), sort: +f.sort.value || 0, discount: pct(f.rdisc.value), active: f.active.checked, featured: f.featured.checked };
+  const row = { swatches, gallery: gal, stock, arrived_at: f.arrived_at.value || null, drop_start: iso(f.drop_start.value), drop_end: iso(f.drop_end.value), worth: num(f.worth.value), vault: f.vault.checked, finish: f.finish.value, brand: f.brand.value.trim(), name: f.name.value.trim(), category_id: +f.category_id.value || null, size: f.size.value.trim(), shades: f.shades.value.trim(), description: f.description.value.trim(), retail_price: num(f.retail_price.value), sort: +f.sort.value || 0, discount: pct(f.rdisc.value), active: f.active.checked, featured: f.featured.checked };
   // only send sku/barcode when used, so saving still works before phase7.sql adds the columns
   if (f.sku.value.trim() || editing?.sku) row.sku = f.sku.value.trim() || null;
   if (f.barcode.value.trim() || editing?.barcode) row.barcode = f.barcode.value.trim() || null;
@@ -874,7 +880,7 @@ function addSwRow(s = { name: "", hex: "#c25a5a" }) {
   d.innerHTML = `<input type="color" value="${esc(s.hex || "#c25a5a")}" aria-label="لون الدرجة" ${s.hex ? "" : 'title="ما في لون لهالدرجة لسا، اضغطي 📷 وصوّري العلبة أو التستر"'}><input type="text" value="${esc(s.name)}" placeholder="اسم الدرجة" aria-label="اسم الدرجة"><input type="number" min="0" value="${s.qty ?? ""}" placeholder="كمية" aria-label="الكمية" style="width:80px" dir="ltr"><button class="sm" type="button" data-pickc aria-label="خذ اللون من صورة" title="خذ اللون من صورة">📷</button><button class="sm" type="button" data-cut aria-label="صورة الدرجة بدون خلفية" title="ارفع صورة الدرجة: بتنشال الخلفية ويضل اللون">🖼️</button><img class="swcut" alt="" ${s.cut ? `src="${esc(s.cut)}"` : "hidden"} style="width:34px;height:34px;object-fit:contain;background:repeating-conic-gradient(#eee 0 25%,#fff 0 50%) 0/10px 10px;border-radius:6px"><button class="sm no" type="button" data-rmsw aria-label="حذف الدرجة">✕</button>`;
   d.querySelector("[data-rmsw]").onclick = () => d.remove();
   if (!s.hex) d.dataset.nohex = "1";
-  d._m = { hex: s.hex ? s.hex.toLowerCase() : null, src: s.src, conf: s.conf, cut: s.cut, sku: s.sku, barcode: s.barcode, code: s.code, orig: s.orig };
+  d._m = { hex: s.hex ? s.hex.toLowerCase() : null, src: s.src, conf: s.conf, cut: s.cut, sku: s.sku, barcode: s.barcode, code: s.code, orig: s.orig, imgs: s.imgs };
   d.querySelector("[data-cut]").onclick = () => uploadCut(d);
   d.querySelector("[type=color]").addEventListener("input", e => { delete d.dataset.nohex; });
   d.querySelector("[data-pickc]").onclick = () => pickColor(d.querySelector("[type=color]"));
@@ -1065,6 +1071,6 @@ window.addEventListener("load", boot);  // after admin-ops.js is in
 <script src="admin-x.js?v=1793894897"></script>
 <script src="admin-fin.js?v=1793894897"></script>
 <script src="admin-inv.js?v=1793894897"></script>
-<script type="module" src="admin-import.js?v=4"></script>
+<script type="module" src="admin-import.js?v=5"></script>
 </body>
 </html>

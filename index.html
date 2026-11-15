@@ -16,7 +16,7 @@
 <meta name="twitter:image" content="https://yaloojak2-ai.github.io/tolay-public/img/og.jpg?v=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Rubik:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1794168591">
+<link rel="stylesheet" href="style.css?v=1794200000">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <script src="i18n.js?v=1793894897"></script>
 </head>
@@ -242,7 +242,7 @@ async function load() {
   const SD = window.SEED || {}, catMedia = Object.fromEntries((cats || []).map(c => [c.id, Object.keys(c.media || {}).length ? c.media : SD.media?.[c.name] || {}]));
   const NEW = new Set((SD.add || []).map(a => a.name));
   const swOf = p => ((p.swatches || []).length ? p.swatches : SD.swatches?.[p.name] || []).map(s => ({ ...s, img: s.img || SD.img?.[p.name]?.[s.name] || "", vid: s.vid || SD.vid?.[p.name]?.[s.name] || "" }));
-  toP = p => ({ id: p.id, sku: p.sku || "", bc: p.barcode || "", disc: +p.discount || 0, ds: p.drop_start ? Date.parse(p.drop_start) : null, de: p.drop_end ? Date.parse(p.drop_end) : null, worth: +p.worth || 0, st: p.stock || {}, b: p.brand, n: p.name, s: p.shades, z: p.size, d: p.description, pr: p.retail_price, img: p.image_url ? p.image_url + (p.image_url.includes("?") ? "&" : "?") + "v=1793640000" : p.image_url, featured: p.featured, cat: catName[p.category_id] || "", sw: swOf(p), fin: p.finish || SD.finish?.[p.name] || "", viz: catViz[p.category_id] || "photo", isNew: (p.arrived_at && Date.now() - Date.parse(p.arrived_at) < 30 * 864e5) || NEW.has(p.name), media: SD.pvid?.[p.name] ? { ...catMedia[p.category_id], video: SD.pvid[p.name] } : catMedia[p.category_id] || {} });
+  toP = p => ({ id: p.id, sku: p.sku || "", bc: p.barcode || "", disc: +p.discount || 0, ds: p.drop_start ? Date.parse(p.drop_start) : null, de: p.drop_end ? Date.parse(p.drop_end) : null, worth: +p.worth || 0, st: p.stock || {}, b: p.brand, n: p.name, s: p.shades, z: p.size, d: p.description, pr: p.retail_price, img: p.image_url ? p.image_url + (p.image_url.includes("?") ? "&" : "?") + "v=1793640000" : p.image_url, featured: p.featured, cat: catName[p.category_id] || "", sw: swOf(p), gal: (p.gallery || []).map(g => g.url).filter(Boolean), fin: p.finish || SD.finish?.[p.name] || "", viz: catViz[p.category_id] || "photo", isNew: (p.arrived_at && Date.now() - Date.parse(p.arrived_at) < 30 * 864e5) || NEW.has(p.name), media: SD.pvid?.[p.name] ? { ...catMedia[p.category_id], video: SD.pvid[p.name] } : catMedia[p.category_id] || {} });
   // vault products load on the Club page only; finished drops leave the store
   ALL = prods.filter(p => !p.vault && !(p.drop_end && Date.parse(p.drop_end) < Date.now())).map(toP);
   byId = Object.fromEntries(ALL.map(p => [p.id, p]));
@@ -705,7 +705,7 @@ function openProduct(id) {
       <div class="photo"><img id="pdImg" src="${esc(p.img)}" alt="${esc(p.n)}"></div><div class="photo smw" id="pdSmear" hidden></div>
       ${sw.some(s => s.hex || s.cut) ? `<button class="thumb" type="button" data-pdbox hidden aria-label="صورة العلبة"><img src="${esc(p.img)}" alt=""></button>` : ""}${p.id === HID ? `<button class="hunt" type="button" data-hunt="${p.id}" aria-label="لقيتيها!">✨</button>` : ""}
       ${first ? `<div class="badge big" id="pdBadge"><i style="--c:${esc(first.hex || "transparent")}"${first.hex ? "" : " hidden"}></i><b class="latin">${esc(first.name)}</b></div>` : ""}
-    </div>
+    </div><div class="pgal" id="pgal"></div>
       ${sw.length ? `<div class="pdsw"><div class="shade-name">اختاري درجة: <b id="shadeName">${esc(first.name)}</b></div><div class="tiles">${sw.map((s, i) => `<button class="sw tile" type="button" data-shade="${esc(s.name)}" data-hex="${esc(s.hex || "")}" data-cut="${esc(s.cut || "")}" aria-pressed="${i === 0}" aria-label="${esc(s.name)}"><span class="ti">${s.cut ? `<img class="cutimg" src="${esc(s.cut)}" alt="" loading="lazy">` : s.hex ? swatchSVG(p, esc(s.hex)) : `<img src="${esc(p.img)}" alt="" loading="lazy">`}<em>غير متوفر</em></span><b class="latin">${esc(s.name)}</b></button>`).join("")}</div></div>`
         : p.s ? `<div class="meta">${esc(p.s)}، اكتبي اللون اللي بدك ياه بالملاحظات.</div>` : ""}
     </div>
@@ -723,7 +723,7 @@ function openProduct(id) {
       </div>
       ${lookHTML(p)}<div class="revs" id="revs"></div>${similarHTML(p)}
     </div>`;
-  pdStock();
+  pgal(first); pdStock();
   loadReviews(p.id);
   if (!$("#pd").open) { history.pushState({ pd: 1 }, ""); $("#pd").showModal(); }
   $("#pd").scrollTop = 0;
@@ -757,6 +757,13 @@ async function loadReviews(pid) {
     const { error } = await db.from("reviews").insert({ product_id: pid, user_id: profile.id, name: (profile.full_name || profile.shop_name || "زبونة").slice(0, 60), stars: +f.stars.value, body: f.body.value.trim() || null, photo_url });
     toast(error ? "ما انحفظ التقييم" : "شكراً! تقييمك بيظهر بعد المراجعة 💗"); loadReviews(pid);
   });
+}
+// official photo strip under the stage: the picked shade's own photos first, then the product gallery
+function pgal(shade) {
+  const p = byId[pdState.id], el = $("#pgal"); if (!el) return;
+  const urls = [...new Set([...(shade?.imgs || []), ...p.gal])];
+  el.hidden = !urls.length;
+  el.innerHTML = urls.map(u => `<button type="button" data-pgal="${esc(u)}" aria-label="صورة المنتج"><img src="${esc(u)}" alt="" loading="lazy"></button>`).join("");
 }
 // stage shows the product box, or the picked shade's smear when it has a real colour
 function pdView(hex, cut) {
@@ -1256,11 +1263,12 @@ document.addEventListener("click", async e => {
   else if (d.vote) { t.disabled = true; const { error } = await db.rpc("vote_battle", { p_battle: +d.vote, p_pick: +d.pick }); toast(error ? "التصويت مسكّر" : "انحفظ توقعك ✓"); clubView(); }
   else if (d.add) { const p = byId[d.add]; if (soldOut(p)) { toast("نفذ من المخزون"); return; } if (!canBuy(p)) { toast("الدروب بيفتح قريباً"); return; } shadesOf(p).length ? openProduct(p.id) : addToCart(p.id, "", minQty(p)); }
   else if (d.pdbox !== undefined) pdView("");
+  else if (d.pgal) { pdView("", d.pgal); $("#pd").scrollTo({ top: 0, behavior: "smooth" }); }
   else if (d.shade !== undefined) {
     pdState.shade = d.shade; $("#shadeName").textContent = d.shade; pdStock();
     t.parentElement.querySelectorAll(".sw").forEach(b => b.setAttribute("aria-pressed", b === t));
     const hx = d.hex, bd = $("#pdBadge");
-    pdView(hx, d.cut);
+    pdView(hx, d.cut); pgal(swatchesOf(byId[pdState.id]).find(s => s.name === d.shade));
     if (bd) { bd.querySelector("b").textContent = d.shade; bd.querySelector("i").hidden = !hx; if (hx) bd.querySelector("i").style.setProperty("--c", hx); }
     $("#pd").scrollTo({ top: 0, behavior: "smooth" });
   }

@@ -4,7 +4,7 @@
 //  3 browser helper: a file saved by the Tolay Chrome helper from a page the admin opened normally
 // Approved images are stored byte-for-byte (colours untouched) and the shade rows are filled; nothing is written
 // to the product until the admin presses the normal Save button.
-import { SOURCES, STATUS, sourceOf, matchShades, parseCSV, fromRows, matchFiles, shadesFromFiles, parseBundle } from "./tools/importer/parse.js";
+import { SOURCES, STATUS, sourceOf, matchShades, parseCSV, fromRows, matchFiles, shadesFromFiles, parseBundle, mergeBundles } from "./tools/importer/parse.js";
 
 const ST = { matched: ["مطابقة", "#1f9d55"], new: ["درجة جديدة", "#2563eb"], review: ["بدها مراجعة", "#d97706"], duplicate: ["مكررة", "#dc2626"] };
 const TYPE = { main: "رئيسية", packaging: "علبة", swatch: "تستر", gallery: "معرض", lifestyle: "لايف ستايل" };
@@ -29,11 +29,12 @@ dlg.innerHTML = `<button class="x" type="button" data-close aria-label="إغلا
 <input id="impFiles" type="file" multiple accept=".csv,.xlsx,.xls,.json,.zip,image/png,image/jpeg,image/webp" style="margin-top:6px"></div>
 <div data-pane="3" hidden><div class="hint">للمواقع المقيّدة (NYX وSephora ومواقع ثانية): افتح صفحة المنتج بمتصفحك عادي، اضغط إضافة Tolay، راجع الدرجات، ونزّل الملف. بعدها اختاره هون. الإضافة ما بتبعث كوكيز ولا كلمات سر، وما بتحل CAPTCHA، وإذا الصفحة محمية بتوقف وبتقلك تستعمل ملفات المورّد.</div>
 <p class="hint"><a href="tools/tolay-helper.zip" download>⬇️ تنزيل إضافة Tolay</a> · فك الضغط، افتح chrome://extensions، شغّل Developer mode، اضغط Load unpacked واختار المجلد.</p>
-<input id="impBundle" type="file" accept=".json,application/json"></div>
+<p class="hint">بدك صور الموديل لكل درجة؟ اكبس الدرجة بصفحة الشركة، افتح الإضافة واختار اسم الدرجة، ونزّل ملف. كرّر لكل درجة، وبعدين اختار كل الملفات هون مع بعض.</p>
+<input id="impBundle" type="file" multiple accept=".json,application/json"></div>
 <div id="impOut"></div></div>`;
 document.body.append(dlg);
 
-let data = null, rows = [], cancel = false, mainKey = null, IMG = {};
+let data = null, rows = [], cancel = false, mainKey = null, IMG = {}, galOn = new Set();
 const out = () => dlg.querySelector("#impOut");
 const tab = n => { dlg.querySelectorAll("[data-pane]").forEach(p => p.hidden = p.dataset.pane !== n); dlg.querySelectorAll("[data-tab]").forEach(b => b.style.background = b.dataset.tab === n ? "var(--ink-2)" : ""); };
 dlg.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => tab(b.dataset.tab));
@@ -100,7 +101,7 @@ dlg.querySelector("#impFiles").onchange = async e => {
 // mode 3: bundle from the browser helper (images arrive inline, fetched by the admin's own browser)
 const loadBundle = d => load({ ...d, images: d.images.map(i => { const file = i.data ? new File([Uint8Array.from(atob(i.data), c => c.charCodeAt(0))], base(new URL(i.url).pathname) || "img", { type: i.mime }) : null;
   return { ...i, key: i.url, src: file ? URL.createObjectURL(file) : i.url, file, remote: file ? null : i.url }; }) }, `إضافة المتصفح · ${d.url ? new URL(d.url).hostname : ""}`);
-dlg.querySelector("#impBundle").onchange = async e => { const f = e.target.files[0]; if (!f) return; try { await loadBundle(parseBundle(JSON.parse(await f.text()))); } catch (err) { fail(err.message); } };
+dlg.querySelector("#impBundle").onchange = async e => { const fs = [...e.target.files]; if (!fs.length) return; try { await loadBundle(mergeBundles(await Promise.all(fs.map(async f => parseBundle(JSON.parse(await f.text())))))); } catch (err) { fail(err.message); } };
 
 const existing = () => [...$("#swList").children].map(d => ({ el: d, name: d.querySelector("[type=text]").value.trim(), sku: d._m?.sku, barcode: d._m?.barcode, code: d._m?.code }));
 
@@ -112,14 +113,16 @@ function render(how) {
   Object.values(seen).filter(a => a.length > 1).flat().forEach(s => { s.dupImg = true; });
   const opts = ex.map((e, i) => `<option value="${i}">← ${h(e.name || "درجة بدون اسم")}</option>`).join("");
   const imgs = data.images, can = i => i.type === "main" || i.type === "packaging" || i.type === "gallery";
+  const shadeImg = new Set(rows.map(s => s.img).filter(Boolean)), forGal = im => !shadeImg.has(im.key) && !im.shade;
+  galOn = new Set(imgs.filter(forGal).map(im => im.key));
   out().innerHTML = `
 <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><b>${h(data.brand)}${data.brand && data.name ? " — " : ""}${h(data.name)}</b><span class="hint">${h(how)}</span>${data.url ? `<a class="hint" href="${h(data.url)}" target="_blank" rel="noopener">الصفحة الأصلية</a>` : ""}</div>
-<details><summary>الصور (${imgs.length})${data.skipped ? ` · ${data.skipped} صورة لدرجات مش موجودة بالصفحة انتركت` : ""}</summary>
+<details><summary>الصور (${imgs.length}): صور المعرض مأشّر عليها، شيل الإشارة عن اللي ما بدك ياه${data.skipped ? ` · ${data.skipped} صورة لدرجات مش موجودة بالصفحة انتركت` : ""}</summary>
 <div class="hint">اختار صورة رئيسية للمنتج إذا بدك تغيّرها (اختياري):</div>
 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:6px">
 <label style="font-size:11px;text-align:center"><input type="radio" name="impMain" value="" checked><br>بدون تغيير</label>
 ${imgs.map((im, i) => `<label style="font-size:11px;text-align:center;display:flex;flex-direction:column;gap:2px"><img src="${h(im.src)}" loading="lazy" alt="" style="width:100%;aspect-ratio:1;object-fit:contain;background:#fff;border-radius:8px;border:1px solid var(--line)">
-<span>${TYPE[im.type] || h(im.type)}${im.shade ? " · " + h(im.shade) : ""}</span>${can(im) ? `<span><input type="radio" name="impMain" value="${i}"> رئيسية</span>` : ""}</label>`).join("")}</div></details>
+<span>${TYPE[im.type] || h(im.type)}${im.shade ? " · " + h(im.shade) : ""}</span>${can(im) ? `<span><input type="radio" name="impMain" value="${i}"> رئيسية</span>` : ""}${forGal(im) ? `<span><input type="checkbox" data-gal="${i}" checked> للمعرض</span>` : im.shade && !shadeImg.has(im.key) ? `<span class="hint">مع درجة ${h(im.shade)}</span>` : ""}</label>`).join("")}</div></details>
 <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><b>الدرجات (${rows.length})</b>
 <button class="sm" type="button" data-all="1">تحديد الكل</button><button class="sm" type="button" data-all="0">إلغاء الكل</button><button class="sm" type="button" id="impRev">عرض اللي بدها مراجعة بس</button></div>
 <div id="impGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px">
@@ -142,6 +145,7 @@ ${s.hex ? `<span title="${s.conf === "sampled" ? "مأخوذ من الصورة �
   out().querySelector("#impRev").onclick = e => { const only = e.target.dataset.only !== "1"; e.target.dataset.only = only ? "1" : "0"; e.target.textContent = only ? "عرض الكل" : "عرض اللي بدها مراجعة بس";
     out().querySelectorAll("#impGrid [data-i]").forEach(c => c.hidden = only && c.dataset.st === "matched"); };
   out().querySelectorAll("[name=impMain]").forEach(r => r.onchange = () => { mainKey = r.value === "" ? null : imgs[+r.value].key; sum(); });
+  out().querySelectorAll("[data-gal]").forEach(c => c.onchange = () => { const k = imgs[+c.dataset.gal].key; c.checked ? galOn.add(k) : galOn.delete(k); sum(); });
   out().querySelector("#impOk").onclick = run;
   out().querySelector("#impStop").onclick = () => { cancel = true; };
   sum();
@@ -150,9 +154,11 @@ ${s.hex ? `<span title="${s.conf === "sampled" ? "مأخوذ من الصورة �
 function sum() {
   const sel = rows.filter(s => s.on), upd = sel.filter(s => s.to !== "new").length;
   const dupTarget = sel.filter(s => s.to !== "new").map(s => s.to).some((t, i, a) => a.indexOf(t) !== i);
-  out().querySelector("#impSum").innerHTML = `${sel.length} درجة مختارة: ${sel.length - upd} جديدة، ${upd} تحديث لدرجات موجودة · ${sel.filter(s => s.img && !s.dupImg).length + (mainKey ? 1 : 0)} صورة للرفع${dupTarget ? ` · <b style="color:var(--danger)">في درجتين رايحين لنفس الدرجة الموجودة</b>` : ""}`;
+  out().querySelector("#impSum").innerHTML = `${sel.length} درجة مختارة: ${sel.length - upd} جديدة، ${upd} تحديث لدرجات موجودة · ${sel.filter(s => s.img && !s.dupImg).length + (mainKey ? 1 : 0) + galOn.size + sel.reduce((n, s) => n + extrasOf(s).length, 0)} صورة للرفع${dupTarget ? ` · <b style="color:var(--danger)">في درجتين رايحين لنفس الدرجة الموجودة</b>` : ""}`;
   return !dupTarget;
 }
+
+const extrasOf = s => data.images.filter(im => im.shade === s.name && im.key !== s.img).map(im => im.key);
 
 // local file -> storage, untouched bytes, name = SHA-1 so a second upload of the same picture is reused
 async function putFile(i, pid) {
@@ -171,8 +177,8 @@ async function run() {
   if (!editing?.id) return toast("احفظ المنتج أول مرة، بعدين استورد الصور");
   if (!out().querySelector("#impLic").checked) return toast("لازم تأكد إذن استعمال الصور");
   if (!sum()) return toast("صلّح التكرار أول");
-  const sel = rows.filter(s => s.on); if (!sel.length && !mainKey) return toast("ما اخترت إشي");
-  const keys = [...new Set([...sel.filter(s => !s.dupImg).map(s => s.img), mainKey].filter(Boolean))];
+  const sel = rows.filter(s => s.on); if (!sel.length && !mainKey && !galOn.size) return toast("ما اخترت إشي");
+  const keys = [...new Set([...sel.filter(s => !s.dupImg).map(s => s.img), ...sel.flatMap(extrasOf), mainKey, ...galOn].filter(Boolean))];
   const bar = out().querySelector("#impBar"), stop = out().querySelector("#impStop"), ok = out().querySelector("#impOk");
   bar.hidden = false; bar.max = keys.length || 1; bar.value = 0; stop.hidden = false; ok.disabled = true; cancel = false;
   const got = {}, failed = [], files = keys.filter(k => IMG[k]?.file), remote = keys.filter(k => !IMG[k]?.file);
@@ -198,14 +204,17 @@ async function run() {
           Object.assign(m, { hex: keep.hex, src: keep.src, conf: keep.conf }); if (keep.hex) d.querySelector("[type=color]").value = keep.hex; if (keep.nohex) d.dataset.nohex = "1"; // never guess the colour from a photo here
         } catch (e) { failed.push({ url: s.img, error: "شيل الخلفية: " + e.message }); } }
       const im = d.querySelector(".swcut"); im.src = m.cut; im.hidden = false; }
+    const ex = extrasOf(s).map(k => got[k]).filter(Boolean); if (ex.length) m.imgs = [...new Set([...(m.imgs || []), ...ex])];
     if (s.hex) { m.hex = s.hex.toLowerCase(); m.src = data.url || "ملف المورّد"; m.conf = s.conf || "high"; d.querySelector("[type=color]").value = m.hex; delete d.dataset.nohex; } // official hex, or one sampled from the official photo (marked conf:"sampled")
     done++; s.on = false; const cb = out().querySelector(`[data-i="${rows.indexOf(s)}"] [data-on]`); if (cb) cb.checked = false; // a second press only retries what is left
   }
   if (mainKey && got[mainKey]) { impMain = got[mainKey]; $("#ePrev").src = impMain; }
+  const gNew = [...galOn].filter(k => got[k]).map(k => ({ url: got[k], type: IMG[k]?.type || "gallery", alt: IMG[k]?.alt || "" }));
+  addGallery(gNew); galOn = new Set([...galOn].filter(k => !got[k])); // a second press retries only the failed ones
   stop.hidden = true; ok.disabled = false; sum();
   const nm = k => (IMG[k]?.file?.name || String(k).split("/").pop().split("?")[0]);
   const noPic = sel.filter(s => !s.img || s.dupImg).map(s => s.name);
-  out().querySelector("#impRep").innerHTML = `<p><b>✓ ${done} درجة جاهزة${mainKey && got[mainKey] ? " + الصورة الرئيسية" : ""}.</b> ${noPic.length ? `منها ${noPic.length} بدون صورة (ما في صورة إلها أو صورتها مكررة): ${h(noPic.join("، "))}. ` : ""}${cancel ? "انوقف قبل ما يخلص. " : ""}سكّر النافذة وراجع الدرجات، بعدين اضغط «حفظ».</p>
+  out().querySelector("#impRep").innerHTML = `<p><b>✓ ${done} درجة جاهزة${mainKey && got[mainKey] ? " + الصورة الرئيسية" : ""}${gNew.length ? ` + ${gNew.length} صورة للمعرض` : ""}.</b> ${noPic.length ? `منها ${noPic.length} بدون صورة (ما في صورة إلها أو صورتها مكررة): ${h(noPic.join("، "))}. ` : ""}${cancel ? "انوقف قبل ما يخلص. " : ""}سكّر النافذة وراجع الدرجات، بعدين اضغط «حفظ».</p>
 ${failed.length ? `<p style="color:var(--danger)">${failed.length} صورة ما انحطت:</p><ul class="hint">${failed.map(f => `<li><span dir="ltr">${h(nm(f.url))}</span>: ${h(f.error)}</li>`).join("")}</ul><p class="hint">تقدر تضغط «اعتماد» مرة ثانية للمحاولة، الصور اللي انرفعت ما بتنرفع مرتين.</p>` : ""}`;
   toast(`${done} درجة جاهزة، اضغط حفظ`);
 }

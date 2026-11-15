@@ -149,3 +149,12 @@ test("bundle accepts hexSampled from older helper copies as sampled", async () =
   const b = parseBundle({ tolay: 1, shades: [{ name: "Java", hexSampled: "#452928" }, { name: "Fair", hex: "#f1c4b1", hexSampled: "#000000" }] });
   assert.equal(b.shades[0].hex, "#452928"); assert.equal(b.shades[0].conf, "sampled"); assert.equal(b.shades[1].hex, "#f1c4b1"); assert.equal(b.shades[1].conf, null);
 });
+
+test("helper files for different shades merge into one product", async () => {
+  const { parseBundle, mergeBundles } = await import("./parse.js");
+  const a = parseBundle({ tolay: 1, name: "Blur", shades: [{ name: "Java", hex: "#381e1d" }, { name: "Fair" }], images: [{ url: "https://x/g1.jpg" }, { url: "https://x/java-model.jpg", shade: "Java" }] });
+  const b = parseBundle({ tolay: 1, name: "Blur", shades: [{ name: "fair", hex: "#f1c4b1" }, { name: "Mocha" }], images: [{ url: "https://x/g1.jpg" }, { url: "https://x/fair-model.jpg", shade: "Fair" }] });
+  const m = mergeBundles([a, b]);
+  assert.deepEqual(m.shades.map(s => s.name), ["Java", "Fair", "Mocha"]); assert.equal(m.shades[1].hex, "#f1c4b1");
+  assert.deepEqual(m.images.map(i => [i.url.split("/").pop(), i.shade]), [["g1.jpg", null], ["java-model.jpg", "Java"], ["fair-model.jpg", "Fair"]]);
+});

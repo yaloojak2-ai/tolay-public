@@ -215,6 +215,19 @@ export function parseBundle(j) {
   return { brand: String(j.brand || ""), name: String(j.name || ""), description: "", sku: null, url: j.url || null, shades, images, skipped: 0 };
 }
 
+// several helper files of one product (one per shade the admin opened) -> one: shades by name, images by url
+export function mergeBundles(list) {
+  const [first, ...rest] = list; if (!first) throw new Error("ما في ملفات");
+  const out = { ...first, shades: first.shades.map(s => ({ ...s })), images: first.images.map(i => ({ ...i })) };
+  for (const b of rest) {
+    for (const s of b.shades) { const o = out.shades.find(x => x.name.toLowerCase() === s.name.toLowerCase());
+      if (!o) out.shades.push({ ...s }); else for (const k in s) if (o[k] == null && s[k] != null) o[k] = s[k]; }
+    for (const i of b.images) { const o = out.images.find(x => x.url === i.url);
+      if (!o) out.images.push({ ...i }); else { if (!o.shade && i.shade) o.shade = i.shade; if (!o.data && i.data) Object.assign(o, { data: i.data, mime: i.mime }); } }
+  }
+  return out;
+}
+
 // ---------- shade matching against the shades already on the product ----------
 // exact SKU/barcode -> exact code -> normalized name -> careful fuzzy (only suggests, never auto-applies)
 export function matchShades(extracted, existing) {
