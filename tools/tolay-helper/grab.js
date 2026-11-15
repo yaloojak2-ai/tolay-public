@@ -22,7 +22,10 @@
     if (!thumb && el) for (const c of [el, ...el.querySelectorAll("*")]) { const m = (getComputedStyle(c).backgroundImage || "").match(/url\(["']?([^"')]+)/); if (m) { thumb = abs(m[1]); break; } }
     shades.push({ name, hex, thumb }); };
   for (const a of document.querySelectorAll("a[href*='olor='],a[href*='hade=']")) { try { const u = new URL(a.href, location.href); if (u.pathname !== location.pathname) continue;
-    const n = shades.length; push(u.searchParams.get("Color") || u.searchParams.get("color") || u.searchParams.get("Colour") || u.searchParams.get("Shade") || u.searchParams.get("shade"), a); if (shades.length > n) shades[n].href = u.href; } catch {} }
+    const nm = (u.searchParams.get("Color") || u.searchParams.get("color") || u.searchParams.get("Colour") || u.searchParams.get("Shade") || u.searchParams.get("shade") || "").replace(/\s+/g, " ").trim();
+    // the same shade is often already found as a swatch button: give it the link instead of skipping it
+    const had = shades.find(s => s.name.toLowerCase() === nm.toLowerCase()); if (had) { had.href ||= u.href; continue; }
+    const n = shades.length; push(nm, a); if (shades.length > n) shades[n].href = u.href; } catch {} }
   // each shade link is its own page on the official site: its og:image is that shade's packshot (seen on e.l.f.), photos whose alt names the shade go with it
   const linked = shades.filter(s => s.href).slice(0, 40);
   if (linked.length > 1) { for (const s of linked) try { const r = await fetch(s.href, { credentials: "omit" }); if (!r.ok) continue;
