@@ -15,6 +15,15 @@
     const img = el.querySelector("img"); seen.add(name.toLowerCase());
     shades.push({ name, hex, thumb: img ? abs(img.currentSrc || img.src) : null });
   }
+  // shades as links (?Color=Light%2FMedium, e.l.f.) or as a real <select>: name from the link / option text
+  const push = (name, el) => { name = (name || "").replace(/\s+/g, " ").trim(); if (!name || name.length < 2 || junk.test(name) || seen.has(name.toLowerCase())) return; seen.add(name.toLowerCase());
+    let hex = el && hexOf(el); if (!hex && el) for (const c of el.querySelectorAll("*")) { hex = hexOf(c); if (hex) break; }
+    const img = el?.querySelector?.("img"); let thumb = img ? abs(img.currentSrc || img.src) : null;
+    if (!thumb && el) for (const c of [el, ...el.querySelectorAll("*")]) { const m = (getComputedStyle(c).backgroundImage || "").match(/url\(["']?([^"')]+)/); if (m) { thumb = abs(m[1]); break; } }
+    shades.push({ name, hex, thumb }); };
+  for (const a of document.querySelectorAll("a[href*='olor='],a[href*='hade=']")) { try { const u = new URL(a.href, location.href); if (u.pathname !== location.pathname) continue;
+    push(u.searchParams.get("Color") || u.searchParams.get("color") || u.searchParams.get("Colour") || u.searchParams.get("Shade") || u.searchParams.get("shade"), a); } catch {} }
+  for (const sel of document.querySelectorAll("select")) if (/shade|colou?r/i.test([sel.name, sel.id, sel.getAttribute("aria-label")].join(" "))) for (const o of sel.options) if (o.value) push(o.text, null);
   const images = [], seenI = new Set(), add = (u, alt) => { const a = abs(u); if (a && a.startsWith("https://") && !seenI.has(a)) { seenI.add(a); images.push({ url: a, alt: alt || "" }); } };
   add(document.querySelector("meta[property='og:image']")?.content, "og:image");
   for (const im of document.images) if ((im.naturalWidth || 0) >= 400) add(im.currentSrc || im.src, im.alt);
