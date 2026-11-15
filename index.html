@@ -770,6 +770,10 @@ function pdView(hex, cut) {
   const sm = $("#pdSmear"); if (!sm) return; const on = !!(hex || cut);
   sm.innerHTML = cut ? `<img class="cutimg" src="${esc(cut)}" alt="">` : hex ? swatchSVG(byId[pdState.id], hex) : ""; sm.hidden = !on; $("#pdImg").parentElement.hidden = on;
   const b = document.querySelector("[data-pdbox]"); if (b) b.hidden = !on;
+  // a shade picture that is only the site's tiny colour chip must not fill the stage: show the shade's own photo, else its colour or the box
+  const im = cut && sm.querySelector("img");
+  if (im) im.onload = () => { if (im.naturalWidth >= 200) return; const s = swatchesOf(byId[pdState.id]).find(x => x.name === pdState.shade), big = s?.imgs?.[0];
+    big && big !== cut ? pdView(hex, big) : pdView(hex); };
 }
 function pdStock() {
   const p = byId[pdState.id], n = stockOf(p, pdState.shade), b = $("#pdAdd");
