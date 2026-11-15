@@ -11,6 +11,8 @@ export function build(g) {
   const images = [...best.images], seen = new Set(images.map(i => i.url));
   for (const s of best.shades) if (s.swatch && !seen.has(s.swatch)) { seen.add(s.swatch); images.push({ url: s.swatch, type: "swatch", shade: s.name, alt: "" }); }
   for (const i of g.dom.images) { const u = cleanImg(i.url); if (!seen.has(u)) { seen.add(u); images.push({ url: u, type: classify({ src: u, alt: i.alt }, false) === "main" ? "gallery" : "lifestyle", shade: null, alt: i.alt }); } }
-  return { tolay: 1, source: "browser", brand: best.brand || src?.name || "", name: best.name, url: g.url, shades: best.shades, images };
+  // site chrome (seen live on NYX: service badges, chat icon, vendor logo) is never a product photo
+  const chrome = /\.svg(\?|$)|logo|icon|services?-|badge|payment|-\d{2,3}x\d{2,3}\.(png|webp|jpe?g)/i;
+  return { tolay: 1, source: "browser", brand: best.brand || src?.name || "", name: best.name, url: g.url, shades: best.shades, images: images.filter(i => i.shade || !chrome.test(i.url)) };
 }
 
