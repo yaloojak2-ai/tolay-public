@@ -1,0 +1,11 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Tolay</title>
+<style>body{font:13px system-ui,sans-serif;width:380px;margin:0;padding:12px;color:#111}h1{font-size:15px;margin:0 0 6px}
+button{font:inherit;border:0;border-radius:999px;padding:7px 14px;background:#e5007d;color:#fff;cursor:pointer}button[disabled]{opacity:.5}
+.hint{color:#666;font-size:12px}.err{color:#b91c1c}.row{display:flex;gap:8px;align-items:center;padding:4px 0;border-bottom:1px solid #eee}
+.row img{width:34px;height:34px;object-fit:contain;background:#fafafa;border-radius:6px}.chip{width:14px;height:14px;border-radius:50%;display:inline-block;border:1px solid #ddd}
+#list{max-height:300px;overflow:auto;margin:8px 0}</style></head>
+<body><h1>Tolay · جمع المنتج من هالصفحة</h1>
+<p class="hint">بتقرأ بس الصفحة اللي فاتحها. ما بتبعث كوكيز ولا كلمات سر لأي مكان، وما بتحل أي تحقق. الملف بينزل عندك وإنت بترفعه بالأدمن.</p>
+<button id="go">اقرأ هالصفحة</button><div id="msg" class="hint"></div><div id="list"></div>
+<button id="save" hidden>تنزيل ملف Tolay</button>
+<script type="module" src="popup.js"></script></body></html>

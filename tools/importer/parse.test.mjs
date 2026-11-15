@@ -77,3 +77,63 @@ test("matching: sku > code > name, fuzzy only suggests, duplicates flagged", () 
     ["matched", 0, "name", null], ["review", null, null, 1], ["matched", 2, "sku", null], ["new", null, null, null], ["duplicate", null, null, null], ["duplicate", null, null, null]]);
   assert.equal(m[0].missingImage, true);
 });
+
+import { parseSfcc, parseCSV, fromRows, matchFiles, shadesFromFiles, parseBundle, SOURCES } from "./parse.js";
+
+test("every source has one of the four statuses; NYX/Sephora are not claimed as available", () => {
+  for (const s of Object.values(SOURCES)) assert.ok(["available", "restricted", "auth", "unsupported"].includes(s.status));
+  assert.equal(SOURCES["nyxcosmetics.com"].status, "restricted"); assert.equal(SOURCES["sephora.com"].status, "restricted");
+});
+
+test("sfcc (NARS): shade names, number codes, official hex, per-shade full-size image", () => {
+  const r = parseSfcc(fx("nars-powder-blush.html"), "https://www.narscosmetics.com/USA/powder-blush/999NAC0000192.html");
+  assert.equal(r.brand, "NARS"); assert.equal(r.name, "Powder Blush");
+  assert.deepEqual(r.shades.map(s => [s.name, s.code, s.hex, s.sku]), [["777 Orgasm", "777", "#faa7a6", "4251140407"], ["778 Orgasm Edge", "778", "#f58a8f", "4251140506"]]);
+  const live = `<li data-shade-name="361 Morocco"><a data-lgimg='{&quot;url&quot;:&quot;https://www.narscosmetics.com/dw/image/v2/x/0194251171746_1.jpg?sw=255&amp;sh=255&quot;}\\"}'></a></li>`; // live attribute: not valid JSON
+  assert.equal(parseSfcc(live, "https://www.narscosmetics.com/x").shades[0].barcode, "194251171746");
+  assert.ok(r.shades[0].pack.endsWith("Orgasm_GLBL.jpg?sm=fit")); // sw/sh size params removed -> original size
+  assert.notEqual(r.shades[0].pack, r.shades[1].pack); // each shade keeps its own image
+  assert.equal(r.images[0].type, "main");
+});
+
+test("supplier CSV: quotes, semicolons, Arabic headers, aliases", () => {
+  const rows = parseCSV('﻿Shade Name;SKU;EAN;Hex;Swatch Image;Packshot\n"102 Fair Ivory";NYX1;0800897;#F1D3C2;102_swatch.png;102_pack.jpg\n"Light, Warm";NYX2;;bad;;\n');
+  assert.equal(rows.length, 2); assert.equal(rows[1]["Shade Name"], "Light, Warm");
+  const d = fromRows(rows);
+  assert.deepEqual(d.shades[0], { name: "102 Fair Ivory", code: null, sku: "NYX1", barcode: "0800897", hex: "#f1d3c2", swatch: "102_swatch.png", pack: "102_pack.jpg" });
+  assert.equal(d.shades[1].hex, null); // a bad colour value is dropped, never guessed
+  assert.deepEqual(fromRows([{ "اسم الدرجة": "وردي", "رقم": "5" }]).shades[0].code, "5");
+});
+
+test("files -> shades: by sku/code/name as a whole word; ambiguous or unrelated files are never assigned", () => {
+  const shades = [{ name: "Hope", sku: "FGP9" }, { name: "Hopeful" }, { name: "102 Fair Ivory", code: "102" }, { name: "Joy" }];
+  const m = Object.fromEntries(matchFiles(["x/SWATCH-HOPE.png", "Hopeful_pack.jpg", "102_swatch.png", "FGP9.jpg", "lifestyle-model.jpg", "logo.png", "joy hope combo.jpg"], shades).map(r => [r.file, r]));
+  assert.equal(m["x/SWATCH-HOPE.png"].shade, "Hope"); assert.equal(m["x/SWATCH-HOPE.png"].type, "swatch");
+  assert.equal(m["Hopeful_pack.jpg"].shade, "Hopeful"); assert.equal(m["Hopeful_pack.jpg"].type, "packaging");
+  assert.equal(m["102_swatch.png"].shade, "102 Fair Ivory"); assert.equal(m["FGP9.jpg"].shade, "Hope");
+  assert.equal(m["lifestyle-model.jpg"].shade, null); assert.equal(m["logo.png"].shade, null);
+  assert.equal(m["joy hope combo.jpg"].shade, null); // two shades named -> nobody gets it
+  assert.equal(matchFiles(["NARS_Orgasm_Edge.jpg"], [{ name: "777 Orgasm" }, { name: "Orgasm" }, { name: "Orgasm Edge" }])[0].shade, "Orgasm Edge");
+  assert.deepEqual(shadesFromFiles(["102 Fair Ivory - swatch.png", "102 Fair Ivory.jpg", "Joy_box.jpg", "model-lifestyle.jpg", "main.jpg"]).map(s => s.name), ["102 Fair Ivory", "Joy"]);
+});
+
+test("browser-helper bundle: validated, bad hex dropped, inline images kept", () => {
+  assert.throws(() => parseBundle({ shades: [] }));
+  const b = parseBundle({ tolay: 1, brand: "NYX", name: "Bare With Me", url: "https://www.nyxcosmetics.com/x.html", shades: [{ name: "01 Light", hex: "zz" }], images: [{ url: "https://www.nyxcosmetics.com/a.jpg", type: "swatch", shade: "01 Light", data: "AAAA", mime: "image/png" }] });
+  assert.equal(b.shades[0].hex, null); assert.equal(b.images[0].data, "AAAA");
+});
+
+import { build } from "../tolay-helper/build.js";
+test("browser helper: same parser copy, no risky permissions, NARS page -> bundle the admin accepts", () => {
+  assert.equal(fs.readFileSync(new URL("../tolay-helper/parse.js", import.meta.url), "utf8"), fs.readFileSync(new URL("./parse.js", import.meta.url), "utf8"));
+  const man = JSON.parse(fs.readFileSync(new URL("../tolay-helper/manifest.json", import.meta.url), "utf8"));
+  assert.deepEqual(man.permissions, ["activeTab", "scripting"]); assert.equal(man.host_permissions, undefined);
+  const html = fx("nars-powder-blush.html"), url = "https://www.narscosmetics.com/USA/powder-blush/999NAC0000192.html";
+  const b = build({ url, title: "Powder Blush | NARS", html, dom: { shades: [], images: [] } });
+  const back = parseBundle(JSON.parse(JSON.stringify(b)));
+  assert.deepEqual(back.shades.map(s => [s.name, s.hex]), [["777 Orgasm", "#faa7a6"], ["778 Orgasm Edge", "#f58a8f"]]);
+  // a page with no known structure: shades come from the swatch buttons on screen, colour only from the page's own attributes
+  const g = build({ url: "https://www.nyxcosmetics.com/x.html", title: "Bare With Me | NYX", html: "<html></html>", dom: { shades: [{ name: "01 Light", hex: "#f2d6c4", thumb: "https://www.nyxcosmetics.com/sw1.jpg" }, { name: "02 Medium", hex: null, thumb: null }], images: [{ url: "https://www.nyxcosmetics.com/main.jpg", alt: "" }] } });
+  assert.deepEqual(g.shades.map(s => [s.name, s.code, s.hex, s.swatch]), [["01 Light", "01", "#f2d6c4", "https://www.nyxcosmetics.com/sw1.jpg"], ["02 Medium", "02", null, null]]);
+  assert.equal(g.images.find(i => i.shade === "01 Light").type, "swatch");
+});

@@ -2,16 +2,18 @@
 // Every value comes from the page; nothing is invented. Missing data stays missing.
 
 // Official sources. Key = hostname suffix. kind picks the adapter.
+// status: available = tested end to end from our server; restricted = the site blocks automated reading (use browser mode or supplier files)
 export const SOURCES = {
-  "rarebeauty.com": { name: "Rare Beauty", kind: "shopify" },
-  "tartecosmetics.com": { name: "Tarte Cosmetics", kind: "shopify" },
-  "maccosmetics.com": { name: "MAC Cosmetics", kind: "shopify" },
-  "maybelline.com": { name: "Maybelline", kind: "maybelline" },
-  "narscosmetics.com": { name: "NARS Cosmetics", kind: "jsonld" },
-  "lorealparis.com": { name: "L'Oréal Paris", kind: "jsonld" },
-  "nyxcosmetics.com": { name: "NYX Professional Makeup", kind: "jsonld" },
-  "sephora.com": { name: "Sephora", kind: "blocked" },
+  "rarebeauty.com": { name: "Rare Beauty", kind: "shopify", status: "available" },
+  "tartecosmetics.com": { name: "Tarte Cosmetics", kind: "shopify", status: "available" },
+  "maccosmetics.com": { name: "MAC Cosmetics", kind: "shopify", status: "available" },
+  "maybelline.com": { name: "Maybelline", kind: "maybelline", status: "available" },
+  "narscosmetics.com": { name: "NARS Cosmetics", kind: "sfcc", status: "available" },
+  "lorealparis.com": { name: "L'Oréal Paris", kind: "jsonld", status: "restricted", why: "الموقع بيحوّل سيرفرنا لموقع بلد ثاني" },
+  "nyxcosmetics.com": { name: "NYX Professional Makeup", kind: "sfcc", status: "restricted", why: "حماية Cloudflare ضد القراءة الآلية" },
+  "sephora.com": { name: "Sephora", kind: "blocked", status: "restricted", why: "حماية Akamai ضد القراءة الآلية" },
 };
+export const STATUS = { available: ["متاح", "#1f9d55"], restricted: ["مقيّد", "#d97706"], auth: ["يحتاج تفويض", "#7c3aed"], unsupported: ["غير مدعوم", "#6b7280"] };
 // image hosts we may download from (official brand sites and their CDNs)
 export const IMAGE_HOSTS = ["cdn.shopify.com", "rarebeauty.com", "tartecosmetics.com", "maccosmetics.com", "maybelline.com", "narscosmetics.com", "lorealparis.com", "nyxcosmetics.com"];
 
@@ -117,6 +119,100 @@ export function parseJsonLd(html, pageUrl) {
   for (const s of shades) if (s.pack && !seen.has(s.pack)) { seen.add(s.pack); images.push({ url: s.pack, type: "packaging", shade: s.name, w: null, h: null, alt: "" }); }
   const brand = typeof p.brand === "string" ? p.brand : p.brand?.name || "";
   return { brand: decode(brand), name: decode(p.name || ""), description: decode(p.description || "").slice(0, 2000), sku: p.sku || p.productGroupID || null, url: pageUrl, shades, images, skipped: 0 };
+}
+
+// Salesforce Commerce Cloud shade lists (NARS; also NYX pages saved by the browser helper):
+// <li data-shade-name="777 Orgasm"> <a class="swatchanchor" href="...dwvar_X_color=ID" data-lgimg='{"url":...}'> <div class="swatch-block" style="background-color:#faa7a6">
+export function parseSfcc(html, pageUrl) {
+  const shades = [], images = [], seen = new Set();
+  const og = (html.match(/<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i) || [])[1];
+  const title = (html.match(/<meta[^>]*property="og:title"[^>]*content="([^"]+)"/i) || [])[1] || (html.match(/<title>([\s\S]*?)<\/title>/i) || [])[1] || "";
+  for (const m of html.matchAll(/<li[^>]*data-shade-name="([^"]+)"[^>]*>([\s\S]*?)<\/li>/g)) {
+    const name = decode(m[1]), body = m[2];
+    if (shades.some(s => s.name === name)) continue;
+    const hex = (decode(body).match(/swatch-block"[^>]*background-color:\s*#?([0-9a-f]{6})/i) || [])[1];
+    const id = (body.match(/dwvar_[^=]+_color=([\w-]+)/) || [])[1] || null;
+    const lg = (body.match(/data-lgimg='([^']+)'/) || [])[1]; // the live attribute is not always valid JSON, so read the url field directly
+    const lu = lg && (decode(lg).match(/"url"\s*:\s*"(https:[^"]+)"/) || [])[1], img = lu ? cleanImg(lu) : null;
+    // NARS names each shade photo by the shade's UPC (0194251171746_1.jpg)
+    const s = { name, code: (name.match(/^\s*(\d{2,4})\b/) || [])[1] || null, sku: id, barcode: (img?.match(/\/0*(\d{12,13})_\d+\.(?:jpe?g|png|webp)/i) || [])[1] || null, hex: hex ? "#" + hex.toLowerCase() : null, swatch: null, pack: null };
+    if (img && !seen.has(img)) { seen.add(img); const type = classify({ src: img }, true) === "swatch" && !/pdpcrop|soldier|packshot|compact/i.test(img) ? "swatch" : "packaging";
+      images.push({ url: img, type, shade: name, w: null, h: null, alt: "" }); s[type === "swatch" ? "swatch" : "pack"] = img; }
+    shades.push(s);
+  }
+  if (og) { const src = cleanImg(decode(og)); if (!seen.has(src)) images.unshift({ url: src, type: "main", shade: null, w: null, h: null, alt: "" }); }
+  let brand = "", name = decode(title).replace(/\s*\|.*$/, "");
+  try { const ld = parseJsonLd(html, pageUrl); brand = ld.brand; name = ld.name || name; } catch {}
+  return { brand, name, description: "", sku: null, url: pageUrl, shades, images, skipped: 0 };
+}
+
+// ---------- mode 2: supplier / brand files ----------
+// CSV with quotes; delimiter guessed from the header line (, ; or tab)
+export function parseCSV(text) {
+  text = String(text).replace(/^﻿/, ""); const first = text.split(/\r?\n/)[0] || "";
+  const d = [",", ";", "\t"].sort((a, b) => first.split(b).length - first.split(a).length)[0];
+  const out = []; let row = [], cell = "", q = false;
+  for (let i = 0; i < text.length; i++) { const c = text[i];
+    if (q) { if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; } else if (c === '"') q = false; else cell += c; }
+    else if (c === '"') q = true; else if (c === d) { row.push(cell); cell = ""; }
+    else if (c === "\n" || c === "\r") { if (c === "\r" && text[i + 1] === "\n") i++; row.push(cell); out.push(row); row = []; cell = ""; }
+    else cell += c; }
+  if (cell || row.length) { row.push(cell); out.push(row); }
+  const [head, ...rest] = out.filter(r => r.some(x => x.trim()));
+  return head ? rest.map(r => Object.fromEntries(head.map((h, i) => [h.trim(), (r[i] ?? "").trim()]))) : [];
+}
+const COLS = { // header aliases (lower-case, spaces/underscores ignored)
+  shade: ["shade", "shadename", "name", "color", "colour", "colorname", "variant", "variantname", "درجة", "اسمالدرجة", "اللون"],
+  sku: ["sku", "itemnumber", "itemno", "article", "reference"], barcode: ["barcode", "ean", "upc", "gtin", "ean13", "باركود"],
+  code: ["code", "shadecode", "shadenumber", "number", "no", "رقم", "رقمالدرجة"], hex: ["hex", "colorhex", "colourhex", "swatchcolor", "swatchhex"],
+  swatch: ["swatch", "swatchimage", "swatchfile", "texture", "صورةالدرجة"], pack: ["packaging", "pack", "packshot", "productimage", "image", "imagefile", "صورة"],
+  gallery: ["gallery", "images", "galleryimages", "lifestyle"], main: ["main", "mainimage", "hero"], brand: ["brand", "العلامة"], product: ["product", "productname", "المنتج"],
+};
+const col = (row, k) => { const keys = Object.keys(row); const hit = keys.find(h => COLS[k].includes(h.toLowerCase().replace(/[\s_\-]+/g, ""))); return hit ? String(row[hit] ?? "").trim() : ""; };
+const refs = v => String(v || "").split(/[|;\n]+/).map(x => x.trim()).filter(Boolean);
+const HEX = v => { const m = String(v || "").trim().match(/^#?([0-9a-f]{6})$/i); return m ? "#" + m[1].toLowerCase() : null; };
+// rows (from CSV / Excel / JSON array) -> the same shape the page adapters return. Image values are file names or https URLs.
+export function fromRows(rows) {
+  const shades = [], images = [], add = (ref, type, shade) => { if (!images.some(i => i.ref === ref && i.shade === shade)) images.push({ ref, type, shade, alt: "" }); };
+  let brand = "", name = "";
+  for (const r of rows) {
+    brand ||= col(r, "brand"); name ||= col(r, "product");
+    refs(col(r, "main")).forEach(x => add(x, "main", null)); refs(col(r, "gallery")).forEach(x => add(x, "gallery", null));
+    const n = col(r, "shade"); if (!n) continue;
+    const s = { name: n, code: col(r, "code") || null, sku: col(r, "sku") || null, barcode: col(r, "barcode") || null, hex: HEX(col(r, "hex")), swatch: refs(col(r, "swatch"))[0] || null, pack: refs(col(r, "pack"))[0] || null };
+    if (s.swatch) add(s.swatch, "swatch", n); if (s.pack) add(s.pack, "packaging", n);
+    shades.push(s);
+  }
+  return { brand, name, description: "", sku: null, url: null, shades, images, skipped: 0 };
+}
+// loose image files (from a ZIP or picked by hand) -> which shade each belongs to, by SKU/barcode/code/name as a whole word in the file name.
+// A file that fits no shade (or more than one) is never given to a shade; it stays as a product image for the admin to look at.
+export function matchFiles(names, shades) {
+  const key = f => norm(f.split("/").pop().replace(/\.[a-z0-9]+$/i, "").replace(/[_\-.]+/g, " "));
+  const word = (hay, w) => w && new RegExp(`(^| )${norm(w).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}( |$)`).test(hay);
+  return names.map(f => { const k = key(f);
+    let hit = shades.filter(s => [s.sku, s.barcode].some(v => v && word(k, v)));
+    if (hit.length !== 1) hit = shades.filter(s => s.code && word(k, s.code));
+    if (hit.length !== 1) { hit = shades.filter(s => keyOf(s.name).length > 1 && word(k, s.name));
+      if (hit.length > 1) hit = hit.filter(s => !hit.some(o => o !== s && word(norm(o.name), s.name))); } // "Orgasm Edge" file: Orgasm Edge wins over Orgasm
+    const s = hit.length === 1 ? hit[0] : null;
+    return { file: f, shade: s?.name || null, type: classify({ src: f.split("/").pop() }, !!s) };
+  });
+}
+// ZIP / folder without a sheet: shades come from the file names themselves ("102 Fair Ivory - swatch.png")
+export function shadesFromFiles(names) {
+  const tidy = f => decode(f.split("/").pop().replace(/\.[a-z0-9]+$/i, "").replace(/[_]+/g, " ").replace(/\s*[-–]?\s*\b(swatch|texture|smear|pack(aging|shot)?|box|product|main|front|back|\d{3,4}x\d{3,4})\b.*$/i, "")).trim();
+  const seen = new Set(), out = [];
+  for (const f of names) { if (classify({ src: f.split("/").pop() }, true) === "lifestyle") continue; const n = tidy(f); const k = keyOf(n);
+    if (n && !seen.has(k) && !/^(main|hero|gallery|cover|front|back|img|image|dsc)\s*\d*$/i.test(n)) { seen.add(k); out.push({ name: n, code: (n.match(/^\s*(\d{2,4})\b/) || [])[1] || null, sku: null, barcode: null, hex: null, swatch: null, pack: null }); } }
+  return out;
+}
+// file bundle saved by the Tolay browser helper (mode 3): already parsed on the admin's own screen, images inline as base64
+export function parseBundle(j) {
+  if (!j || j.tolay !== 1 || !Array.isArray(j.shades)) throw new Error("مش ملف من إضافة Tolay");
+  const shades = j.shades.map(s => ({ name: String(s.name || "").trim(), code: s.code || null, sku: s.sku || null, barcode: s.barcode || null, hex: HEX(s.hex), swatch: s.swatch || null, pack: s.pack || null })).filter(s => s.name);
+  const images = (j.images || []).filter(i => i && i.url).map(i => ({ url: String(i.url), type: i.type || "gallery", shade: i.shade || null, alt: i.alt || "", data: i.data || null, mime: i.mime || null }));
+  return { brand: String(j.brand || ""), name: String(j.name || ""), description: "", sku: null, url: j.url || null, shades, images, skipped: 0 };
 }
 
 // ---------- shade matching against the shades already on the product ----------
