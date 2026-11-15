@@ -210,7 +210,7 @@ export function shadesFromFiles(names) {
 // file bundle saved by the Tolay browser helper (mode 3): already parsed on the admin's own screen, images inline as base64
 export function parseBundle(j) {
   if (!j || j.tolay !== 1 || !Array.isArray(j.shades)) throw new Error("مش ملف من إضافة Tolay");
-  const shades = j.shades.map(s => ({ name: String(s.name || "").trim(), code: s.code || null, sku: s.sku || null, barcode: s.barcode || null, hex: HEX(s.hex), conf: s.conf === "sampled" ? "sampled" : null, swatch: s.swatch || null, pack: s.pack || null })).filter(s => s.name);
+  const shades = j.shades.map(s => ({ name: String(s.name || "").trim(), code: s.code || null, sku: s.sku || null, barcode: s.barcode || null, hex: HEX(s.hex) || HEX(s.hexSampled), conf: s.conf === "sampled" || (!HEX(s.hex) && HEX(s.hexSampled)) ? "sampled" : null, swatch: s.swatch || null, pack: s.pack || null })).filter(s => s.name);
   const images = (j.images || []).filter(i => i && i.url).map(i => ({ url: String(i.url), type: i.type || "gallery", shade: i.shade || null, alt: i.alt || "", data: i.data || null, mime: i.mime || null }));
   return { brand: String(j.brand || ""), name: String(j.name || ""), description: "", sku: null, url: j.url || null, shades, images, skipped: 0 };
 }

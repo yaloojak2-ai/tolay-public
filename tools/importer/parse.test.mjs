@@ -143,3 +143,9 @@ test("bundle keeps only the 'sampled' confidence mark", async () => {
   const b = parseBundle({ tolay: 1, shades: [{ name: "Java", hex: "#381E1D", conf: "sampled" }, { name: "Fair", hex: "#f1c4b1", conf: "high" }] });
   assert.equal(b.shades[0].conf, "sampled"); assert.equal(b.shades[0].hex, "#381e1d"); assert.equal(b.shades[1].conf, null);
 });
+
+test("bundle accepts hexSampled from older helper copies as sampled", async () => {
+  const { parseBundle } = await import("./parse.js");
+  const b = parseBundle({ tolay: 1, shades: [{ name: "Java", hexSampled: "#452928" }, { name: "Fair", hex: "#f1c4b1", hexSampled: "#000000" }] });
+  assert.equal(b.shades[0].hex, "#452928"); assert.equal(b.shades[0].conf, "sampled"); assert.equal(b.shades[1].hex, "#f1c4b1"); assert.equal(b.shades[1].conf, null);
+});
