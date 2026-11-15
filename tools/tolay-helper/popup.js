@@ -16,10 +16,10 @@ $("#go").onclick = async () => {
     // a listing page mixes several products' shades into one
     if (/\/(collections?|search|category|categories|shop|c)\/|[-\/]collection\/|[?&]q=/i.test(tab.url) && !/\/products?\//i.test(tab.url))
       return msg("هاي صفحة تشكيلة أو بحث مش منتج واحد. افتح صفحة المنتج نفسه واضغط مرة تانية.", true);
-    if (!found.shades.length) return msg("ما لقيت درجات بهالصفحة. استعمل ملفات المورّد بالأدمن.", true);
-    msg(`${found.brand} — ${found.name}: ${found.shades.length} درجة، ${found.images.length} صورة. شيل الإشارة عن أي إشي ما بدك ياه.`);
+    if (!found.shades.length && !found.images.length) return msg("ما لقيت درجات ولا صور بهالصفحة. استعمل ملفات المورّد بالأدمن.", true);
+    msg(`${found.brand} — ${found.name}: ${found.shades.length ? found.shades.length + " درجة، " : "بدون درجات (منتج صور بس)، "}${found.images.length} صورة. شيل الإشارة عن أي إشي ما بدك ياه.`);
     $("#list").innerHTML = found.shades.map((s, i) => `<label class="row"><input type="checkbox" data-s="${i}" checked>${s.swatch || s.pack ? `<img src="${esc(s.swatch || s.pack)}" alt="">` : ""}<span>${esc(s.name)}</span>${s.hex ? `<span class="chip" style="background:${esc(s.hex)}"></span>` : ""}</label>`).join("")
-      + `<p class="hint">صور المنتج (الموديل، الإيد، العلبة المفتوحة…):</p><label class="hint">هالصور لـ <select id="for"><option value="">كل المنتج (معرض)</option>${found.shades.map(s => `<option>${esc(s.name)}</option>`).join("")}</select></label><p class="hint">إذا الصور بالصفحة هلّق لدرجة معيّنة (كبستها بموقع الشركة)، اختار اسمها. بتقدر تعيد لكل درجة وتنزّل ملف لكل وحدة.</p>`
+      + `<p class="hint">صور المنتج (الموديل، الإيد، العلبة المفتوحة…):</p>${found.shades.length ? `<label class="hint">هالصور لـ <select id="for"><option value="">كل المنتج (معرض)</option>${found.shades.map(s => `<option>${esc(s.name)}</option>`).join("")}</select></label><p class="hint">إذا الصور بالصفحة هلّق لدرجة معيّنة (كبستها بموقع الشركة)، اختار اسمها. بتقدر تعيد لكل درجة وتنزّل ملف لكل وحدة.</p>` : ""}`
       + found.images.filter(i => !i.shade).map(im => `<label class="row"><input type="checkbox" data-i="${found.images.indexOf(im)}" checked><img src="${esc(im.url)}" alt=""><span>${esc(im.type)}</span></label>`).join("");
     $("#save").hidden = false;
   } catch (e) { msg("ما زبطت القراءة: " + e.message, true); }
