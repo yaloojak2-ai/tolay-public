@@ -814,9 +814,9 @@ $("#pRows").addEventListener("change", async e => {
 // datetime-local works in local time; the database keeps UTC
 const dl = v => { if (!v) return ""; const d = new Date(v); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 16); };
 const iso = v => v ? new Date(v).toISOString() : null;
-let editing = null, pickedFile = null;
+let editing = null, pickedFile = null, impMain = null; // impMain: main image chosen in the official-site importer
 function openEdit(id) {
-  editing = id ? P.find(p => p.id === id) : null; pickedFile = null; $("#eFile").value = "";
+  editing = id ? P.find(p => p.id === id) : null; pickedFile = null; impMain = null; $("#eFile").value = "";
   const p = editing || { brand: "", name: "", category_id: C[0]?.id, size: "", shades: "", description: "", retail_price: "", sort: (P.at(-1)?.sort || 0) + 1, active: true, featured: false, image_url: "" };
   const f = $("#eForm").elements;
   ["brand", "name", "category_id", "size", "shades", "description", "sort", "finish", "sku", "barcode"].forEach(k => f[k].value = p[k] ?? "");
@@ -839,12 +839,13 @@ $("#eForm").addEventListener("submit", async e => {
   const f = e.target.elements, m = $("#eMsg"); m.textContent = "عم نحفظ…";
   const rows = [...$("#swList").children].map(d => ({ name: d.querySelector("[type=text]").value.trim(), hex: d.dataset.nohex ? null : d.querySelector("[type=color]").value, qty: d.querySelector("[type=number]").value, m: d._m || {} })).map((s, i) => s.name || !s.m.cut ? s : { ...s, name: "درجة " + (i + 1) }).filter(s => s.name);
   // keep where a colour came from (src/conf) while the colour itself is unchanged
-  const swatches = rows.map(({ name, hex, m }) => ({ name, hex, ...(m.src && hex === m.hex ? { src: m.src, conf: m.conf } : {}), ...(m.cut ? { cut: m.cut } : {}) }));
+  const swatches = rows.map(({ name, hex, m }) => ({ name, hex, ...(m.src && hex === m.hex ? { src: m.src, conf: m.conf } : {}), ...Object.fromEntries(["cut", "sku", "barcode", "code", "orig"].filter(k => m[k]).map(k => [k, m[k]])) }));
   const stock = {}; rows.forEach(r => { if (r.qty !== "") stock[r.name] = Math.max(0, +r.qty); }); if (f.stock0.value !== "") stock[""] = Math.max(0, +f.stock0.value);
   const row = { swatches, stock, arrived_at: f.arrived_at.value || null, drop_start: iso(f.drop_start.value), drop_end: iso(f.drop_end.value), worth: num(f.worth.value), vault: f.vault.checked, finish: f.finish.value, brand: f.brand.value.trim(), name: f.name.value.trim(), category_id: +f.category_id.value || null, size: f.size.value.trim(), shades: f.shades.value.trim(), description: f.description.value.trim(), retail_price: num(f.retail_price.value), sort: +f.sort.value || 0, discount: pct(f.rdisc.value), active: f.active.checked, featured: f.featured.checked };
   // only send sku/barcode when used, so saving still works before phase7.sql adds the columns
   if (f.sku.value.trim() || editing?.sku) row.sku = f.sku.value.trim() || null;
   if (f.barcode.value.trim() || editing?.barcode) row.barcode = f.barcode.value.trim() || null;
+  if (!pickedFile && impMain) row.image_url = impMain;
   if (pickedFile) {
     const path = `${Date.now()}-${pickedFile.name.replace(/[^\w.]+/g, "_")}`;
     const up = await db.storage.from("products").upload(path, pickedFile, { contentType: pickedFile.type });
@@ -873,7 +874,7 @@ function addSwRow(s = { name: "", hex: "#c25a5a" }) {
   d.innerHTML = `<input type="color" value="${esc(s.hex || "#c25a5a")}" aria-label="لون الدرجة" ${s.hex ? "" : 'title="ما في لون لهالدرجة لسا، اضغطي 📷 وصوّري العلبة أو التستر"'}><input type="text" value="${esc(s.name)}" placeholder="اسم الدرجة" aria-label="اسم الدرجة"><input type="number" min="0" value="${s.qty ?? ""}" placeholder="كمية" aria-label="الكمية" style="width:80px" dir="ltr"><button class="sm" type="button" data-pickc aria-label="خذ اللون من صورة" title="خذ اللون من صورة">📷</button><button class="sm" type="button" data-cut aria-label="صورة الدرجة بدون خلفية" title="ارفع صورة الدرجة: بتنشال الخلفية ويضل اللون">🖼️</button><img class="swcut" alt="" ${s.cut ? `src="${esc(s.cut)}"` : "hidden"} style="width:34px;height:34px;object-fit:contain;background:repeating-conic-gradient(#eee 0 25%,#fff 0 50%) 0/10px 10px;border-radius:6px"><button class="sm no" type="button" data-rmsw aria-label="حذف الدرجة">✕</button>`;
   d.querySelector("[data-rmsw]").onclick = () => d.remove();
   if (!s.hex) d.dataset.nohex = "1";
-  d._m = { hex: s.hex ? s.hex.toLowerCase() : null, src: s.src, conf: s.conf, cut: s.cut };
+  d._m = { hex: s.hex ? s.hex.toLowerCase() : null, src: s.src, conf: s.conf, cut: s.cut, sku: s.sku, barcode: s.barcode, code: s.code, orig: s.orig };
   d.querySelector("[data-cut]").onclick = () => uploadCut(d);
   d.querySelector("[type=color]").addEventListener("input", e => { delete d.dataset.nohex; });
   d.querySelector("[data-pickc]").onclick = () => pickColor(d.querySelector("[type=color]"));
@@ -1064,5 +1065,6 @@ window.addEventListener("load", boot);  // after admin-ops.js is in
 <script src="admin-x.js?v=1793894897"></script>
 <script src="admin-fin.js?v=1793894897"></script>
 <script src="admin-inv.js?v=1793894897"></script>
+<script type="module" src="admin-import.js?v=1"></script>
 </body>
 </html>
