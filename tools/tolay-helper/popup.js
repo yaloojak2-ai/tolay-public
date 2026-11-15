@@ -13,6 +13,9 @@ $("#go").onclick = async () => {
     if (isBlockedPage(200, g.html) || /just a moment|access denied|attention required|captcha/i.test(g.title))
       return msg("الصفحة عم تعرض تحقق أو حماية. ما رح نكمل. خلّص التحقق بنفسك إذا بدك، أو استعمل ملفات المورّد بالأدمن.", true);
     found = build(g);
+    // a listing page mixes several products' shades into one
+    if (/\/(collections?|search|category|categories|shop|c)\/|[-\/]collection\/|[?&]q=/i.test(tab.url) && !/\/products?\//i.test(tab.url))
+      return msg("هاي صفحة تشكيلة أو بحث مش منتج واحد. افتح صفحة المنتج نفسه واضغط مرة تانية.", true);
     if (!found.shades.length) return msg("ما لقيت درجات بهالصفحة. استعمل ملفات المورّد بالأدمن.", true);
     msg(`${found.brand} — ${found.name}: ${found.shades.length} درجة، ${found.images.length} صورة. شيل الإشارة عن أي إشي ما بدك ياه.`);
     $("#list").innerHTML = found.shades.map((s, i) => `<label class="row"><input type="checkbox" data-s="${i}" checked>${s.swatch || s.pack ? `<img src="${esc(s.swatch || s.pack)}" alt="">` : ""}<span>${esc(s.name)}</span>${s.hex ? `<span class="chip" style="background:${esc(s.hex)}"></span>` : ""}</label>`).join("")
