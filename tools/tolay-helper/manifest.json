@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Tolay Importer Helper",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Collects shade names, official colours and product images from the product page you are viewing, after you click. Saves a file for the Tolay admin importer. Sends nothing anywhere.",
   "action": { "default_popup": "popup.html", "default_title": "Tolay: collect this product" },
   "permissions": ["activeTab", "scripting"],

@@ -1,5 +1,5 @@
 // Runs once in the page the admin is looking at, only when they press the button. Reads the page; changes nothing, clicks nothing.
-(() => {
+(async () => {
   const abs = u => { try { return new URL(u, location.href).href; } catch { return null; } };
   const hexOf = el => { const st = el.getAttribute("style") || "";
     const v = el.getAttribute("data-swatch-color") || el.getAttribute("data-color-hexa") || el.getAttribute("data-color") || el.getAttribute("data-hex") || el.getAttribute("data-attr-hex")
@@ -18,5 +18,8 @@
   const images = [], seenI = new Set(), add = (u, alt) => { const a = abs(u); if (a && a.startsWith("https://") && !seenI.has(a)) { seenI.add(a); images.push({ url: a, alt: alt || "" }); } };
   add(document.querySelector("meta[property='og:image']")?.content, "og:image");
   for (const im of document.images) if ((im.naturalWidth || 0) >= 400) add(im.currentSrc || im.src, im.alt);
-  return { url: location.href, title: document.title, html: document.documentElement.outerHTML, dom: { shades, images } };
+  // Shopify stores keep shades in a dropdown: read the store's own public product data (same site, no cookies)
+  let shopify = null; const h = location.pathname.match(/\/products\/([^\/?#]+)/);
+  if (h) try { const r = await fetch(`${location.origin}/products/${h[1]}.json`, { credentials: "omit" }); if (r.ok) shopify = await r.json(); } catch {}
+  return { url: location.href, title: document.title, html: document.documentElement.outerHTML, dom: { shades, images }, shopify };
 })();

@@ -1,9 +1,10 @@
-import { sourceOf, parseSfcc, parseJsonLd, parseMaybelline, classify, cleanImg } from "./parse.js";
+import { parseShopify, sourceOf, parseSfcc, parseJsonLd, parseMaybelline, classify, cleanImg } from "./parse.js";
 // page -> product: the same parsers the admin uses; the generic reading of the page fills only what they miss
 export function build(g) {
   const host = new URL(g.url).hostname.toLowerCase(), src = sourceOf(host);
   const tries = [];
   for (const f of src?.kind === "maybelline" ? [parseMaybelline] : [parseSfcc, parseJsonLd]) { try { tries.push(f(g.html, g.url)); } catch {} }
+  if (g.shopify) try { tries.push(parseShopify(g.shopify, g.url)); } catch {}
   const best = tries.sort((a, b) => b.shades.length - a.shades.length)[0] || { brand: "", name: g.title.replace(/\s*[|–-].*$/, ""), shades: [], images: [] };
   const key = n => n.toLowerCase().replace(/[^a-z0-9؀-ۿ]+/g, "");
   if (!best.shades.length) best.shades = g.dom.shades.map(s => ({ name: s.name, code: (s.name.match(/^\s*(\d{2,4})\b/) || [])[1] || null, sku: null, barcode: null, hex: s.hex, swatch: s.thumb, pack: null }));
