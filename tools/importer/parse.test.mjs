@@ -137,3 +137,9 @@ test("browser helper: same parser copy, no risky permissions, NARS page -> bundl
   assert.deepEqual(g.shades.map(s => [s.name, s.code, s.hex, s.swatch]), [["01 Light", "01", "#f2d6c4", "https://www.nyxcosmetics.com/sw1.jpg"], ["02 Medium", "02", null, null]]);
   assert.equal(g.images.find(i => i.shade === "01 Light").type, "swatch");
 });
+
+test("bundle keeps only the 'sampled' confidence mark", async () => {
+  const { parseBundle } = await import("./parse.js");
+  const b = parseBundle({ tolay: 1, shades: [{ name: "Java", hex: "#381E1D", conf: "sampled" }, { name: "Fair", hex: "#f1c4b1", conf: "high" }] });
+  assert.equal(b.shades[0].conf, "sampled"); assert.equal(b.shades[0].hex, "#381e1d"); assert.equal(b.shades[1].conf, null);
+});

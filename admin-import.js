@@ -198,7 +198,7 @@ async function run() {
           Object.assign(m, { hex: keep.hex, src: keep.src, conf: keep.conf }); if (keep.hex) d.querySelector("[type=color]").value = keep.hex; if (keep.nohex) d.dataset.nohex = "1"; // never guess the colour from a photo here
         } catch (e) { failed.push({ url: s.img, error: "شيل الخلفية: " + e.message }); } }
       const im = d.querySelector(".swcut"); im.src = m.cut; im.hidden = false; }
-    if (s.hex) { m.hex = s.hex.toLowerCase(); m.src = data.url || "ملف المورّد"; m.conf = "high"; d.querySelector("[type=color]").value = m.hex; delete d.dataset.nohex; } // official hex only
+    if (s.hex) { m.hex = s.hex.toLowerCase(); m.src = data.url || "ملف المورّد"; m.conf = s.conf || "high"; d.querySelector("[type=color]").value = m.hex; delete d.dataset.nohex; } // official hex, or one sampled from the official photo (marked conf:"sampled")
     done++; s.on = false; const cb = out().querySelector(`[data-i="${rows.indexOf(s)}"] [data-on]`); if (cb) cb.checked = false; // a second press only retries what is left
   }
   if (mainKey && got[mainKey]) { impMain = got[mainKey]; $("#ePrev").src = impMain; }
