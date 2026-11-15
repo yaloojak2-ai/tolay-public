@@ -24,7 +24,7 @@
   for (const a of document.querySelectorAll("a[href*='olor='],a[href*='hade=']")) { try { const u = new URL(a.href, location.href); if (u.pathname !== location.pathname) continue;
     const nm = (u.searchParams.get("Color") || u.searchParams.get("color") || u.searchParams.get("Colour") || u.searchParams.get("Shade") || u.searchParams.get("shade") || "").replace(/\s+/g, " ").trim();
     // the same shade is often already found as a swatch button: give it the link instead of skipping it
-    const had = shades.find(s => s.name.toLowerCase() === nm.toLowerCase()); if (had) { had.href ||= u.href; continue; }
+    const had = shades.find(s => s.name.toLowerCase() === nm.toLowerCase()); if (had) { had.href ||= u.href; const ti = a.querySelector("img"); if (!had.thumb && ti) had.thumb = abs(ti.currentSrc || ti.src); continue; }
     const n = shades.length; push(nm, a); if (shades.length > n) shades[n].href = u.href; } catch {} }
   // each shade link is its own page on the official site: its og:image is that shade's packshot (seen on e.l.f.), photos whose alt names the shade go with it
   const linked = shades.filter(s => s.href).slice(0, 40);
@@ -33,7 +33,8 @@
       s.pack = abs(d.querySelector("meta[property='og:image']")?.content || "");
       s.imgs = [...new Set([...d.images].filter(i => (i.alt || "").toLowerCase().includes(k)).map(i => abs(i.getAttribute("src") || "")).filter(u => u && u.startsWith("https://") && u !== s.pack))].slice(0, 6);
     } catch {}
-    if (new Set(linked.map(s => s.pack)).size < linked.length) linked.forEach(s => { s.pack = null; s.imgs = []; }); } // same picture for every shade = the site does not change it per shade
+    // a photo two shade pages share is the generic product shot, not that variant's own photo: drop it, keep the rest
+    const n = {}; linked.forEach(s => { if (s.pack) n[s.pack] = (n[s.pack] || 0) + 1; }); linked.forEach(s => { if (n[s.pack] > 1) { s.pack = null; s.imgs = []; } }); } // same picture for every shade = the site does not change it per shade
   for (const sel of document.querySelectorAll("select")) if (/shade|colou?r/i.test([sel.name, sel.id, sel.getAttribute("aria-label")].join(" "))) for (const o of sel.options) if (o.value) push(o.text, null);
   const images = [], seenI = new Set(), add = (u, alt) => { const a = abs(u); if (a && a.startsWith("https://") && !seenI.has(a)) { seenI.add(a); images.push({ url: a, alt: alt || "" }); } };
   add(document.querySelector("meta[property='og:image']")?.content, "og:image");

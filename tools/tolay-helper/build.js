@@ -7,7 +7,7 @@ export function build(g) {
   if (g.shopify) try { tries.push(parseShopify(g.shopify, g.url)); } catch {}
   const best = tries.sort((a, b) => b.shades.length - a.shades.length)[0] || { brand: "", name: g.title.replace(/\s*[|–-].*$/, ""), shades: [], images: [] };
   const key = n => n.toLowerCase().replace(/[^a-z0-9؀-ۿ]+/g, "");
-  if (!best.shades.length) best.shades = g.dom.shades.map(s => ({ name: s.name, code: (s.name.match(/^\s*(\d{2,4})\b/) || [])[1] || null, sku: null, barcode: null, hex: s.hex, swatch: s.pack ? null : s.thumb, pack: s.pack || null, imgs: s.imgs || [] }));
+  if (!best.shades.length) best.shades = g.dom.shades.map(s => ({ name: s.name, code: (s.name.match(/^\s*(\d{2,4})\b/) || [])[1] || null, sku: null, barcode: null, hex: s.hex, swatch: s.thumb || null, pack: s.pack || null, imgs: s.imgs || [] }));
   else for (const s of best.shades) { const d = g.dom.shades.find(x => key(x.name) === key(s.name)); if (d && !s.hex && d.hex) s.hex = d.hex; }
   // NYX-style file names carry the shade number: …-BWMBT24-JAVA-0800897234539-… ; use it only when the name part is this shade
   for (const s of best.shades) if (!s.code && s.pack) { const m = s.pack.match(/[A-Z](\d{1,3})-([A-Z0-9-]+?)-0?\d{12,13}/); if (m && key(m[2]) === key(s.name)) s.code = m[1]; }

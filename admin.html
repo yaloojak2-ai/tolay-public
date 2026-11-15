@@ -845,7 +845,7 @@ $("#eForm").addEventListener("submit", async e => {
   const f = e.target.elements, m = $("#eMsg"); m.textContent = "عم نحفظ…";
   const rows = [...$("#swList").children].map(d => ({ name: d.querySelector("[type=text]").value.trim(), hex: d.dataset.nohex ? null : d.querySelector("[type=color]").value, qty: d.querySelector("[type=number]").value, m: d._m || {} })).map((s, i) => s.name || !s.m.cut ? s : { ...s, name: "درجة " + (i + 1) }).filter(s => s.name);
   // keep where a colour came from (src/conf) while the colour itself is unchanged
-  const swatches = rows.map(({ name, hex, m }) => ({ name, hex, ...(m.src && hex === m.hex ? { src: m.src, conf: m.conf } : {}), ...Object.fromEntries(["cut", "sku", "barcode", "code", "orig", "imgs"].filter(k => m[k] && (!Array.isArray(m[k]) || m[k].length)).map(k => [k, m[k]])) }));
+  const swatches = rows.map(({ name, hex, m }) => ({ name, hex, ...(m.src && hex === m.hex ? { src: m.src, conf: m.conf } : {}), ...Object.fromEntries(["cut", "prod", "vmiss", "sku", "barcode", "code", "orig", "imgs"].filter(k => m[k] && (!Array.isArray(m[k]) || m[k].length)).map(k => [k, m[k]])) }));
   const stock = {}; rows.forEach(r => { if (r.qty !== "") stock[r.name] = Math.max(0, +r.qty); }); if (f.stock0.value !== "") stock[""] = Math.max(0, +f.stock0.value);
   const row = { swatches, gallery: gal, stock, arrived_at: f.arrived_at.value || null, drop_start: iso(f.drop_start.value), drop_end: iso(f.drop_end.value), worth: num(f.worth.value), vault: f.vault.checked, finish: f.finish.value, brand: f.brand.value.trim(), name: f.name.value.trim(), category_id: +f.category_id.value || null, size: f.size.value.trim(), shades: f.shades.value.trim(), description: f.description.value.trim(), retail_price: num(f.retail_price.value), sort: +f.sort.value || 0, discount: pct(f.rdisc.value), active: f.active.checked, featured: f.featured.checked };
   // only send sku/barcode when used, so saving still works before phase7.sql adds the columns
@@ -877,11 +877,12 @@ $("#eDel").addEventListener("click", async () => {
 $("#newP").addEventListener("click", () => openEdit(null));
 function addSwRow(s = { name: "", hex: "#c25a5a" }) {
   const d = document.createElement("div");
-  d.innerHTML = `<input type="color" value="${esc(s.hex || "#c25a5a")}" aria-label="لون الدرجة" ${s.hex ? "" : 'title="ما في لون لهالدرجة لسا، اضغطي 📷 وصوّري العلبة أو التستر"'}><input type="text" value="${esc(s.name)}" placeholder="اسم الدرجة" aria-label="اسم الدرجة"><input type="number" min="0" value="${s.qty ?? ""}" placeholder="كمية" aria-label="الكمية" style="width:80px" dir="ltr"><button class="sm" type="button" data-pickc aria-label="خذ اللون من صورة" title="خذ اللون من صورة">📷</button><button class="sm" type="button" data-cut aria-label="صورة الدرجة بدون خلفية" title="ارفع صورة الدرجة: بتنشال الخلفية ويضل اللون">🖼️</button><img class="swcut" alt="" ${s.cut ? `src="${esc(s.cut)}"` : "hidden"} style="width:34px;height:34px;object-fit:contain;background:repeating-conic-gradient(#eee 0 25%,#fff 0 50%) 0/10px 10px;border-radius:6px"><button class="sm no" type="button" data-rmsw aria-label="حذف الدرجة">✕</button>`;
+  d.innerHTML = `<input type="color" value="${esc(s.hex || "#c25a5a")}" aria-label="لون الدرجة" ${s.hex ? "" : 'title="ما في لون لهالدرجة لسا، اضغطي 📷 وصوّري العلبة أو التستر"'}><input type="text" value="${esc(s.name)}" placeholder="اسم الدرجة" aria-label="اسم الدرجة"><input type="number" min="0" value="${s.qty ?? ""}" placeholder="كمية" aria-label="الكمية" style="width:80px" dir="ltr"><button class="sm" type="button" data-pickc aria-label="خذ اللون من صورة" title="خذ اللون من صورة">📷</button><button class="sm" type="button" data-cut aria-label="صورة الدرجة بدون خلفية" title="ارفع صورة الدرجة: بتنشال الخلفية ويضل اللون">🖼️</button><img class="swcut" alt="" ${s.cut ? `src="${esc(s.cut)}"` : "hidden"} style="width:34px;height:34px;object-fit:contain;background:repeating-conic-gradient(#eee 0 25%,#fff 0 50%) 0/10px 10px;border-radius:6px"><button class="sm" type="button" data-prod aria-label="صورة المنتج بهالدرجة" title="صورة المنتج الرسمية بهالدرجة (بتظهر كصورة رئيسية لما الزبونة تختار الدرجة)">📦</button><img class="swprod" alt="صورة المنتج" ${s.prod ? `src="${esc(s.prod)}"` : "hidden"} style="width:34px;height:34px;object-fit:contain;background:#fff;border-radius:6px;border:1px solid var(--line)"><span class="pill swmiss" ${s.vmiss && !s.prod ? "" : "hidden"} style="color:#d97706;border-color:#d97706;font-size:10px" title="ما في صورة منتج رسمية لهالدرجة، الزبونة بتشوف الصورة الأساسية">Missing Variant Image</span><button class="sm no" type="button" data-rmsw aria-label="حذف الدرجة">✕</button>`;
   d.querySelector("[data-rmsw]").onclick = () => d.remove();
   if (!s.hex) d.dataset.nohex = "1";
-  d._m = { hex: s.hex ? s.hex.toLowerCase() : null, src: s.src, conf: s.conf, cut: s.cut, sku: s.sku, barcode: s.barcode, code: s.code, orig: s.orig, imgs: s.imgs };
+  d._m = { hex: s.hex ? s.hex.toLowerCase() : null, src: s.src, conf: s.conf, cut: s.cut, prod: s.prod, vmiss: s.vmiss, sku: s.sku, barcode: s.barcode, code: s.code, orig: s.orig, imgs: s.imgs };
   d.querySelector("[data-cut]").onclick = () => uploadCut(d);
+  d.querySelector("[data-prod]").onclick = () => uploadProd(d);
   d.querySelector("[type=color]").addEventListener("input", e => { delete d.dataset.nohex; });
   d.querySelector("[data-pickc]").onclick = () => pickColor(d.querySelector("[type=color]"));
   $("#swList").append(d);
@@ -923,6 +924,17 @@ async function applyCut(d, f) {
   d._m.cut = url; d._m.hex = r.hex; d._m.src = "صورة من الأدمن"; d._m.conf = "photo";
   d.querySelector("[type=color]").value = r.hex; delete d.dataset.nohex;
   const im = d.querySelector(".swcut"); im.src = url; im.hidden = false;
+}
+// the official product photo of this shade, stored as-is (no background removal, colours untouched)
+function uploadProd(d) {
+  const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/jpeg,image/png,image/webp";
+  inp.onchange = async () => { const f = inp.files[0]; if (!f) return; toast("عم نرفع الصورة…");
+    const path = `${editing?.id || "new"}/prod-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${(f.type.split("/")[1] || "jpg").replace("jpeg", "jpg")}`;
+    const up = await db.storage.from("shades").upload(path, f, { contentType: f.type });
+    if (up.error) return toast("ما انرفعت الصورة: " + up.error.message);
+    d._m.prod = db.storage.from("shades").getPublicUrl(path).data.publicUrl; delete d._m.vmiss;
+    const im = d.querySelector(".swprod"); im.src = d._m.prod; im.hidden = false; d.querySelector(".swmiss").hidden = true; toast("انحطت صورة المنتج للدرجة ✓ اضغط حفظ"); };
+  inp.click();
 }
 function uploadCut(d) {
   const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*";
@@ -1071,6 +1083,6 @@ window.addEventListener("load", boot);  // after admin-ops.js is in
 <script src="admin-x.js?v=1793894897"></script>
 <script src="admin-fin.js?v=1793894897"></script>
 <script src="admin-inv.js?v=1793894897"></script>
-<script type="module" src="admin-import.js?v=5"></script>
+<script type="module" src="admin-import.js?v=6"></script>
 </body>
 </html>
