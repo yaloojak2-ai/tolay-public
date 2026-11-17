@@ -107,13 +107,18 @@ const existing = () => [...$("#swList").children].map(d => ({ el: d, name: d.que
 
 function render(how) {
   const ex = existing(); mainKey = null;
-  rows = matchShades(data.shades, ex).map(s => ({ ...s, img: s.swatch || s.pack || null, on: s.status === "matched", to: s.match ?? s.suggest ?? "new", ex }));
+  // two separate pictures per shade: img = the small swatch (selector tile), prod = the official product photo of that variant (main stage)
+  rows = matchShades(data.shades, ex).map(s => ({ ...s, img: s.swatch || null, prod: s.pack || null, to: s.match ?? s.suggest ?? "new", ex }));
   // the same picture (same bytes) on two different shades means one mapping is wrong: flag both, never use it
   const seen = {}; rows.forEach(s => { const k = s.img && (IMG[s.img]?.hash || s.img); if (k) (seen[k] ||= []).push(s); });
   Object.values(seen).filter(a => a.length > 1).flat().forEach(s => { s.dupImg = true; });
+  // a product photo shared by several shades is the generic shot, not a verified variant photo: it is dropped, the shade needs review
+  const pseen = {}; rows.forEach(s => { const k = s.prod && (IMG[s.prod]?.hash || s.prod); if (k) (pseen[k] ||= []).push(s); });
+  Object.values(pseen).filter(a => a.length > 1).flat().forEach(s => { s.prod = null; s.prodShared = true; });
+  rows.forEach(s => { s.vmiss = !s.prod; s.on = s.status === "matched" && !s.vmiss; }); // Missing Variant Image: never pre-ticked, the admin reviews it
   const opts = ex.map((e, i) => `<option value="${i}">← ${h(e.name || "درجة بدون اسم")}</option>`).join("");
   const imgs = data.images, can = i => i.type === "main" || i.type === "packaging" || i.type === "gallery";
-  const shadeImg = new Set(rows.map(s => s.img).filter(Boolean)), forGal = im => !shadeImg.has(im.key) && !im.shade;
+  const shadeImg = new Set(rows.flatMap(s => [s.img, s.prod]).filter(Boolean)), forGal = im => !shadeImg.has(im.key) && !im.shade;
   galOn = new Set(imgs.filter(forGal).map(im => im.key));
   out().innerHTML = `
 <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><b>${h(data.brand)}${data.brand && data.name ? " — " : ""}${h(data.name)}</b><span class="hint">${h(how)}</span>${data.url ? `<a class="hint" href="${h(data.url)}" target="_blank" rel="noopener">الصفحة الأصلية</a>` : ""}</div>
@@ -126,12 +131,12 @@ ${imgs.map((im, i) => `<label style="font-size:11px;text-align:center;display:fl
 <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><b>الدرجات (${rows.length})</b>
 <button class="sm" type="button" data-all="1">تحديد الكل</button><button class="sm" type="button" data-all="0">إلغاء الكل</button><button class="sm" type="button" id="impRev">عرض اللي بدها مراجعة بس</button></div>
 <div id="impGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px">
-${rows.map((s, i) => `<div class="tk" data-i="${i}" data-st="${s.dupImg ? "dup" : s.status}">
+${rows.map((s, i) => `<div class="tk" data-i="${i}" data-st="${s.dupImg ? "dup" : s.vmiss ? "review" : s.status}">
 <div style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-on ${s.on ? "checked" : ""} aria-label="اختيار">
-${s.img ? `<img src="${h(IMG[s.img]?.src || s.img)}" alt="" loading="lazy" style="width:56px;height:56px;object-fit:contain;background:#fff;border-radius:8px">` : `<span class="hint" style="width:56px">بدون صورة</span>`}
+${[[s.img, "الدرجة"], [s.prod, "صورة المنتج"]].map(([k, t]) => `<figure style="margin:0;text-align:center;font-size:10px">${k ? `<img src="${h(IMG[k]?.src || k)}" alt="" loading="lazy" style="width:56px;height:56px;object-fit:contain;background:#fff;border-radius:8px">` : `<span style="display:grid;place-items:center;width:56px;height:56px;border:1px dashed var(--line);border-radius:8px">—</span>`}<figcaption class="hint">${t}</figcaption></figure>`).join("")}
 <div style="min-width:0"><b dir="auto">${h(s.name)}</b><small class="hint" style="display:block" dir="ltr">${h([s.code, s.sku, s.barcode].filter(Boolean).join(" · "))}</small>
 ${s.hex ? `<span title="${s.conf === "sampled" ? "مأخوذ من الصورة الرسمية (مش كود رسمي)" : "لون رسمي من المصدر"}" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${h(s.hex)};vertical-align:middle"></span> <small dir="ltr">${h(s.hex)}</small>` : ""}</div></div>
-<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="pill" style="color:${ST[s.status][1]};border-color:${ST[s.status][1]}">${ST[s.status][0]}${s.how ? ` (${s.how === "sku" ? "SKU/باركود" : s.how === "code" ? "رقم" : "اسم"})` : ""}</span>${!s.img ? `<span class="pill">ما في صورة</span>` : ""}${s.dupImg ? `<span class="pill" style="color:#dc2626;border-color:#dc2626">صورة مكررة لدرجة ثانية، ما رح تنحط</span>` : ""}</div>
+<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="pill" style="color:${ST[s.status][1]};border-color:${ST[s.status][1]}">${ST[s.status][0]}${s.how ? ` (${s.how === "sku" ? "SKU/باركود" : s.how === "code" ? "رقم" : "اسم"})` : ""}</span>${s.vmiss ? `<span class="pill" style="color:#d97706;border-color:#d97706" title="ما في صورة منتج رسمية مؤكدة لهالدرجة${s.prodShared ? " (نفس الصورة لأكثر من درجة)" : ""}، راجعها يدوي">Missing Variant Image</span>` : ""}${s.dupImg ? `<span class="pill" style="color:#dc2626;border-color:#dc2626">صورة مكررة لدرجة ثانية، ما رح تنحط</span>` : ""}</div>
 <select data-to aria-label="وين تنحط"><option value="new">+ درجة جديدة</option>${opts}</select></div>`).join("")}</div>
 <label class="hint"><input type="checkbox" id="impCut"> شيل الخلفية عن صور الدرجات (الأصلية بتضل محفوظة)</label>
 <label class="hint"><input type="checkbox" id="impLic"> أأكد إنو مسموح إلي أستعمل هالصور بالمتجر (منتج أصلي ومحتوى رسمي من العلامة أو المورّد)</label>
@@ -154,11 +159,11 @@ ${s.hex ? `<span title="${s.conf === "sampled" ? "مأخوذ من الصورة �
 function sum() {
   const sel = rows.filter(s => s.on), upd = sel.filter(s => s.to !== "new").length;
   const dupTarget = sel.filter(s => s.to !== "new").map(s => s.to).some((t, i, a) => a.indexOf(t) !== i);
-  out().querySelector("#impSum").innerHTML = `${sel.length} درجة مختارة: ${sel.length - upd} جديدة، ${upd} تحديث لدرجات موجودة · ${sel.filter(s => s.img && !s.dupImg).length + (mainKey ? 1 : 0) + galOn.size + sel.reduce((n, s) => n + extrasOf(s).length, 0)} صورة للرفع${dupTarget ? ` · <b style="color:var(--danger)">في درجتين رايحين لنفس الدرجة الموجودة</b>` : ""}`;
+  out().querySelector("#impSum").innerHTML = `${sel.length} درجة مختارة: ${sel.length - upd} جديدة، ${upd} تحديث لدرجات موجودة · ${sel.filter(s => s.img && !s.dupImg).length + sel.filter(s => s.prod).length + (mainKey ? 1 : 0) + galOn.size + sel.reduce((n, s) => n + extrasOf(s).length, 0)} صورة للرفع${dupTarget ? ` · <b style="color:var(--danger)">في درجتين رايحين لنفس الدرجة الموجودة</b>` : ""}`;
   return !dupTarget;
 }
 
-const extrasOf = s => data.images.filter(im => im.shade === s.name && im.key !== s.img).map(im => im.key);
+const extrasOf = s => data.images.filter(im => im.shade === s.name && im.key !== s.img && im.key !== s.prod && im.key !== s.pack).map(im => im.key);
 
 // local file -> storage, untouched bytes, name = SHA-1 so a second upload of the same picture is reused
 async function putFile(i, pid) {
@@ -178,7 +183,7 @@ async function run() {
   if (!out().querySelector("#impLic").checked) return toast("لازم تأكد إذن استعمال الصور");
   if (!sum()) return toast("صلّح التكرار أول");
   const sel = rows.filter(s => s.on); if (!sel.length && !mainKey && !galOn.size) return toast("ما اخترت إشي");
-  const keys = [...new Set([...sel.filter(s => !s.dupImg).map(s => s.img), ...sel.flatMap(extrasOf), mainKey, ...galOn].filter(Boolean))];
+  const keys = [...new Set([...sel.filter(s => !s.dupImg).map(s => s.img), ...sel.map(s => s.prod), ...sel.flatMap(extrasOf), mainKey, ...galOn].filter(Boolean))];
   const bar = out().querySelector("#impBar"), stop = out().querySelector("#impStop"), ok = out().querySelector("#impOk");
   bar.hidden = false; bar.max = keys.length || 1; bar.value = 0; stop.hidden = false; ok.disabled = true; cancel = false;
   const got = {}, failed = [], files = keys.filter(k => IMG[k]?.file), remote = keys.filter(k => !IMG[k]?.file);
@@ -195,8 +200,8 @@ async function run() {
   Object.values(owners).filter(a => a.length > 1).forEach(a => a.forEach(s => { s.dupImg = true; failed.push({ url: s.img, error: `نفس الصورة طلعت لأكثر من درجة (${a.map(x => x.name).join("، ")})، ما انحطت` }); }));
   const cut = out().querySelector("#impCut").checked; let done = 0;
   for (const s of sel) {
-    if (s.img && !s.dupImg && !got[s.img]) continue; // its picture failed: leave the row as it was, retry later
-    let d = s.to === "new" ? null : s.ex[+s.to].el; if (!d) { addSwRow({ name: s.name, hex: s.hex || null }); d = $("#swList").lastElementChild; }
+    if ((s.img && !s.dupImg && !got[s.img]) || (s.prod && !got[s.prod])) continue; // a picture failed: leave the row as it was, retry later
+    let d = s.to === "new" ? null : s.ex[+s.to].el; const fresh = !d; if (!d) { addSwRow({ name: s.name, hex: null }); d = $("#swList").lastElementChild; }
     const m = d._m; Object.assign(m, Object.fromEntries(Object.entries({ sku: s.sku, barcode: s.barcode, code: s.code }).filter(([, v]) => v)));
     if (s.img && !s.dupImg) { m.orig = IMG[s.img]?.remote || got[s.img]; m.cut = got[s.img];
       if (cut) { try { const b = await (await fetch(got[s.img])).blob(); const keep = { hex: m.hex, src: m.src, conf: m.conf, nohex: d.dataset.nohex };
@@ -204,8 +209,10 @@ async function run() {
           Object.assign(m, { hex: keep.hex, src: keep.src, conf: keep.conf }); if (keep.hex) d.querySelector("[type=color]").value = keep.hex; if (keep.nohex) d.dataset.nohex = "1"; // never guess the colour from a photo here
         } catch (e) { failed.push({ url: s.img, error: "شيل الخلفية: " + e.message }); } }
       const im = d.querySelector(".swcut"); im.src = m.cut; im.hidden = false; }
+    if (s.prod) { m.prod = got[s.prod]; delete m.vmiss; } else if (!m.prod) m.vmiss = true; // kept on the shade so the admin sees it still needs a real photo
+    const pi = d.querySelector(".swprod"); if (pi && m.prod) { pi.src = m.prod; pi.hidden = false; } const mi = d.querySelector(".swmiss"); if (mi) mi.hidden = !m.vmiss;
     const ex = extrasOf(s).map(k => got[k]).filter(Boolean); if (ex.length) m.imgs = [...new Set([...(m.imgs || []), ...ex])];
-    if (s.hex) { m.hex = s.hex.toLowerCase(); m.src = data.url || "ملف المورّد"; m.conf = s.conf || "high"; d.querySelector("[type=color]").value = m.hex; delete d.dataset.nohex; } // official hex, or one sampled from the official photo (marked conf:"sampled")
+    if (s.hex && (fresh || !m.hex)) { m.hex = s.hex.toLowerCase(); m.src = data.url || "ملف المورّد"; m.conf = s.conf || "high"; d.querySelector("[type=color]").value = m.hex; delete d.dataset.nohex; } // an existing colour is never overwritten; official hex, or one sampled from the official photo (conf:"sampled")
     done++; s.on = false; const cb = out().querySelector(`[data-i="${rows.indexOf(s)}"] [data-on]`); if (cb) cb.checked = false; // a second press only retries what is left
   }
   if (mainKey && got[mainKey]) { impMain = got[mainKey]; $("#ePrev").src = impMain; }
@@ -213,8 +220,8 @@ async function run() {
   addGallery(gNew); galOn = new Set([...galOn].filter(k => !got[k])); // a second press retries only the failed ones
   stop.hidden = true; ok.disabled = false; sum();
   const nm = k => (IMG[k]?.file?.name || String(k).split("/").pop().split("?")[0]);
-  const noPic = sel.filter(s => !s.img || s.dupImg).map(s => s.name);
-  out().querySelector("#impRep").innerHTML = `<p><b>✓ ${done} درجة جاهزة${mainKey && got[mainKey] ? " + الصورة الرئيسية" : ""}${gNew.length ? ` + ${gNew.length} صورة للمعرض` : ""}.</b> ${noPic.length ? `منها ${noPic.length} بدون صورة (ما في صورة إلها أو صورتها مكررة): ${h(noPic.join("، "))}. ` : ""}${cancel ? "انوقف قبل ما يخلص. " : ""}سكّر النافذة وراجع الدرجات، بعدين اضغط «حفظ».</p>
+  const noPic = sel.filter(s => s.vmiss).map(s => s.name);
+  out().querySelector("#impRep").innerHTML = `<p><b>✓ ${done} درجة جاهزة${mainKey && got[mainKey] ? " + الصورة الرئيسية" : ""}${gNew.length ? ` + ${gNew.length} صورة للمعرض` : ""}.</b> ${noPic.length ? `<b style="color:#d97706">Missing Variant Image</b>: ${noPic.length} درجة بدون صورة منتج رسمية، بتضل صورة المنتج الأساسية إلها لحد ما تراجعها: ${h(noPic.join("، "))}. ` : ""}${cancel ? "انوقف قبل ما يخلص. " : ""}سكّر النافذة وراجع الدرجات، بعدين اضغط «حفظ».</p>
 ${failed.length ? `<p style="color:var(--danger)">${failed.length} صورة ما انحطت:</p><ul class="hint">${failed.map(f => `<li><span dir="ltr">${h(nm(f.url))}</span>: ${h(f.error)}</li>`).join("")}</ul><p class="hint">تقدر تضغط «اعتماد» مرة ثانية للمحاولة، الصور اللي انرفعت ما بتنرفع مرتين.</p>` : ""}`;
   toast(`${done} درجة جاهزة، اضغط حفظ`);
 }
