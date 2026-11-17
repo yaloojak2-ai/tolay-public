@@ -16,7 +16,7 @@
 <meta name="twitter:image" content="https://yaloojak2-ai.github.io/tolay-public/img/og.jpg?v=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Rubik:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1794940000">
+<link rel="stylesheet" href="style.css?v=1794941000">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <script src="i18n.js?v=1793894897"></script>
 </head>
@@ -761,7 +761,7 @@ async function loadReviews(pid) {
 }
 // official photo strip under the stage: the picked shade's own photos first, then the product gallery
 // shade photos arrive with uneven empty margins (transparent or plain white), so the product sits off to one side:
-// crop each one to the product itself (+3% margin) so it is centred in the stage and the tiles. Colours are untouched.
+// crop each one to the product itself (+8% margin) so it is centred in the stage and the tiles. Colours are untouched.
 const TRIM = new Map();
 function trimImg(im) {
   const src = im.getAttribute("src"); if (!src || /^(blob|data):/.test(src)) return;
@@ -780,7 +780,7 @@ function cropToProduct(p, ok) {
   let x0 = w, y0 = h, x1 = -1, y1 = -1;
   for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) if (isP(at(i, j))) { if (i < x0) x0 = i; if (i > x1) x1 = i; if (j < y0) y0 = j; if (j > y1) y1 = j; }
   if (x1 < 0 || (x1 - x0 > w * .96 && y1 - y0 > h * .96)) return ok(null); // empty, or already tight
-  const sx = x0 / k, sy = y0 / k, sw = (x1 - x0 + 1) / k, sh = (y1 - y0 + 1) / k, pad = Math.max(sw, sh) * .03;
+  const sx = x0 / k, sy = y0 / k, sw = (x1 - x0 + 1) / k, sh = (y1 - y0 + 1) / k, pad = Math.max(sw, sh) * .08;
   const s = Math.max(1, Math.min(1400, Math.max(W, H)) / (Math.max(sw, sh) + pad * 2)); // keep the original pixel size, so a tiny chip stays tiny
   const o = document.createElement("canvas"); o.width = Math.round((sw + pad * 2) * s); o.height = Math.round((sh + pad * 2) * s);
   const ox = o.getContext("2d"); if (!clear) { ox.fillStyle = `rgb(${bg})`; ox.fillRect(0, 0, o.width, o.height); }
