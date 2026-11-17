@@ -535,7 +535,8 @@ td small.hint{display:block;margin-top:2px}
 .sw.tile{width:auto;height:auto;border-radius:12px;background:#fff;border:1px solid var(--line);box-shadow:none;padding:6px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--ivory);min-width:0}
 .sw.tile:hover{transform:none;border-color:var(--ivory)}
 .sw.tile[aria-pressed="true"]{outline:0;border:2px solid var(--gold)}
-.sw.tile .ti{position:relative;width:100%;aspect-ratio:1;display:block}
+.sw.tile .ti{position:relative;width:100%;aspect-ratio:1;display:block;overflow:hidden}
+.sw.tile .ti>img{position:absolute;inset:0}
 .sw.tile img{width:100%;height:100%;object-fit:contain;display:block}
 .sw.tile .ti i{position:absolute;bottom:2px;inset-inline-end:2px;width:16px;height:16px;border-radius:50%;background:var(--c);border:2px solid #fff;box-shadow:0 0 0 1px var(--line)}
 .sw.tile b{font-size:11px;font-weight:600;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -843,13 +844,13 @@ dialog#pd.full{overflow-x:hidden}
 .stage .badge.big i{width:34px;height:34px;box-shadow:0 0 0 2px #fff,0 0 0 3px var(--line)}
 @media (max-width:700px){#pd .stage{aspect-ratio:auto;min-height:0;height:min(420px,95vw)}}
 .stage .photo[hidden],.stage .thumb[hidden]{display:none}
-.stage .smw{display:grid;place-items:center;background:#fff}
+.stage .smw{display:flex;align-items:center;justify-content:center;background:#fff}
 .stage .smw .smear{height:86%;width:auto;animation:smIn .35s ease-out}
 .stage .thumb{bottom:auto;top:14px;background:#fff;border-color:var(--line)}
 .stage .thumb img{object-fit:contain}
 .sw.tile .ti .smear{width:100%;height:100%;display:block}
 .sw.tile .ti .cutimg{width:100%;height:100%;object-fit:contain;padding:6%;display:block}
-.stage .smw .cutimg{height:86%;width:auto;max-width:90%;object-fit:contain;animation:smIn .35s ease-out}
+.stage .smw .cutimg{height:86%;width:90%;object-fit:contain;object-position:center;animation:smIn .35s ease-out}
 .sw.tile.oos .cutimg{opacity:.35}
 .sw.tile.oos .smear{opacity:.35}
 @keyframes smIn{from{opacity:0;transform:scale(.92)}}
