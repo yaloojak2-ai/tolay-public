@@ -861,10 +861,10 @@ dialog#pd.full{overflow-x:hidden}
 .wsq .chip{color:var(--ivory);border-color:var(--gold)}
 .wst{display:flex;align-items:center;gap:8px;font-size:14px;margin-bottom:8px}
 .wst input{width:90px}
-.wsrow{display:grid;grid-template-columns:22px 1fr auto 84px;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.wsrow{display:grid;grid-template-columns:40px 1fr auto 84px;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
 .wsrow.oos{opacity:.5}.wsrow small{color:var(--muted);font-size:12px}
 .wsrow input{width:100%;padding:9px;text-align:center;font-size:16px}
-.wsd{width:22px;height:22px;border-radius:50%;background:var(--c);border:1px solid var(--line)}
+.wsd{width:40px;height:40px;border-radius:8px;background:var(--c);border:1px solid var(--line);object-fit:contain}
 .wsum,.wsbar{position:sticky;bottom:0;z-index:5;display:flex;flex-direction:column;gap:8px;background:var(--ink);border-top:2px solid var(--gold);padding:10px 4px calc(10px + env(safe-area-inset-bottom,0px));margin-top:8px}
 .wsum>div,.wsbar>div{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:14px}
 .wsum .btn,.wsbar .btn{justify-content:center;width:100%}.wsum .btn:disabled,.wsbar .btn:disabled{opacity:.45}
@@ -881,3 +881,4 @@ dialog#pd.full{overflow-x:hidden}
 .wsrow2{display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:12px;padding:8px 12px}.wsrow2 small{display:block;color:var(--muted)}
 #pg-quick{padding-bottom:140px}
 .wsp .wsum{position:static}
+.wsav{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;font-size:14px;margin-bottom:8px}

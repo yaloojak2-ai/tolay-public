@@ -17,9 +17,10 @@ function wsWidget(p) {
     <div class="shade-name">طلب سريع بالجملة${mq > 1 ? ` · أقل كمية للدرجة ${mq}` : ""}</div>
     <div class="wsq">${wsPresets(p).map(n => `<button type="button" class="chip" data-ws-preset="${n}">${n} من كل درجة</button>`).join("")}
       ${av ? `<button type="button" class="chip" data-ws-all>كل المتوفر (${av})</button>` : ""}<button type="button" class="chip" data-ws-clear>توزيع يدوي</button></div>
+    ${av ? `<div class="wsav"><span>إجمالي الكمية المتاحة للطلب: <b>${av}</b> قطعة</span><button type="button" class="btn ghost" data-ws-allcart>أضف جميع الكميات المتوفرة للسلة</button></div>` : ""}
     <label class="wst">أريد طلب إجمالي <input type="number" inputmode="numeric" min="0" dir="ltr" value="${t}" data-ws-target placeholder="مثلاً 100"> قطعة</label>
     <div class="wsr">${wsList(p).map(s => { const n = stockOf(p, s.name), q = WQ[p.id]?.[s.name] || "", out = n === 0;
-      return `<label class="wsrow${out ? " oos" : ""}"><span class="wsd" style="--c:${esc(s.hex || "#eee")}"></span><b class="latin">${esc(s.name || p.n)}</b>
+      return `<label class="wsrow${out ? " oos" : ""}">${s.cut || s.prod || s.imgs?.[0] ? `<img class="wsd" src="${esc(s.cut || s.prod || s.imgs[0])}" alt="" loading="lazy">` : `<span class="wsd" style="--c:${esc(s.hex || "#eee")}"></span>`}<b class="latin">${esc(s.name || p.n)}</b>
         <small>${out ? "Out of Stock" : n === null ? "" : `متوفر ${n}`}</small>
         <input type="number" inputmode="numeric" min="0" ${n === null ? "" : `max="${n}"`} dir="ltr" placeholder="0" value="${q}" data-ws-q="${esc(s.name)}" ${out ? "disabled" : ""} aria-label="${esc(s.name)}"></label>`; }).join("")}</div>
     <div class="wsum" data-ws-sum="${p.id}">${wsSumHTML(p.id)}</div>
@@ -67,6 +68,7 @@ document.addEventListener("click", e => {
   const t = e.target.closest("button"); if (!t) return; const w = t.closest(".wsx"), d = t.dataset, pid = +w?.dataset.wsp;
   if (d.wsPreset) wsFill(pid, () => +d.wsPreset);
   else if (d.wsAll !== undefined) { wsFill(pid, sh => stockOf(byId[pid], sh) ?? 0); toast("انحطت كل الكميات المتوفرة، عدّلي اللي بدك ياه"); }
+  else if (d.wsAllcart !== undefined) { wsFill(pid, sh => stockOf(byId[pid], sh) ?? 0); wsAdd([pid]); }
   else if (d.wsClear !== undefined) { wsFill(pid, () => 0); w.querySelector("[data-ws-q]:not(:disabled)")?.focus(); }
   else if (d.wsAdd) wsAdd([+d.wsAdd]);
   else if (d.wsAddAll !== undefined) wsAdd(Object.keys(WQ).map(Number).filter(id => wsTotal(id) > 0 && wsDone(id)));
