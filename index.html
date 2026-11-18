@@ -23,7 +23,7 @@
 <body>
 <div class="pbar" id="pbar"><span>👑 عروض الإطلاق بتنتهي بعد</span><a class="cd" href="#/offers" data-pcd aria-label="الوقت الباقي للعرض"></a></div>
 <div class="mbar" aria-label="ليش Tolay"><div class="track"><span>🚚 توصيل سريع لكل البلاد</span><span>💵 الدفع عند الاستلام، آمن ومضمون</span><span>🔍 افحصي طلبك قدام الشوفير قبل ما تدفعي</span><span>⭐ ماركات أصلية 100% من أمريكا</span><span>🎁 مكافآت وألعاب ونقاط مع كل طلب</span><span>💬 دعم سريع على واتساب</span><span>🔥 عروض حصرية، لا تفوّتيها!</span><span aria-hidden="true" class="dup"></span><span aria-hidden="true">🚚 توصيل سريع لكل البلاد</span><span aria-hidden="true">💵 الدفع عند الاستلام، آمن ومضمون</span><span aria-hidden="true">🔍 افحصي طلبك قدام الشوفير قبل ما تدفعي</span><span aria-hidden="true">⭐ ماركات أصلية 100% من أمريكا</span><span aria-hidden="true">🎁 مكافآت وألعاب ونقاط مع كل طلب</span><span aria-hidden="true">💬 دعم سريع على واتساب</span><span aria-hidden="true">🔥 عروض حصرية، لا تفوّتيها!</span></div></div>
-<div class="wholesale-bar" id="wBar" hidden>وضع التاجر: أسعار الجملة ظاهرة لإلك</div>
+<div class="wholesale-bar" id="wBar" hidden>وضع التاجر: أسعار الجملة ظاهرة لإلك · <a href="#/quick">⚡ طلب الجملة السريع</a></div>
 <header class="top"><div class="wrap">
   <a class="logo" href="#/" aria-label="Tolay Makeup"><b>TOLAY</b><small>MAKEUP</small></a>
   <label class="srch"><span data-ic="search"></span><input id="q" type="search" placeholder="ابحثي عن منتج أو براند…" aria-label="بحث" autocomplete="off"><button type="button" class="mic" data-mic="q" aria-label="ابحثي بالصوت" hidden>🎙️</button><button type="button" class="mic" data-imgsearch aria-label="ابحثي بصورة" title="ابحثي بصورة">📷</button><input type="file" id="imgPick" accept="image/*" hidden></label>
@@ -101,10 +101,12 @@
   <div class="grid" id="wgrid"></div>
 </div></section>
 
+<section class="page" id="pg-quick" hidden></section>
 <section class="page" id="pg-cart" hidden><div class="wrap cartpg">
   <div class="pghead"><h2 id="cartTitle">سلة الطلب</h2></div>
   <div class="dinfo"><b>أسعار التوصيل</b><span>الضفة 20 · القدس 30 · الداخل 70</span></div>
   <div class="lines" id="lines"></div>
+  <button type="button" class="btn ghost" id="wsSaveBtn" data-ws-save hidden>💾 احفظي الطلب وارجعي له لاحقاً</button>
   <label>منطقة التوصيل<select id="cZone"><option value="">اختاري المنطقة</option><option value="20">الضفة الغربية</option><option value="30">القدس</option><option value="70">الداخل</option></select></label>
   <label id="payL" hidden>طريقة الدفع<select id="cPay"><option value="cash">كاش عند الاستلام</option><option value="credit">دين أو أقساط</option></select></label>
   <div class="cpn"><input id="cCode" dir="ltr" autocomplete="off" placeholder="كود خصم" aria-label="كود خصم"><button type="button" class="btn ghost" id="cApply">تطبيق</button></div>
@@ -504,17 +506,18 @@ function wishView() {
   $("#wgrid").innerHTML = l.length ? l.map(cardHTML).join("") : `<div class="empty"><p>لسا ما ضفتي ولا منتج للمفضلة.</p><a class="btn" href="#/shop">تصفّحي المنتجات</a></div>`;
 }
 
-const TABS = { home: "home", brands: "brands", cats: "cats", shop: "cats", cart: "cart", account: "account", wish: "account", arcade: "arcade", club: "club", box: "club", surprise: "club", about: "account", track: "account", beauty: "account" };
+const TABS = { home: "home", brands: "brands", cats: "cats", shop: "cats", cart: "cart", quick: "cart", account: "account", wish: "account", arcade: "arcade", club: "club", box: "club", surprise: "club", about: "account", track: "account", beauty: "account" };
 function route() {
   const [, pg = "", arg = ""] = location.hash.split("/"), a = decodeURIComponent(arg);
-  const page = { "": "home", brands: "brands", cats: "cats", shop: "shop", new: "shop", brand: "shop", offers: "shop", g: "shop", wishlist: "wish", cart: "cart", account: "account", arcade: "arcade", club: "club", box: "box", surprise: "surprise", about: "about", track: "track", beauty: "beauty", help: "help" }[pg] || "home";
+  const page = { "": "home", brands: "brands", cats: "cats", shop: "shop", new: "shop", brand: "shop", offers: "shop", g: "shop", wishlist: "wish", cart: "cart", quick: "quick", account: "account", arcade: "arcade", club: "club", box: "box", surprise: "surprise", about: "about", track: "track", beauty: "beauty", help: "help" }[pg] || "home";
   cat = pg === "shop" ? a : ""; brand = pg === "brand" ? a : ""; onlyNew = pg === "new"; onlyDisc = pg === "offers"; grp = pg === "g" && GROUPS[a] ? a : "";
-  ["home", "brands", "cats", "shop", "wish", "cart", "account", "arcade", "club", "box", "surprise", "about", "track", "beauty", "help"].forEach(p => $("#pg-" + p).hidden = p !== page);
+  ["home", "brands", "cats", "shop", "wish", "cart", "quick", "account", "arcade", "club", "box", "surprise", "about", "track", "beauty", "help"].forEach(p => $("#pg-" + p).hidden = p !== page);
   document.querySelectorAll("[data-tab]").forEach(t => t.toggleAttribute("aria-current", t.dataset.tab === (onlyNew ? "new" : TABS[page])));
   if (page === "shop") render();
   else if (page === "brands") brandsView();
   else if (page === "cats") catsView(a);
   else if (page === "wish") wishView();
+  else if (page === "quick") quickView();
   else if (page === "account") acctView();
   else if (page === "arcade") arcadeView();
   else if (page === "club") clubView();
@@ -613,6 +616,7 @@ function drawCart() {
     </div>`; }).join("") : `<div class="empty">السلة فاضية. ضيفي منتجاتك المفضلة من المتجر.</div>`;
   const priced = cart.filter(l => unit(byId[l.id]) !== null);
   $("#payL").hidden = !isTrader();
+  $("#wsSaveBtn").hidden = !isTrader() || !cart.length;
   const pct = isTrader() && $("#cPay").value === "cash" ? +DISC.pct || 0 : 0;
   const base = priced.reduce((a, l) => a + unit(byId[l.id]) * l.qty, 0) * (1 - pct / 100), sum = base * (1 - (CP.pct || 0) / 100);
   $("#total").textContent = !cart.length ? "—" : priced.length === cart.length ? money(Math.round(sum * 100) / 100) + (pct ? ` (بعد خصم ${DISC.tier} ${pct}%)` : "") + (CP.pct ? ` (بعد كود ${CP.code} −${CP.pct}%)` : "") : "يتأكد بالواتساب";
@@ -644,6 +648,7 @@ $("#send").addEventListener("click", async e => {
     p_phone: $("#cPhone").value.trim(), p_address: $("#cAddr").value.trim(), p_note: $("#cNote").value.trim(), p_delivery: zoneFee(), p_payment: isTrader() ? $("#cPay").value : "cash", ...(CP.code ? { p_coupon: CP.code } : {}) });
   delete btn.dataset.busy;
   if (error && CP.code && /bad coupon/.test(error.message)) { win?.close(); CP = {}; drawCart(); toast("كود الخصم مش فعّال، شلناه. جرّبي ترسلي مرة ثانية"); return; }
+  if (error && /insufficient stock/.test(error.message)) { win?.close(); toast("في كمية أكبر من المتوفر، عدّلي الكميات وجرّبي كمان مرة"); return; }
   const no = !error && data?.[0]?.order_id;
   const url = waLink(no);  // even if saving failed, the order still reaches WhatsApp
   if (win) win.location.href = url; else location.href = url;
@@ -713,7 +718,7 @@ function openProduct(id) {
       <div class="eyebrow latin">${esc(p.b)}</div>
       <h3>${esc(p.n)}</h3>
       <div class="meta">${esc(p.cat)}${p.z ? " · " + esc(p.z) : ""}${FIN[p.fin] ? `<span class="fin latin">${FIN[p.fin]}</span>` : ""}</div>
-      ${starsHTML(p.id, true)}${priceHTML(p)}
+      ${starsHTML(p.id, true)}${priceHTML(p)}${wsShown(p) ? wsWidget(p) : ""}
       <div class="note"><b>ⓘ ملاحظة مهمة</b>لا يمكن استرجاع أو استبدال المنتج بعد الشراء.<br>الدفع عند الاستلام، وبتقدري تفحصي طلبك قدام الشوفير.</div>
       ${descHTML(p)}${useHTML(p)}
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:auto">
@@ -1347,5 +1352,6 @@ let tt; function toast(m) { const el = $("#toast"); el.textContent = m; el.class
 load();
 </script>
 <script src="imgsearch.js?v=1793896933"></script>
+<script src="wholesale.js?v=1"></script>
 </body>
 </html>
