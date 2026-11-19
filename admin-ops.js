@@ -8,7 +8,7 @@ const staffName = id => { const s = STAFF.find(x => x.id === id); return s ? s.f
 const r2 = n => Math.round(n * 100) / 100;
 const fmt = v => v ? new Date(v).toLocaleString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
 const waNo = ph => { const d = String(ph || "").replace(/\D/g, ""); return !d ? "" : d.startsWith("0") ? "972" + d.slice(1) : d; };
-const ZONE = { 20: "الضفة الغربية", 30: "القدس", 70: "الداخل" };
+const ZONE = { west: "الضفة الغربية", jer: "القدس", 48: "الداخل" }, ZOLD = { 20: "west", 30: "jer", 70: "48" };  // old orders only had the fee
 
 function gateTabs() {
   document.querySelectorAll(".tabbar [data-tab]").forEach(b => b.hidden = !can(TABPERM[b.dataset.tab] || "owner"));
@@ -151,7 +151,7 @@ $("#od").addEventListener("click", async e => {
   }
   else if (t.id === "shMake") {
     const c = COUR.find(x => x.id === +$("#shC").value); if (!c) { toast("ضيف شركة توصيل أول"); return; }
-    const zone = ZONE[+OD.delivery] || "", fee = { 20: c.fee_west, 30: c.fee_jer, 70: c.fee_48 }[+OD.delivery] ?? 0;
+    const z = OD.zone || ZOLD[+OD.delivery], zone = ZONE[z] || "", fee = { west: c.fee_west, jer: c.fee_jer, 48: c.fee_48 }[z] ?? 0;
     const { error } = await db.from("shipments").insert({ order_id: OD.id, courier_id: c.id, driver: $("#shDrv").value.trim() || null, tracking_no: $("#shNo").value.trim() || null, zone, cod: +$("#shCod").value || 0, fee: +fee || 0 });
     if (!fail(error)) { toast("انعملت الشحنة ✓ والطلب صار \"خرج للتوصيل\""); await loadDelivery(); refreshOrder(OD.id); }
   }
