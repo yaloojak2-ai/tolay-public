@@ -420,7 +420,8 @@ tr.late td{background:#fff1f1}
         <label>كود الخصم (اختياري)<input name="splash_code" dir="ltr"></label>
         <label>الزر بودّي على<input name="splash_link" dir="ltr" placeholder="#/offers"></label>
         <label>نسبة الخصم بالإعلان %<input name="splash_pct" type="number" min="0" max="90" dir="ltr" placeholder="مثلاً 15"></label>
-        <label>العرض بينتهي (العداد)<input name="promo_end" type="datetime-local" dir="ltr"><small class="hint">فاضي = العداد لنص الليل كل يوم</small></label>
+        <label>العرض بينتهي (العداد)<input name="promo_end" type="datetime-local" dir="ltr"><small class="hint">فاضي = ما بيطلع عداد</small></label>
+        <label class="full">سياسة الاستبدال والإرجاع (صفحة #/policy)<textarea name="policy_text" rows="6" placeholder="فاضي = النص الافتراضي. سطر فاضي بين الفقرات"></textarea></label>
         <div class="full"><button class="btn" type="submit">حفظ</button></div>
       </form>
       <p class="hint">المنتجات اللي معلّم عليها "مميّز" بتطلع بأول الصفحة (أول 3).</p>
@@ -1080,7 +1081,7 @@ document.addEventListener("click", async e => {
 });
 window.addEventListener("load", boot);  // after admin-ops.js is in
 </script>
-<script src="admin-ops.js?v=1793894897"></script>
+<script src="admin-ops.js?v=1795000000"></script>
 <script src="admin-x.js?v=1793894897"></script>
 <script src="admin-fin.js?v=1793894897"></script>
 <script src="admin-inv.js?v=1793894897"></script>

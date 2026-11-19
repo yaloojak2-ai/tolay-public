@@ -694,7 +694,7 @@ dialog.reelpl{max-width:min(420px,100vw);background:#000;color:#fff}
 .tkform .ph{display:flex;flex-direction:column;gap:6px;font-size:14px}
 
 /* ===== Nov 5 launch look: promo bar, wide hero carousel, features, flash sale, stacked badges ===== */
-.pbar{background:#111;color:#fff;display:flex;align-items:center;justify-content:center;gap:18px;padding:7px 16px;font-size:13px;font-weight:500;min-height:44px}
+#pbar{background:#111;color:#fff;display:flex;align-items:center;justify-content:center;gap:18px;padding:7px 16px;font-size:13px;font-weight:500;min-height:44px}
 .pb-msg{display:flex;gap:22px;overflow:hidden;position:relative}
 .pb-msg span{white-space:nowrap}
 .pb-msg span+span{padding-inline-start:22px;border-inline-start:1px solid #444}
@@ -703,7 +703,7 @@ dialog.reelpl{max-width:min(420px,100vw);background:#000;color:#fff}
 .cd i b,.sp-cd i b{font-size:16px;font-variant-numeric:tabular-nums}
 .cd i small,.sp-cd i small{font-size:9px;opacity:.85}
 @media (max-width:700px){
-  .pbar{justify-content:space-between;gap:10px;padding:6px 12px;font-size:12px}
+  #pbar{justify-content:space-between;gap:10px;padding:6px 12px;font-size:12px}
   .pb-msg{flex:1;min-width:0;height:20px;display:block}
   .pb-msg span{position:absolute;inset:0;padding:0!important;border:0!important;animation:pbswap 8s infinite;overflow:hidden;text-overflow:ellipsis}
   .pb-msg span+span{animation-delay:-4s}
@@ -815,7 +815,7 @@ dialog.reelpl{max-width:min(420px,100vw);background:#000;color:#fff}
 .sp-cd i{min-width:46px;padding:5px}.sp-cd i b{font-size:20px}
 @media (max-width:900px){.feats{grid-auto-columns:116px}.feats>div{grid-template-columns:1fr;justify-items:center;text-align:center;row-gap:3px;padding:12px 8px}.feats i{grid-row:auto}}
 /* Nov 5 fix: countdown on its own bar, selling points scroll under it */
-.pbar{justify-content:center!important;gap:12px!important}
+#pbar{justify-content:center!important;gap:12px!important}
 .mbar{background:var(--gold);color:#fff;overflow:hidden;direction:ltr;padding:8px 0;font-size:13.5px;font-weight:600}
 .mbar .track{display:flex;width:max-content;animation:mbar 38s linear infinite}
 .mbar span{white-space:nowrap;direction:rtl;padding-inline:22px;position:relative}
@@ -883,3 +883,25 @@ dialog#pd.full{overflow-x:hidden}
 .wsp .wsum{position:static}
 .wsav{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;font-size:14px;margin-bottom:8px}
 .splash .sp-why{list-style:none;margin:0;padding:0;display:grid;gap:6px;text-align:start;font-size:.88rem;line-height:1.5}
+/* Nov 19 launch review */
+.mbar.sbar{direction:rtl;text-align:center;padding:8px 12px;white-space:normal}
+.mbar.sbar span{white-space:normal;padding:0}
+.mbar.sbar span::after{content:none}
+.why .whyg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.why .whyg div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:3px}
+.why .whyg i{font-style:normal;font-size:22px}
+.why .whyg b{font-size:15px}
+.why .whyg small{color:var(--muted);font-size:12.5px;line-height:1.5}
+@media (max-width:640px){.why .whyg{grid-template-columns:1fr 1fr}}
+.card .bdg .bd-b{background:#e0002a;color:#fff}
+.card .bdg .bd-x{background:#ff8a00;color:#111}
+.card .ph{background:#fff}
+.card .ph img{object-fit:contain;padding:8px;box-sizing:border-box}
+.bstrip a img{width:46px;height:46px;object-fit:contain;margin-bottom:4px}
+.wtag{display:inline-block;width:max-content;font-style:normal;font-size:10.5px;font-weight:700;background:#111;color:var(--sun);border-radius:6px;padding:1px 7px;margin-bottom:2px}
+.price.wprice{color:#0a7a3d}
+.coinrules{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:12px 0 18px}
+.coinrules h3{margin:4px 0 6px;font-size:16px}
+.coinrules ul{margin:0 0 8px;padding-inline-start:18px;line-height:1.8}
+.policy p{line-height:1.8}
+#freeHint{margin:4px 0;color:#0a7a3d;font-weight:600}
