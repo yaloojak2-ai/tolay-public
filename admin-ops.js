@@ -11,10 +11,10 @@ const waNo = ph => { const d = String(ph || "").replace(/\D/g, ""); return !d ? 
 const ZONE = { west: "الضفة الغربية", jer: "القدس", 48: "الداخل" }, ZOLD = { 20: "west", 30: "jer", 70: "48" };  // old orders only had the fee
 
 function gateTabs() {
-  document.querySelectorAll(".tabbar [data-tab]").forEach(b => b.hidden = !can(TABPERM[b.dataset.tab] || "owner"));
+  document.querySelectorAll(".admtabs [data-tab]").forEach(b => b.hidden = !can(TABPERM[b.dataset.tab] || "owner"));
   document.body.classList.toggle("nofin", !can("finance")); document.body.classList.toggle("noowner", !can("owner"));
   $("#ost").innerHTML = `<option value="">كل الطلبات</option>` + Object.entries(OST).map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
-  if (!can("orders")) [...document.querySelectorAll(".tabbar [data-tab]")].find(b => !b.hidden)?.click();
+  if (!can("orders")) [...document.querySelectorAll(".admtabs [data-tab]")].find(b => !b.hidden)?.click();
 }
 
 async function loadOps() {
@@ -261,4 +261,4 @@ function drawAudit() {
     return `<tr><td dir="ltr">${fmt(a.at)}</td><td>${esc(a.who || "النظام")}</td><td>${AUT[a.tbl] || a.tbl} ${a.row_id ? `<b dir="ltr">#${esc(a.row_id)}</b>` : ""}</td><td><small>${what}</small></td></tr>`; }).join("") || `<tr><td colspan="4" class="hint">ما في سجلات.</td></tr>`;
 }
 $("#auT").addEventListener("change", drawAudit); $("#auQ").addEventListener("input", drawAudit);
-document.querySelector(".tabbar").addEventListener("click", e => { if (e.target.dataset.tab === "audit" && can("audit")) loadAudit(); if (e.target.dataset.tab === "delivery" && can("delivery")) loadDelivery(); if (e.target.dataset.tab === "money" && can("finance")) loadMoney(); });
+document.querySelector(".admtabs").addEventListener("click", e => { if (e.target.dataset.tab === "audit" && can("audit")) loadAudit(); if (e.target.dataset.tab === "delivery" && can("delivery")) loadDelivery(); if (e.target.dataset.tab === "money" && can("finance")) loadMoney(); });

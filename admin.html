@@ -10,7 +10,7 @@
 <style>
 body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 .adm{padding-block:28px 80px;display:flex;flex-direction:column;gap:20px}
-.tabbar{display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:14px}
+.admtabs{display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:14px}
 .panel{display:flex;flex-direction:column;gap:14px}
 .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .bar input,.bar select,.f input,.f select,.f textarea,td input{background:var(--ink-2);border:1px solid var(--line);color:var(--ivory);border-radius:10px;padding:8px 12px;font:inherit;font-size:14px;min-width:0}
@@ -62,7 +62,33 @@ dialog.wide{width:min(980px,96vw);max-height:92vh}
 .rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:10px}.rgrid h3{margin:0 0 6px;font-size:15px}
 .bars i{display:block;height:6px;border-radius:3px;background:var(--gold);margin-top:3px}
 .pos{color:#2e8b57}.neg{color:var(--danger)}
-@media print{.tabbar,.noprint,header,.adm>.bar{display:none!important}.panel{display:none!important}#t-rep{display:flex!important}.tbl{max-height:none!important;overflow:visible}body{background:#fff}}
+/* phone: tabs in one sliding row under the header; every table turns into cards with labels */
+@media (max-width:760px){
+  .adm{padding-block:12px 60px;gap:14px}
+  .admtabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;position:sticky;top:62px;z-index:15;background:var(--ink);margin-inline:-16px;padding:8px 16px;border-bottom:1px solid var(--line)}
+  .admtabs::-webkit-scrollbar{display:none}
+  .admtabs .chip{flex:none;white-space:nowrap;font-size:13px;padding:7px 13px}
+  .tbl{border:0;overflow:visible}
+  .tbl table,.tbl tbody{display:block}
+  .tbl thead{display:none}
+  .tbl tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px;border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:10px;background:#fff}
+  .tbl td{display:flex;flex-direction:column;gap:3px;border:0;padding:0;min-width:0;font-size:13px}
+  .tbl td[data-l]::before{content:attr(data-l);color:var(--muted);font-size:11px}
+  .tbl td:empty{display:none}
+  .tbl td input:not([type=checkbox]),.tbl td select{width:100%!important;box-sizing:border-box;font-size:16px;padding:9px 10px}
+  .tbl td.nm{grid-column:1/-1;min-width:0;font-size:15px;font-weight:600}
+  .tbl td.nm::before{display:none}
+  .tbl td.pic{grid-row:span 1;grid-column:1/-1;flex-direction:row}
+  .tbl tr:has(td.pic) td.nm{grid-column:auto / span 2}
+  .tbl td.pic+td.nm{margin-top:-4px}
+  .tbl td .sm{align-self:flex-start;padding:8px 14px;font-size:13px}
+  .tbl td.pcard{flex-direction:row;align-items:center;gap:12px}
+}
+.pcard img{width:56px;height:64px;object-fit:contain;border-radius:10px;background:#fff;border:1px solid var(--line);flex:none}
+.pcard .nmt{line-height:1.35}.pcard .nmt small{display:block;color:var(--gold);font-size:11px;font-weight:500}
+.bdisc{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.bdisc .pill{font-size:13px;padding:4px 12px}
+@media print{.admtabs,.noprint,header,.adm>.bar{display:none!important}.panel{display:none!important}#t-rep{display:flex!important}.tbl{max-height:none!important;overflow:visible}body{background:#fff}}
 .odg label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
 .odc b,.odc>span{display:block}.odc>span{text-align:right}
 .odsum .btn{white-space:nowrap;border-radius:999px;padding:10px 18px}
@@ -107,7 +133,7 @@ tr.late td{background:#fff1f1}
   </section>
 
   <section id="app" hidden>
-    <div class="tabbar">
+    <div class="admtabs">
       <button class="chip" type="button" data-tab="orders" aria-pressed="true">الطلبات <span id="newN"></span></button>
       <button class="chip" type="button" data-tab="products">المنتجات والأسعار</button>
       <button class="chip" type="button" data-tab="stock">المخزون والقيمة</button>
@@ -195,9 +221,14 @@ tr.late td{background:#fff1f1}
         <select id="pcat"><option value="">كل الأقسام</option></select>
         <button class="btn" type="button" id="newP">+ منتج جديد</button>
       </div>
+      <details class="bdbox"><summary><b>خصم حسب الماركة</b> <span class="hint">(على سعر المفرق، لكل منتجات الماركة)</span></summary>
+        <div class="bar" style="margin-top:10px"><select id="bdBrand" aria-label="الماركة"></select><input id="bdPct" type="number" min="0" max="90" step="1" dir="ltr" placeholder="%" style="width:80px" aria-label="نسبة الخصم"><button class="btn" type="button" id="bdSave">حفظ</button></div>
+        <p class="hint">إذا المنتج عليه خصم لحاله كمان، بيطلع الخصم الأكبر بس (ما بينجمعوا). اكتب 0 لتشيل خصم الماركة.</p>
+        <div class="bdisc" id="bdList"></div>
+      </details>
       <p class="hint">عدّل السعر مباشرة بالجدول وبينحفظ لحاله لما تطلع من الخانة. سعر الجملة والحد الأدنى بيشوفهم التجار المعتمدين بس.</p>
       <div class="tbl"><table>
-        <thead><tr><th></th><th>المنتج</th><th class="fin">سعره عليّ</th><th>سعر المفرق</th><th>خصم مفرق %</th><th>سعر الجملة</th><th>خصم جملة %</th><th>أقل كمية جملة</th><th>المخزون</th><th>ظاهر</th><th></th></tr></thead>
+        <thead><tr><th>المنتج</th><th class="fin">سعره عليّ</th><th>سعر المفرق</th><th>خصم مفرق %</th><th>سعر الجملة</th><th>خصم جملة %</th><th>أقل كمية جملة</th><th>المخزون</th><th>ظاهر</th><th></th></tr></thead>
         <tbody id="pRows"></tbody>
       </table></div>
     </div>
@@ -540,7 +571,7 @@ async function loadAll() {
   const opts = C.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
   $("#pcat").innerHTML = `<option value="">كل الأقسام</option>` + opts;
   $("#eCat").innerHTML = opts;
-  drawP(); drawStock(); drawT(); drawC(); loadOrders(); loadSearches(); loadCoins(); loadBattles(); loadExtras(); loadMkt(); loadReviews(); loadOps();
+  drawP(); loadBD(); drawStock(); drawT(); drawC(); loadOrders(); loadSearches(); loadCoins(); loadBattles(); loadExtras(); loadMkt(); loadReviews(); loadOps();
   $("#rlProd").innerHTML = `<option value="">بدون منتج</option>` + P.map(p => `<option value="${p.id}">${esc(p.brand)} – ${esc(p.name)}</option>`).join("");
   (s.data || []).forEach(r => { const i = $("#cForm").elements[r.key]; if (i) i.value = r.value; });
   const have = new Set(P.map(p => (p.brand + "|" + p.name).toLowerCase()));
@@ -643,7 +674,7 @@ function drawStock() {
   });
   const m = v => money(Math.round(v * 100) / 100);
   $("#kpis").innerHTML = `<div><b>${units}</b><small>قطعة بالمخزون</small></div><div class="fin"><b>${m(vCost)}</b><small>قيمتها عليّ${noCost ? ` (${noCost} قطعة بدون تكلفة)` : ""}</small></div><div><b>${m(vRet)}</b><small>قيمتها بسعر المفرق</small></div><div><b>${m(vWh)}</b><small>قيمتها بسعر الجملة</small></div><div class="fin"><b>${m(vProfit)}</b><small>ربح متوقع بالمفرق (للي إله تكلفة وسعر)</small></div>`;
-  $("#stRows").innerHTML = rows.slice(0, 600).map(({ p, k, n, cost, ret, wh }) => `<tr><td class="nm">${esc(p.name)}<small>${esc(p.brand)}</small></td><td>${esc(k) || "—"}</td>
+  $("#stRows").innerHTML = rows.slice(0, 600).map(({ p, k, n, cost, ret, wh }) => `<tr><td class="nm pcard"><img src="${esc(p.image_url)}" alt="" loading="lazy"><span class="nmt">${esc(p.name)}<small>${esc(p.brand)}</small></span></td><td>${esc(k) || "—"}</td>
     <td><input type="number" min="0" dir="ltr" value="${n ?? ""}" data-sid="${p.id}" data-sk="${esc(k)}" style="width:80px" aria-label="الكمية"></td>
     <td class="fin"><input type="number" step="0.01" min="0" dir="ltr" value="${cost ?? ""}" data-cid="${p.id}" style="width:80px" aria-label="سعرها عليّ"></td><td>${ret != null ? m(ret) : "—"}</td><td>${wh != null ? m(wh) : "—"}</td><td class="fin">${n && cost != null ? m(n * cost) : "—"}</td><td>${n && ret != null ? m(n * ret) : "—"}</td><td>${n && wh != null ? m(n * wh) : "—"}</td></tr>`).join("") || `<tr><td colspan="9" class="hint">ما في نتائج.</td></tr>`;
 }
@@ -771,21 +802,39 @@ async function loadSearches() {
   $("#sRows").innerHTML = rows.length ? rows.map(([t, x]) => `<tr><td>${esc(t)}</td><td>${x.n}</td><td>${x.r ? x.r : `<span class="pill rejected">مش متوفر</span>`}</td></tr>`).join("") : `<tr><td colspan="3" class="hint">لسا ما حدا دوّر على إشي.</td></tr>`;
 }
 
+const labelCells = tb => { const hs = [...(tb.closest("table")?.querySelectorAll("thead th") || [])].map(h => h.textContent.trim());
+  tb.querySelectorAll("tr").forEach(tr => [...tr.children].forEach((td, i) => { if (hs[i] && !td.dataset.l) td.dataset.l = hs[i]; })); };
+new MutationObserver(ms => new Set(ms.map(m => m.target.closest?.("tbody")).filter(Boolean)).forEach(labelCells)).observe(document.body, { childList: true, subtree: true });
+// brand discounts (retail): the bigger of the brand's and the product's own discount applies, in place_order too
+let BD = {};
+async function loadBD() {
+  const { data, error } = await db.from("brand_discounts").select("*"); if (error) return;
+  BD = Object.fromEntries((data || []).filter(r => +r.pct > 0).map(r => [r.brand, +r.pct]));
+  $("#bdBrand").innerHTML = [...new Set(P.map(p => p.brand))].sort().map(b => `<option>${esc(b)}</option>`).join("");
+  $("#bdList").innerHTML = Object.keys(BD).length ? Object.entries(BD).sort().map(([b, v]) => `<button class="pill" type="button" data-bd="${esc(b)}" title="عدّل">${esc(b)} · ${v}%</button>`).join("") : `<span class="hint">ما في خصومات ماركات.</span>`;
+  drawP();
+}
+$("#bdSave").addEventListener("click", async () => {
+  const brand = $("#bdBrand").value, v = Math.min(90, Math.max(0, Math.round(+$("#bdPct").value || 0)));
+  if (!brand) return;
+  const { error } = v ? await db.from("brand_discounts").upsert({ brand, pct: v }) : await db.from("brand_discounts").delete().eq("brand", brand);
+  if (fail(error)) return; toast(v ? `خصم ${v}% على ${brand} ✓` : `انشال خصم ${brand}`); $("#bdPct").value = ""; loadBD();
+});
+$("#bdList").addEventListener("click", e => { const b = e.target.closest("[data-bd]")?.dataset.bd; if (b) { $("#bdBrand").value = b; $("#bdPct").value = BD[b]; $("#bdPct").focus(); } });
 // products
 function drawP() {
   const q = $("#pq").value.trim().toLowerCase(), cf = $("#pcat").value;
   const catName = Object.fromEntries(C.map(c => [c.id, c.name]));
   $("#pRows").innerHTML = P.filter(p => (!cf || p.category_id == cf) && (!q || `${p.brand} ${p.name}`.toLowerCase().includes(q))).map(p => `
     <tr class="${p.active ? "" : "off"}">
-      <td><img src="${esc(p.image_url)}" alt="" loading="lazy"></td>
-      <td class="nm">${esc(p.name)}<small>${esc(p.brand)} · ${esc(catName[p.category_id] || "")}</small></td>
+      <td class="nm pcard"><img src="${esc(p.image_url)}" alt="" loading="lazy"><span class="nmt">${esc(p.name)}<small>${esc(p.brand)} · ${esc(catName[p.category_id] || "")}${BD[p.brand] ? ` · خصم الماركة ${BD[p.brand]}%` : ""}</small></span></td>
       <td class="fin"><input type="number" step="0.01" min="0" dir="ltr" value="${CO[p.id] ?? ""}" data-id="${p.id}" data-f="cost" aria-label="سعره عليّ" style="width:80px"></td>
       <td><input type="number" step="0.01" min="0" dir="ltr" value="${p.retail_price ?? ""}" data-id="${p.id}" data-f="retail" aria-label="سعر المفرق"></td>
       <td><input type="number" step="1" min="0" max="99" dir="ltr" value="${+p.discount || ""}" data-id="${p.id}" data-f="rdisc" aria-label="خصم مفرق" style="width:64px">${+p.discount && p.retail_price ? `<small class="hint">${money(p.retail_price * (100 - p.discount) / 100)}</small>` : ""}</td>
       <td><input type="number" step="0.01" min="0" dir="ltr" value="${W[p.id]?.price ?? ""}" data-id="${p.id}" data-f="wprice" aria-label="سعر الجملة"></td>
       <td><input type="number" step="1" min="0" max="99" dir="ltr" value="${+W[p.id]?.discount || ""}" data-id="${p.id}" data-f="wdisc" aria-label="خصم جملة" style="width:64px">${+W[p.id]?.discount && W[p.id]?.price ? `<small class="hint">${money(W[p.id].price * (100 - W[p.id].discount) / 100)}</small>` : ""}</td>
       <td><input type="number" min="1" dir="ltr" value="${W[p.id]?.min_qty ?? 1}" data-id="${p.id}" data-f="wmin" aria-label="أقل كمية" style="width:70px"></td>
-      <td>${stockSum(p) ?? "—"}</td>
+      <td><button class="sm" type="button" data-stk="${p.id}">📦 ${stockSum(p) ?? "—"}</button></td>
       <td><input type="checkbox" ${p.active ? "checked" : ""} data-id="${p.id}" data-f="active" aria-label="ظاهر" style="width:auto"></td>
       <td><button class="sm" type="button" data-edit="${p.id}">تعديل</button></td>
     </tr>`).join("");
@@ -1064,8 +1113,10 @@ document.addEventListener("click", async e => {
   if (d.tab) {
     document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-pressed", b === t));
     document.querySelectorAll("#app > .panel").forEach(p => p.hidden = p.id !== "t-" + d.tab);
+    t.scrollIntoView({ block: "nearest", inline: "center" }); window.scrollTo(0, 0);
   }
   else if (d.edit) openEdit(+d.edit);
+  else if (d.stk) { const p = P.find(x => x.id === +d.stk); $("#sq").value = p.brand + " " + p.name; $("#sOnly").checked = false; drawStock(); document.querySelector('[data-tab="stock"]').click(); $("#sq").scrollIntoView({ block: "start" }); }
   else if (d.alsave !== undefined) { const tr = e.target.closest("tr"); if (!fail((await db.from("restock_alerts").update({ reply: tr.querySelector("[data-alr]").value.trim() || null, eta: tr.querySelector("[data-ale]").value || null, replied_at: new Date().toISOString() }).eq("user_id", d.alu).eq("product_id", +d.alp).eq("shade", d.als)).error)) { toast("انحفظ الرد ✓"); loadExtras(); } }
   else if (d.alu) { if (!fail((await db.from("restock_alerts").delete().eq("user_id", d.alu).eq("product_id", +d.alp).eq("shade", d.als)).error)) loadExtras(); }
   else if (d.resolve) { t.disabled = true; const { error } = await db.rpc("resolve_battle", { p_battle: +d.resolve }); if (!fail(error)) { toast("انعلنت النتيجة ✓"); loadBattles(); } else t.disabled = false; }
@@ -1081,10 +1132,10 @@ document.addEventListener("click", async e => {
 });
 window.addEventListener("load", boot);  // after admin-ops.js is in
 </script>
-<script src="admin-ops.js?v=1795000000"></script>
-<script src="admin-x.js?v=1793894897"></script>
-<script src="admin-fin.js?v=1793894897"></script>
-<script src="admin-inv.js?v=1793894897"></script>
+<script src="admin-ops.js?v=1795100000"></script>
+<script src="admin-x.js?v=1795100000"></script>
+<script src="admin-fin.js?v=1795100000"></script>
+<script src="admin-inv.js?v=1795100000"></script>
 <script type="module" src="admin-import.js?v=6"></script>
 </body>
 </html>

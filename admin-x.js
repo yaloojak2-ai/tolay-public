@@ -4,7 +4,7 @@
 
 const NEV = { new_order: "🛍️ طلب جديد", new_wholesale: "📦 طلب جملة", cancelled: "❌ إلغاء طلب", new_trader: "🏪 تاجر جديد", low_stock: "🟠 كمية قليلة", out_of_stock: "🔴 نفد منتج", new_ticket: "💬 سؤال أو شكوى", restock_request: "🔔 طلب منتج مش متوفر", task: "✅ مهمة" };
 let NF = [], NR = [], TK = [], TA = [], NFMAX = 0, GOAL = 0;
-const goTab = t => document.querySelector(`.tabbar [data-tab="${t}"]`)?.click();
+const goTab = t => document.querySelector(`.admtabs [data-tab="${t}"]`)?.click();
 
 async function loadX() {
   loadNtf(); drawMfa(); if (can("orders")) loadHelp();
@@ -191,7 +191,7 @@ $("#taAdd").addEventListener("click", async () => {
 });
 $("#taRows").addEventListener("change", async e => { const id = +e.target.dataset.tad; if (id && !fail((await db.from("tasks").update({ done: e.target.checked, done_at: e.target.checked ? new Date().toISOString() : null }).eq("id", id)).error)) loadHelp(); });
 $("#taRows").addEventListener("click", e => { if (e.target.dataset.tko) openOrder(+e.target.dataset.tko); });
-document.querySelector(".tabbar").addEventListener("click", e => { const t = e.target.closest("[data-tab]")?.dataset.tab; if (t === "ntf") { loadNtf(); if (can("owner")) loadRules(); } if (t === "help") loadHelp(); });
+document.querySelector(".admtabs").addEventListener("click", e => { const t = e.target.closest("[data-tab]")?.dataset.tab; if (t === "ntf") { loadNtf(); if (can("owner")) loadRules(); } if (t === "help") loadHelp(); });
 
 // ===== Tolay AI: questions answered from the store's own numbers =====
 let AID = null;

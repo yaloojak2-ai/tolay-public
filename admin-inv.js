@@ -168,5 +168,5 @@ $("#iAlRows").addEventListener("click", async e => {
   if (d.recv) { const p = P.find(x => x.id === +d.recv); $("#mvT").value = "receive"; mvMode(); $("#mvP").value = `${p.brand} – ${p.name} #${p.id}`; mvShades(); $("#mvS").value = d.rs; $("#mvQ").focus(); $("#mvF").scrollIntoView({ behavior: "smooth", block: "center" }); }
   if (d.bdone && !fail((await db.from("product_batches").update({ done: true }).eq("id", +d.bdone)).error)) loadInv();
 });
-document.querySelector(".tabbar").addEventListener("click", e => { if (e.target.closest("[data-tab]")?.dataset.tab === "inv" && can("stock")) loadInv(); });
+document.querySelector(".admtabs").addEventListener("click", e => { if (e.target.closest("[data-tab]")?.dataset.tab === "inv" && can("stock")) loadInv(); });
 $("#mlRows").addEventListener("click", e => { const id = +e.target.dataset.od; if (id) openOrder(id); });
