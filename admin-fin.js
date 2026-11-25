@@ -230,4 +230,4 @@ $("#rBody").addEventListener("click", async e => {
   if (d.exv && confirm("تلغي هالمصروف؟ بيضل بالسجل.") && !fail((await db.from("expenses").update({ void: true }).eq("id", +d.exv)).error)) { await loadFin(); drawReport(); }
   if (d.cav && confirm("تلغي هالحركة؟ بتضل بالسجل.") && !fail((await db.from("capital_moves").update({ void: true }).eq("id", +d.cav)).error)) { await loadFin(); drawReport(); }
 });
-document.querySelector(".tabbar").addEventListener("click", e => { const t = e.target.closest("[data-tab]")?.dataset.tab; if ((t === "sup" || t === "rep") && can("finance")) loadFin(); });
+document.querySelector(".admtabs").addEventListener("click", e => { const t = e.target.closest("[data-tab]")?.dataset.tab; if ((t === "sup" || t === "rep") && can("finance")) loadFin(); });

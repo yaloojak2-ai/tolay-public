@@ -247,11 +247,14 @@ async function load() {
   const tmo = (p, ms) => Promise.race([p, new Promise(r => setTimeout(() => r(null), ms))]);
   const secP = tmo(Promise.all([db.rpc("hidden_today"), db.rpc("best_sellers"), db.rpc("product_ratings"), db.from("reels").select("*").order("sort").order("id", { ascending: false }), db.rpc("top_searches")]), 6000).catch(() => null);
   const sesP = tmo(loadSession(), 6000).catch(() => null);
-  const [{ data: st }, { data: cats }, { data: prods, error }] = await Promise.all([
+  const [{ data: st }, { data: cats }, { data: prods, error }, bdr] = await Promise.all([
     db.from("settings").select("key,value"),
     db.from("categories").select("*").order("sort"),
     db.from("products").select("*").eq("active", true).order("sort"),
+    db.from("brand_discounts").select("brand,pct"),
   ]);
+  // brand discount from the admin: the bigger of it and the product's own discount (same as place_order)
+  const BDISC = Object.fromEntries((bdr?.data || []).map(r => [r.brand, +r.pct || 0]));
   if (error) { if (!load.tried) { load.tried = 1; return setTimeout(load, 1200); } $("#grid").innerHTML = `<div class="empty">ما قدرنا نحمّل المنتجات، حدّثي الصفحة.</div>`; return; }
   S = Object.fromEntries((st || []).map(r => [r.key, r.value]));
   const catName = Object.fromEntries((cats || []).map(c => [c.id, c.name]));
@@ -260,7 +263,7 @@ async function load() {
   const SD = window.SEED || {}, catMedia = Object.fromEntries((cats || []).map(c => [c.id, Object.keys(c.media || {}).length ? c.media : SD.media?.[c.name] || {}]));
   const NEW = new Set((SD.add || []).map(a => a.name));
   const swOf = p => ((p.swatches || []).length ? p.swatches : SD.swatches?.[p.name] || []).map(s => ({ ...s, img: s.img || SD.img?.[p.name]?.[s.name] || "", vid: s.vid || SD.vid?.[p.name]?.[s.name] || "" }));
-  toP = p => ({ id: p.id, sku: p.sku || "", bc: p.barcode || "", disc: +p.discount || 0, ds: p.drop_start ? Date.parse(p.drop_start) : null, de: p.drop_end ? Date.parse(p.drop_end) : null, worth: +p.worth || 0, st: p.stock || {}, b: p.brand, n: p.name, s: p.shades, z: p.size, d: p.description, pr: p.retail_price, img: p.image_url ? p.image_url + (p.image_url.includes("?") ? "&" : "?") + "v=1793640000" : p.image_url, featured: p.featured, cat: catName[p.category_id] || "", sw: swOf(p), gal: (p.gallery || []).map(g => g.url).filter(Boolean), fin: p.finish || SD.finish?.[p.name] || "", viz: catViz[p.category_id] || "photo", isNew: (p.arrived_at && Date.now() - Date.parse(p.arrived_at) < 30 * 864e5) || NEW.has(p.name), media: SD.pvid?.[p.name] ? { ...catMedia[p.category_id], video: SD.pvid[p.name] } : catMedia[p.category_id] || {} });
+  toP = p => ({ id: p.id, sku: p.sku || "", bc: p.barcode || "", disc: Math.max(+p.discount || 0, BDISC[p.brand] || 0), ds: p.drop_start ? Date.parse(p.drop_start) : null, de: p.drop_end ? Date.parse(p.drop_end) : null, worth: +p.worth || 0, st: p.stock || {}, b: p.brand, n: p.name, s: p.shades, z: p.size, d: p.description, pr: p.retail_price, img: p.image_url ? p.image_url + (p.image_url.includes("?") ? "&" : "?") + "v=1793640000" : p.image_url, featured: p.featured, cat: catName[p.category_id] || "", sw: swOf(p), gal: (p.gallery || []).map(g => g.url).filter(Boolean), fin: p.finish || SD.finish?.[p.name] || "", viz: catViz[p.category_id] || "photo", isNew: (p.arrived_at && Date.now() - Date.parse(p.arrived_at) < 30 * 864e5) || NEW.has(p.name), media: SD.pvid?.[p.name] ? { ...catMedia[p.category_id], video: SD.pvid[p.name] } : catMedia[p.category_id] || {} });
   // vault products load on the Club page only; finished drops leave the store
   ALL = prods.filter(p => !p.vault && !(p.drop_end && Date.parse(p.drop_end) < Date.now())).map(toP);
   byId = Object.fromEntries(ALL.map(p => [p.id, p]));
